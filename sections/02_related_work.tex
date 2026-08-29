@@ -1,0 +1,14 @@
+\section{Related Work}
+\label{sec:related-work}
+
+\paragraph{Knowledge distillation.}
+Classical knowledge distillation trains a student to reproduce the softened
+class distribution of a teacher \cite{hinton2015distilling}. This distribution
+contains relative evidence for non-target classes, often called dark knowledge.
+
+\paragraph{Intermediate representation transfer.}
+FitNets introduced hints from intermediate teacher layers
+\cite{romero2015fitnets}. Later approaches match attention, correlations, or
+contrastive relationships instead of requiring direct feature equality
+\cite{zagoruyko2017paying,tian2020contrastive}. Our dummy objective follows this
+general principle but focuses on pairwise spatial geometry.
