@@ -1,0 +1,18 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Illustrative Setup}
+
+We use a dummy image-classification experiment with 100 classes. The teacher is
+a larger convolutional model and the student is a compact model. All methods
+use the same data split, augmentation, optimizer, and training budget. We report
+Top-1 accuracy, negative log-likelihood (NLL), expected calibration error (ECE),
+parameter count, and computational cost.
+
+\subsection{Implementation Details}
+
+The student is trained for 90 epochs with AdamW, an initial learning rate of
+$2\times10^{-3}$, weight decay $0.05$, and batch size 128. For illustration, we
+set $\tau=4$, $\lambda_{\mathrm{KD}}=1$, and $\lambda_{\mathrm{geo}}=2$. These
+values are placeholders and should be replaced by the actual experimental
+configuration.
