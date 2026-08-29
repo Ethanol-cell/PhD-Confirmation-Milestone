@@ -1,0 +1,15 @@
+\begin{table}[t]
+    \centering
+    \caption{Dummy loss ablation. Checkmarks indicate enabled objectives.}
+    \label{tab:ablation}
+    \begin{tabular}{ccc c}
+        \toprule
+        $\mathcal{L}_{\mathrm{CE}}$ & $\mathcal{L}_{\mathrm{KD}}$ &
+        $\mathcal{L}_{\mathrm{geo}}$ & Top-1 (\%) \\
+        \midrule
+        $\checkmark$ &              &              & 82.10 \\
+        $\checkmark$ & $\checkmark$ &              & 84.35 \\
+        $\checkmark$ & $\checkmark$ & $\checkmark$ & \textbf{86.20} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
