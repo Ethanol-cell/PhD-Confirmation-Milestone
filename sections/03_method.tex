@@ -1,0 +1,70 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Problem Formulation}
+
+Let $(\bm{x}_i,y_i)$ be an image and its label. A frozen teacher $f_T$ and a
+trainable student $f_S$ produce logits $\bm{z}_i^T$ and $\bm{z}_i^S$. The student
+is trained with the total objective
+
+\begin{equation}
+\mathcal{L}
+=
+\mathcal{L}_{\mathrm{CE}}
++ \lambda_{\mathrm{KD}}\mathcal{L}_{\mathrm{KD}}
++ \lambda_{\mathrm{geo}}\mathcal{L}_{\mathrm{geo}}.
+\label{eq:total-loss}
+\end{equation}
+
+The first term is ordinary cross-entropy:
+
+\begin{equation}
+\mathcal{L}_{\mathrm{CE}}
+= -\frac{1}{N}\sum_{i=1}^{N}\log p_S(y_i\mid\bm{x}_i).
+\end{equation}
+
+For output-level transfer, softened probabilities at temperature $\tau$ are
+
+\begin{equation}
+q_{i,c}^{M}(\tau)
+= \frac{\exp(z_{i,c}^{M}/\tau)}
+{\sum_{k}\exp(z_{i,k}^{M}/\tau)}, \qquad M\in\{T,S\},
+\end{equation}
+
+and the distillation loss is
+
+\begin{equation}
+\mathcal{L}_{\mathrm{KD}}
+= \frac{\tau^2}{N}\sum_{i=1}^{N}
+\operatorname{KL}\!\left(
+\bm{q}_{i}^{T}(\tau)\,\|\,\bm{q}_{i}^{S}(\tau)
+\right).
+\end{equation}
+
+\subsection{Spatial Geometry Transfer}
+
+At a selected layer, let $\bm{a}_{i,p}^{M}\in\mathbb{R}^{d}$ denote the aligned
+feature vector at spatial position $p$. We first normalize it:
+
+\begin{equation}
+\widehat{\bm{a}}_{i,p}^{M}
+= \frac{\bm{a}_{i,p}^{M}}
+{\lVert\bm{a}_{i,p}^{M}\rVert_2+\varepsilon}.
+\end{equation}
+
+The cosine relation between positions $p$ and $q$ is
+$r_{i,pq}^{M}=(\widehat{\bm{a}}_{i,p}^{M})^{\top}
+\widehat{\bm{a}}_{i,q}^{M}$. The geometry loss matches these relations:
+
+\begin{equation}
+\mathcal{L}_{\mathrm{geo}}
+= \frac{1}{N|\mathcal{P}|}
+\sum_{i=1}^{N}\sum_{(p,q)\in\mathcal{P}}
+\left(r_{i,pq}^{S}-r_{i,pq}^{T}\right)^2.
+\label{eq:geometry-loss}
+\end{equation}
+
+Unlike direct feature regression, \cref{eq:geometry-loss} preserves how spatial
+positions relate to one another while allowing teacher and student features to
+use different coordinate systems. The complete objective is given in
+\cref{eq:total-loss}.
