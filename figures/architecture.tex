@@ -1,0 +1,23 @@
+\definecolor{teacherblue}{HTML}{DCEBFA}
+\definecolor{studentgreen}{HTML}{DFF3E4}
+\definecolor{lossorange}{HTML}{FBE6CE}
+\begin{tikzpicture}[
+    node distance=8mm and 12mm,
+    box/.style={draw,rounded corners,minimum width=27mm,minimum height=10mm,align=center,font=\sffamily},
+    arrow/.style={-{Latex[length=2.2mm]},thick}
+]
+\node[box,fill=gray!12] (input) {Input image};
+\node[box,fill=teacherblue,above right=of input] (teacher) {Frozen teacher};
+\node[box,fill=studentgreen,below right=of input] (student) {Trainable student};
+\node[box,fill=lossorange,right=18mm of teacher] (kd) {Output KD};
+\node[box,fill=lossorange,right=18mm of student] (geo) {Geometry loss};
+\node[box,fill=gray!12,right=19mm of kd,yshift=-10mm] (total) {Total objective};
+\draw[arrow] (input) -- (teacher);
+\draw[arrow] (input) -- (student);
+\draw[arrow] (teacher) -- (kd);
+\draw[arrow] (student) -- (kd);
+\draw[arrow] (teacher) -- (geo);
+\draw[arrow] (student) -- (geo);
+\draw[arrow] (kd) -- (total);
+\draw[arrow] (geo) -- (total);
+\end{tikzpicture}
