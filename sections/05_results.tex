@@ -1,0 +1,23 @@
+\section{Results and Discussion}
+\label{sec:results}
+
+\input{tables/main_results}
+
+As shown in \cref{tab:main-results}, the dummy full method improves Top-1
+accuracy over both the cross-entropy baseline and classical distillation. The
+same trend is visualized in \cref{fig:results}. These values are deliberately
+synthetic and must not be interpreted as experimental evidence.
+
+\begin{figure}[t]
+    \centering
+    \input{figures/results}
+    \caption{Dummy Top-1 accuracy comparison. All values are placeholders.}
+    \label{fig:results}
+\end{figure}
+
+\input{tables/ablation}
+
+The illustrative ablation in \cref{tab:ablation} separates the contribution of
+output-level and geometry-level supervision. A real paper should report means,
+standard deviations or confidence intervals, the number of seeds, and a
+predefined checkpoint-selection protocol.

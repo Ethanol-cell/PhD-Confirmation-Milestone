@@ -1,0 +1,27 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Knowledge distillation transfers information from a high-capacity teacher model
+to a smaller student model \cite{hinton2015distilling}. Beyond matching final
+predictions, recent methods also transfer intermediate representations and their
+relationships \cite{romero2015fitnets,tian2020contrastive}.
+
+This manuscript uses dummy content to illustrate a modular writing workflow.
+The example method combines supervised learning, output-level distillation, and
+a geometry-aware intermediate objective. Our illustrative contributions are:
+
+\begin{itemize}[leftmargin=*]
+    \item a readable one-column layout for developing a research paper;
+    \item modular source files for sections, figures, and tables; and
+    \item examples of equations, citations, cross-references, and result reporting.
+\end{itemize}
+
+The conceptual pipeline is summarized in \cref{fig:architecture}.
+
+\begin{figure}[t]
+    \centering
+    \resizebox{0.88\linewidth}{!}{\input{figures/architecture}}
+    \caption{Dummy teacher--student architecture. The student is optimized using
+    labels, teacher predictions, and intermediate spatial geometry.}
+    \label{fig:architecture}
+\end{figure}

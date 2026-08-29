@@ -1,0 +1,51 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\graphicspath{{figures/}}
+
+\title{A Clean One-Column Research Paper}
+\author{Jia Zheng Chan \\
+School of Information Technology, Monash University Malaysia}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This dummy manuscript demonstrates a clean one-column structure for developing
+a technical research paper. It includes modular sections, mathematical notation,
+figures, tables, cross-references, and a BibTeX bibliography. Replace the example
+text and results with the content of your own project.
+\end{abstract}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_method}
+\input{sections/04_experiments}
+\input{sections/05_results}
+\input{sections/06_conclusion}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
