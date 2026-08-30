@@ -50,21 +50,21 @@ and when those properties produce a useful intervention.
 
 \textbf{The immediate priority is to complete the \methodname{} paper and the
 \jmethod{} paper.} This requires closing the current evidence rather than
-continuing unbounded formula search. For the PCA-RGB study, this means freezing the
-display protocol and transition selector, quantifying wrong-prediction
-alignment over the complete error set, and separating class count from other
-dataset differences. For \methodname{}, it means a prospective cross-dataset
-study with the mode-count selector frozen before segmentation evaluation,
-expanded faithfulness and sanity tests, and a fixed semantic atlas containing
-failures. For J1, it means replicating the strongest external baselines,
-quantifying the J1--ReviewKD difference, reporting resource cost, and testing
-generality beyond one teacher--student setting.
+continuing unbounded formula search. The PCA-RGB study needs a frozen display
+protocol and transition selector, a complete analysis of wrong-prediction
+alignment, and experiments that separate class count from other dataset
+differences. The \methodname{} paper needs a prospective cross-dataset study
+with the mode-count selector frozen before segmentation evaluation. It also
+needs expanded faithfulness and sanity tests, together with a fixed semantic
+atlas that includes failures. The J1 paper needs replication of the strongest
+external baselines, an uncertainty-aware J1--ReviewKD comparison, resource-cost
+reporting, and a generality test beyond one teacher--student setting.
 
 \subsection{Transformer investigation across a broad design space}
 
-After the CNN closure, a transformer literature review will begin with a broad
-comparison of the
-objects explained by attention rollout, gradient-weighted attention,
+After the CNN work is complete, the transformer literature review will begin
+with a broad comparison of the objects explained by attention rollout,
+gradient-weighted attention,
 relevance propagation, token-transformation methods, and feature-formation
 methods \cite{abnar2020attentionflow,chefer2021transformer,
 xie2023vitcx,wu2024tokentm,mehri2025libragrad,bousselham2025legrad}. The review
@@ -77,9 +77,9 @@ The first pilot will not assume that a CNN feature grid has a direct
 transformer equivalent. Candidate objects include patch tokens before and
 after attention, residual-stream states, value vectors, attention-output
 features, and hierarchical stage outputs. Candidate architectures may include
-a flat supervised Vision Transformer (ViT), a data-efficient variant, and a hierarchical transformer,
-but the final selection will depend on reproducible probes and computational
-feasibility.
+a flat supervised Vision Transformer (ViT), a data-efficient variant, and a
+hierarchical transformer. Reproducible probes and computational feasibility
+will determine the final selection.
 
 The pilot has three gates:
 
@@ -93,8 +93,8 @@ The pilot has three gates:
     models.
 \end{enumerate}
 
-These gates prioritize the most promising evidence path after the broad survey;
-they do not presuppose a single architecture or explanatory object. If PCA-RGB
+These gates prioritize the most promising evidence path after the broad survey.
+They do not presuppose a single architecture or explanatory object. If PCA-RGB
 is unstable for token states, the project can use centred kernel alignment
 (CKA), linear probes,
 affinity change, token clustering, or class-prototype geometry. If
@@ -148,9 +148,8 @@ Three intended publications align with the research questions:
 
 \textbf{The first two papers are the next concrete stage of the PhD.} They are
 independent enough to publish separately but are linked in the thesis through
-representation geometry. The third should test the
-scope of the thesis hypothesis rather than introduce an unrelated transformer
-method.
+representation geometry. The third should test the scope of the thesis
+hypothesis rather than introduce an unrelated transformer method.
 
 \subsection{Risks and contingencies}
 

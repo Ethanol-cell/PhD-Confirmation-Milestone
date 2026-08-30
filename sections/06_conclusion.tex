@@ -3,9 +3,9 @@
 \subsection{From explanation to transferable geometry}
 
 The third stage asks whether representation geometry has practical training
-value. Classical output knowledge distillation (KD) tells a student which classes the teacher considers
-similar, but it does not specify how spatial organization develops. Direct
-feature regression, conversely, may force a compact student to reproduce
+value. Classical output knowledge distillation (KD) tells a student which
+classes the teacher considers similar. However, it does not specify how spatial
+organization develops. By contrast, direct feature regression may force a compact student to reproduce
 teacher channels or transitions that its architecture cannot efficiently
 realize. \jmethod{} adopts a selective principle: organize space like the
 teacher at a useful early state, permit a student-specific bridge, constrain
@@ -17,15 +17,16 @@ Earlier experiments tested supervision at early, transition, and late states.
 Early relational guidance was useful, but applying coordinate or flow
 constraints too early, extending them continuously through the full hierarchy,
 or relying only on the most compressed late state performed worse than the
-selective transition-centred configuration. The final design therefore anchors
+selective transition-centred configuration. The final design anchors
 E1, leaves the E1-to-M1 bridge student-specific, applies coordinate supervision
 at M1/M2 where spatial organization is becoming semantic, and uses L1/L2 mainly
 to constrain mature geometry and late relational flow \cite{chan2026j1}.
 
 The production implementation has undergone a separate implementation-forensics
-audit, conducted independently of the training-code execution used to produce
-the benchmark \cite{chan2026j1}. The audit reproduced descriptors, scalar losses, gradients,
-one-step updates, and deployment logits to numerical precision. It corrected
+audit. This was conducted independently of the training-code execution used to
+produce the benchmark \cite{chan2026j1}. The audit reproduced descriptors,
+scalar losses, gradients, one-step updates, and deployment logits to numerical
+precision. It corrected
 the written specification of the spatial weights, teacher gate, shared
 schedule, and hard-sign conventions without identifying a scientific code
 error.
@@ -107,8 +108,8 @@ excluded from unreliable teacher imitation. In compact form, the step is
 \textbf{Intuition.} The spatial losses compare corresponding positions. If the
 teacher sees one crop while the student sees another, position $p$ no longer
 describes the same visible content and the target becomes contradictory.
-Alignment is therefore a mathematical requirement for pointwise transfer, not
-only an implementation convenience.
+Alignment is a mathematical requirement for pointwise transfer, not simply an
+implementation convenience.
 
 \paragraph{Step 2: global teacher-coordinate supervision (TCS).}
 TCS transfers a partitioned version of the teacher's global representation and
@@ -158,10 +159,10 @@ half-space.
 \textbf{Intuition.} CE says which class should win, but it does not describe
 where the image lies inside the teacher's semantic space. TCS supplies many
 binary half-space memberships. The student must reproduce those coarse
-partitions but may move freely within a half-space, which is less restrictive
-than exact coordinate regression. \textbf{The teacher-correct gate is therefore
-a reliability filter: TCS transfers geometry only when the teacher also gets
-the class decision right.}
+partitions but may move freely within a half-space. This is less restrictive
+than exact coordinate regression. \textbf{The teacher-correct gate acts as a
+reliability filter: TCS transfers geometry only when the teacher also gets the
+class decision right.}
 
 \subsection{Early relational state}
 
@@ -220,7 +221,7 @@ eight-neighbour pairs, preserving boundaries, parts, and short-range
 continuity. Global relations alone can be too coarse for local structure,
 whereas local relations alone cannot express coordination between distant
 regions. Averaging the two branch losses gives these two questions equal
-importance; it also prevents the much larger global pair set from dominating
+importance. It also prevents the much larger global pair set from dominating
 solely through its number of entries. This use of spatial relations follows the
 broader similarity-preserving and relational-distillation principle that a
 student can reproduce geometry without matching teacher channels directly
@@ -276,13 +277,13 @@ their absolute states.
 \textbf{Intuition.} State matching asks teacher and student to occupy the same
 representation, which can be unnecessarily restrictive when their channel
 widths and computational paths differ. Flow matching instead asks whether
-spatial relations change in the same direction between selected states. The
-student may therefore use a different absolute representation while preserving
-the teacher's transition pattern, an idea related to inter-layer flow and
+spatial relations change in the same direction between selected states. This
+allows the student to use a different absolute representation while preserving
+the teacher's transition pattern. The idea is related to inter-layer flow and
 relational knowledge transfer \cite{yim2017fsp,park2019rkd}.
 
 The local term is restricted to $M1\rightarrow M2$ because these endpoints
-share the same $14\times14$ transition grid and therefore support position-wise
+share the same $14\times14$ transition grid, so they support position-wise
 neighbour-change comparison. The global branch uses pooled descriptors and can
 cross the later resolution changes. Combining the branches retains detailed
 transition behaviour where the grids are compatible and long-range evolution
@@ -399,8 +400,8 @@ $(\gamma_{M1},\gamma_{M2},\gamma_{L1},\gamma_{L2})
 =(19.2733,77.5578,19.9431,17.1116)$,
 $\lambda_E=9.7376$, and $\lambda_F=0.0028157$. Their scalar magnitudes should
 be interpreted through the achieved gradient ratios, not compared directly.
-This controls training pressure, making ablations more informative about the
-transferred object rather than accidental scalar magnitude.
+The calibration controls training pressure and makes ablations more informative
+about the transferred object rather than accidental scalar magnitude.
 
 One shared multiplier controls J32, E1, and flow:
 \begin{equation}
@@ -504,8 +505,8 @@ including unified balanced PC1--32 optimization, but does not isolate that
 component without the complete matched ablation. The external results suggest
 a substantial advantage over the tested feature baselines in this setting, but
 their single-seed status prevents a strong statistical ranking. The very low
-ECE of SemCKD and InDistill also
-shows that accuracy and calibration should not be collapsed into one claim.
+ECE values of SemCKD and InDistill also show that accuracy and calibration
+should not be collapsed into one claim.
 
 \subsection{Remaining evidence and claim boundary}
 

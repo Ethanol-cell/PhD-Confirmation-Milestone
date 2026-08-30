@@ -5,7 +5,7 @@
 \textbf{High predictive accuracy does not explain how a vision model forms its
 decision.} Deep neural networks now provide highly effective representations
 for image classification, detection, segmentation, and many downstream vision
-tasks, but their predictive success does not by itself reveal how evidence is
+tasks, but their predictive success alone does not reveal how evidence is
 formed inside the model. A classification score is the endpoint of a sequence
 of spatial transformations: local edges and textures are combined into parts,
 parts are grouped into objects, and object representations become sufficiently
@@ -23,8 +23,8 @@ Class activation mapping (CAM) and its descendants project
 class-relevant signals onto a spatial feature map
 \cite{zhou2016cam,selvaraju2017gradcam,chattopadhay2018gradcampp}. These
 methods have made model decisions easier to inspect, but a heatmap is not a
-complete account of representation formation. It normally begins with a chosen
-output and a chosen layer, then asks which spatial locations support that
+complete account of representation formation. Such a method typically begins
+with a chosen output and layer and asks which spatial locations support that
 output. It does not directly identify where the internal representation changes
 from generic visual encoding to mature class organization. This project studies
 that earlier and broader question.
@@ -35,10 +35,9 @@ that earlier and broader question.
 principal component analysis (PCA).} For each layer, a basis is fitted using
 one dataset-wide pool of spatial vectors sampled across the training split. The
 first three coordinates are rendered as red, green, and blue channels to form
-PCA red--green--blue (PCA-RGB) maps, allowing
-within-layer comparisons across images because all images share the same
-layer-specific basis. The resulting maps suggested a recurring qualitative
-progression: early maps preserve local image structure; intermediate maps
+PCA red--green--blue (PCA-RGB) maps. All images share the same layer-specific
+basis, which makes within-layer comparisons possible. The resulting maps
+suggested a recurring qualitative progression: early maps preserve local image structure; intermediate maps
 undergo conspicuous spatial reorganization; and late maps become more
 class-oriented.
 
@@ -47,25 +46,24 @@ through spatial reorganization, to class-oriented structure.} A randomly
 initialized convolutional neural network (CNN) can retain visible
 image structure at unexpectedly
 late depth, indicating that architecture alone can propagate structured
-signals. \textbf{Visible structure in a random network is therefore not, by
-itself, evidence of learned semantics.} Training changes that structure into a
-more class-discriminative organization. On CIFAR-10, images from the same class can show similar
-late-layer PCA-RGB organization, and selected misclassified images appear more
+signals. \textbf{This means that visible structure in a random network does not
+necessarily reflect learned semantics.} Training changes that structure into a
+more class-discriminative organization. On CIFAR-10, images from the same class
+can show similar late-layer PCA-RGB organization. Selected misclassified images appear more
 similar to the predicted class than to the labelled class. On CIFAR-100 and
 ImageNet-100, such class-consistent colours are less visually obvious at late
-depth, but intermediate reorganization remains observable. These findings
-motivate a transition-layer hypothesis, while also demonstrating why visual
+depth, but intermediate reorganization remains observable. Together, these
+findings motivate a transition-layer hypothesis. They also show why visual
 inspection alone is insufficient.
 
 \textbf{The observation is tested through two downstream uses: explanation and
-knowledge transfer.} The first, Adaptive K Dataset-Global Robust Prototypes
-(K-DGRP),
-asks whether the geometry of late unpooled spatial features can itself provide
-an explanation. It models recurrent dataset-global feature modes using robust
+knowledge transfer.} The first method is Adaptive K Dataset-Global Robust
+Prototypes (K-DGRP). It asks whether the geometry of late unpooled spatial
+features can provide an explanation. It models recurrent dataset-global feature modes using robust
 prototypes and scores each spatial position by its distance from the nearest
-mode. The second, \jmethod{}---the project name for a selective hierarchical
-knowledge-distillation objective---asks whether selected spatial and relational
-geometry can be transferred from a teacher to a smaller student. This creates a
+mode. The second method is \jmethod{}, the project name for a selective
+hierarchical knowledge-distillation objective. It asks whether selected spatial
+and relational geometry can be transferred from a teacher to a smaller student. This creates a
 linked programme in which representation geometry is first observed, then used
 for explanation, and finally tested as an actionable training signal.
 
@@ -74,18 +72,22 @@ for explanation, and finally tested as an actionable training signal.
 \textbf{The project addresses four linked gaps.}
 
 \begin{enumerate}[leftmargin=*]
-    \item \textbf{Depth is under-characterized:} existing CAM methods provide useful output-conditioned localization,
+    \item \textbf{Depth is under-characterized:} existing CAM methods provide
+    useful output-conditioned localization,
     but do not fully characterize how spatial representations evolve across
     depth or how an explanatory layer should be selected.
-    \item \textbf{Visual similarity is not sufficient evidence:} PCA-RGB can reveal repeatable visual patterns, but colour similarity
+    \item \textbf{Visual similarity is not sufficient evidence:} PCA-RGB can
+    reveal repeatable visual patterns, but colour similarity
     is not automatically semantic evidence. Each layer has its own basis, so
     direct colour identity across layers is not defined, and global variance may
     reflect texture, background, position, or scale.
-    \item \textbf{Localization and faithfulness are different claims:} competitive object localization does not automatically imply
+    \item \textbf{Localization and faithfulness are different claims:}
+    competitive object localization does not automatically imply
     classifier faithfulness. A class-agnostic representation map and a
     class-conditioned attribution map answer different questions and require
     different evaluation.
-    \item \textbf{Knowledge transfer requires selective supervision:} knowledge-distillation methods often match logits, features, or
+    \item \textbf{Knowledge transfer requires selective supervision:}
+    knowledge-distillation methods often match logits, features, or
     relations without an explicit account of which stage of representation
     formation should be constrained. Excessive layer-wise imitation can
     overconstrain a compact student whose computational path differs from its
@@ -109,18 +111,23 @@ visual explanation and knowledge-transfer methods.}
 Four research questions (RQs) organize the programme:
 
 \begin{description}[leftmargin=1.3cm,style=nextline]
-    \item[RQ1] \textbf{Representation transition:} How do learned spatial representations evolve across CNN depth,
+    \item[RQ1] \textbf{Representation transition:} How do learned spatial
+    representations evolve across CNN depth,
     and can the transition toward class-discriminative organization be detected
     reproducibly?
-    \item[RQ2] \textbf{Explanation:} Can transition-layer geometry provide informative and faithful
+    \item[RQ2] \textbf{Explanation:} Can transition-layer geometry provide
+    informative and faithful
     visual explanations?
-    \item[RQ3] \textbf{Knowledge transfer:} Can related geometry be transferred from teacher to student to
+    \item[RQ3] \textbf{Knowledge transfer:} Can related geometry be transferred
+    from teacher to student to
     improve learning, and which layers and geometric components are responsible?
-    \item[RQ4] \textbf{Extension beyond CNNs:} Do comparable transitions arise in token-based vision models,
+    \item[RQ4] \textbf{Extension beyond CNNs:} Do comparable transitions arise
+    in token-based vision models,
     and what explanation or transfer opportunities do they enable?
 \end{description}
 
-\textbf{The objectives connect observation to application:} (i) construct aligned representation
+\textbf{The objectives connect observation to application:} (i) construct
+aligned representation
 visualizations and quantitative transition measures; (ii) develop and evaluate
 \methodname{} as a class-agnostic explanation method; (iii) develop and audit
 the \jmethod{} geometry-distillation objective; and (iv) investigate
@@ -132,16 +139,21 @@ method.
 The expected contributions are:
 
 \begin{enumerate}[leftmargin=*]
-    \item \textbf{Transition characterization:} an empirical and quantitative characterization of spatial
+    \item \textbf{Transition characterization:} an empirical and quantitative
+    characterization of spatial
     representation transition across trained CNNs;
-    \item \textbf{Representation-based explanation:} a class-agnostic, gradient-free explanation principle based on
+    \item \textbf{Representation-based explanation:} a class-agnostic,
+    gradient-free explanation principle based on
     distance from adaptive dataset-global robust feature modes;
-    \item \textbf{Actionable transfer:} a selective hierarchical distillation method that transfers early
+    \item \textbf{Actionable transfer:} a selective hierarchical distillation
+    method that transfers early
     relations, balanced transition coordinates, and late relational evolution;
-    \item \textbf{Claim-specific evaluation:} an evaluation framework that distinguishes object localization,
+    \item \textbf{Claim-specific evaluation:} an evaluation framework that
+    distinguishes object localization,
     class attribution, representation diagnostics, and transferable utility;
     and
-    \item \textbf{Future generalization:} evidence clarifying whether the same transition hypothesis extends
+    \item \textbf{Future generalization:} evidence clarifying whether the same
+    transition hypothesis extends
     beyond CNN spatial grids to transformer token representations.
 \end{enumerate}
 
@@ -162,8 +174,8 @@ remains prospective.
 \end{figure}
 
 \Cref{fig:research-program} shows the intended logic. \textbf{PCA-RGB is a
-discovery and diagnostic instrument, not by itself a faithful attribution
-method.}
+discovery and diagnostic instrument. It should not be treated as a faithful
+attribution method on its own.}
 \methodname{} tests whether recurrent feature-space geometry can localize
 object-relevant structure. \jmethod{} tests whether selected geometry has
 training utility. These studies are complementary, but the report avoids the

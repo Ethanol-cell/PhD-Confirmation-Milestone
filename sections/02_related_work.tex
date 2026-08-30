@@ -9,16 +9,16 @@ correct output. The literature uses terms such as interpretability,
 explainability, attribution, visualization, transparency, and understanding for
 partly overlapping goals. Lipton separates models whose operation is
 intrinsically understandable from explanations constructed after an opaque
-model produces a prediction. Rudin argues that, especially when a decision has
-serious consequences, an inherently interpretable model should be used whenever
-it can solve the task adequately, instead of choosing a black box first and
+model produces a prediction. For decisions with serious consequences, Rudin
+argues that an inherently interpretable model should be used whenever it can
+solve the task adequately. This is preferable to choosing a black box first and
 attempting to justify it afterward
 \cite{lipton2018mythos,rudin2019stop}.
 
 \textbf{In simple terms, the contrast is: interpret the model itself versus
 explain the model after the fact.} A short decision tree or sparse scoring rule
-may expose the complete reasoning path directly. A heatmap attached to a large
-CNN, by contrast, explains one aspect of a prediction but does not make every
+may expose the complete reasoning path directly. By contrast, a heatmap attached
+to a large CNN explains one aspect of a prediction but does not make every
 internal computation transparent. Rudin's warning is intuitive: when an error
 can materially affect a person, a plausible post-hoc explanation should not be
 treated as a substitute for an understandable decision rule, validated
@@ -35,8 +35,7 @@ understanding, not replace an interpretable model when one is feasible.
 
 \subsubsection{Terminology and evaluation levels}
 
-Evaluation
-frameworks also distinguish application-grounded studies with real users,
+Evaluation frameworks also distinguish application-grounded studies with real users,
 human-grounded proxy tasks, and functionally grounded tests that do not require
 human participants \cite{doshivelez2017rigorous}. Broad surveys organize the
 field by whether an explanation is local or global, model-specific or
@@ -50,8 +49,8 @@ importance for one score; a concept method can test sensitivity to a
 human-defined direction; a prototype method can retrieve representative
 examples; and a representation diagnostic can describe how internal geometry
 changes with depth. All may be useful, but they do not make the same claim.
-\textbf{This report therefore separates representation diagnostics,
-attribution, and human-facing explanation.} Principal component analysis with
+\textbf{This report separates representation diagnostics, attribution, and
+human-facing explanation.} Principal component analysis with
 red--green--blue rendering (PCA-RGB) is primarily a representation diagnostic.
 Adaptive K Dataset-Global Robust Prototypes (K-DGRP) is a class-agnostic
 spatial explanation of representation distinctiveness. Class activation
@@ -60,12 +59,12 @@ methods. J1, the project name for the final selective hierarchical
 geometry-distillation candidate, is an intervention:
 it tests whether selected internal geometry is useful for knowledge transfer.
 
-\textbf{The choice of method therefore follows the question being asked; the
-report does not treat all visual maps as interchangeable explanations.}
+\textbf{The question being asked determines the choice of method. The report
+does not treat all visual maps as interchangeable explanations.}
 
 \subsubsection{Claim boundaries}
 
-\textbf{The distinction also prevents a common category error: a visually
+\textbf{This distinction helps prevent a common category error: a visually
 plausible map is not automatically faithful to a classifier, and a faithful
 sensitivity map is not automatically understandable or useful to a person.}
 The report uses
@@ -130,7 +129,7 @@ Perturbation methods estimate importance through controlled changes to the
 input or internal representation. Occlusion analysis masks image regions and
 measures the resulting score change \cite{zeiler2014visualizing}. Meaningful
 Perturbation optimizes a deletion mask while regularizing its area and
-smoothness \cite{fong2017meaningful}; Extremal Perturbations instead searches
+smoothness \cite{fong2017meaningful}. Extremal Perturbations instead searches
 for a smooth region of prescribed area that maximally preserves or changes the
 target response \cite{fong2019extremal}. Randomized Input Sampling for
 Explanation (RISE) samples randomized masks and
@@ -198,7 +197,7 @@ the concept vocabulary.
 \subsubsection{Prototype and label-free representation explanations}
 
 Prototype networks make similarity to learned cases part of the prediction.
-ProtoPNet, for example, compares image patches with learned class prototypes
+For example, ProtoPNet compares image patches with learned class prototypes
 and presents a ``this looks like that'' justification
 \cite{chen2019protopnet}. Label-free representation explanation instead seeks
 structure without prespecified semantic labels, including post-hoc description
@@ -206,8 +205,8 @@ of unsupervised representations \cite{crabbe2022labelfree}. Feature
 visualization and activation maximization provide another view by synthesizing
 or retrieving inputs that strongly activate units
 \cite{yosinski2015deepvis}. These approaches motivate this project's interest
-in recurrent spatial feature geometry, while also warning that a geometric
-mode is not automatically a named semantic concept.
+in recurrent spatial feature geometry. They also warn that a geometric mode is
+not automatically a named semantic concept.
 
 \subsubsection{Positioning of K-DGRP}
 
@@ -228,7 +227,7 @@ it connects semantic convolutional features with spatial localization. The
 original CAM architecture uses global average pooling and classifier weights
 to form a class-specific linear combination of feature maps
 \cite{zhou2016cam}. Grad-CAM replaces the fixed classifier weights with
-spatially pooled gradients and therefore applies to a broader range of CNNs
+spatially pooled gradients, allowing it to work with a broader range of CNNs
 \cite{selvaraju2017gradcam}. Grad-CAM++ uses higher-order derivative terms to
 better handle multiple occurrences, while XGrad-CAM derives weights from
 axioms concerning sensitivity and conservation
@@ -259,8 +258,8 @@ This motivates a different starting point. Instead of assuming that the final
 convolution is the explanatory layer, the project first studies how spatial
 representation changes across depth. K-DGRP then asks whether the distribution
 of semantic spatial features contains object-relevant structure without a
-target class or gradient. The comparison with CAMs is therefore informative
-but asymmetric. \textbf{Localization and classifier faithfulness are different
+target class or gradient. This comparison with CAMs is informative but
+asymmetric. \textbf{Localization and classifier faithfulness are different
 evaluation axes.}
 
 \subsection{Limitations, faithfulness, and evaluation}
@@ -270,8 +269,8 @@ evaluation axes.}
 Several studies demonstrate that explanation quality cannot be inferred from
 appearance. Model-parameter and data randomization tests reveal that some
 saliency methods remain visually similar after learned parameters or labels are
-destroyed \cite{adebayo2018sanity}. RemOve And Retrain (ROAR) removes features judged important,
-retrains the model, and evaluates the resulting loss of predictive information
+destroyed \cite{adebayo2018sanity}. RemOve And Retrain (ROAR) removes features
+judged important, retrains the model, and evaluates the resulting loss of predictive information
 to reduce artifacts from using a fixed model on corrupted inputs
 \cite{hooker2019roar}. Infidelity measures disagreement between attribution and
 output change under a perturbation distribution, while sensitivity measures
@@ -298,8 +297,8 @@ pointing-game accuracy rewards only a peak location.
 
 \textbf{No explanation family is uniformly faithful under every definition.}
 The correct response is not to select one favorable metric, but to state the
-intended explanatory object and assemble convergent tests. The K-DGRP paper
-therefore requires exact-area intersection over union (IoU) and area under the
+intended explanatory object and assemble convergent tests. Accordingly, the
+K-DGRP paper requires exact-area intersection over union (IoU) and area under the
 precision--recall curve (AUPRC) for localization; insertion and
 deletion for behavioral response; class-sensitivity tests for the boundary
 between objectness and target attribution; feature-norm and random-map
@@ -312,8 +311,8 @@ not replace functional evidence.
 
 \subsubsection{Comparing representations across depth}
 
-The project is also related to methods that compare internal
-representations rather than attribute an output. Linear probes measure how
+Related methods compare internal representations rather than attribute an
+output. Linear probes measure how
 readily task information can be decoded at different depths
 \cite{alain2017linearprobes}. Representational similarity analysis compares
 pairwise dissimilarity structure between representational spaces
@@ -330,8 +329,9 @@ when interpreting similarity scores
 \subsubsection{PCA-RGB as a spatial diagnostic}
 
 PCA-RGB is simpler and more spatially direct. Principal component analysis
-finds orthogonal directions of maximal variance, originating in classical
-work by Pearson and Hotelling \cite{pearson1901pca,hotelling1933pca}. Mapping
+finds orthogonal directions of maximal variance. The method originates in
+classical work by Pearson and Hotelling
+\cite{pearson1901pca,hotelling1933pca}. Mapping
 the first three scores to red, green, and blue (RGB) makes a high-dimensional
 feature grid visually
 inspectable. In this project, one dataset-wide basis is fitted per layer, so
@@ -408,8 +408,8 @@ distinct forms of transfer \cite{zhao2022dkd}.
 \subsubsection{Limits of output-only transfer}
 
 Output KD is attractive because teacher and student need only share a label
-space, but it leaves internal spatial organization unspecified. Its behavior is
-also conditional. A teacher with higher standalone accuracy is not always the
+space, but it leaves internal spatial organization unspecified. Its
+effectiveness also depends on the setting. A teacher with higher standalone accuracy is not always the
 best teacher, and a large teacher--student capacity gap can make transfer
 difficult; teacher-assistant distillation inserts an intermediate model to
 bridge that gap \cite{mirzadeh2020takd}. Controlled studies report that the
@@ -418,7 +418,7 @@ relative learning capacities of teacher and student
 \cite{cho2019efficacy,beyer2022patient}. Theoretical and empirical analyses
 seek to explain which teacher information is learnable and whether a student
 actually matches the teacher function away from the training samples
-\cite{phuong2019understandingkd,stanton2021doeskd}. Surveys consequently
+\cite{phuong2019understandingkd,stanton2021doeskd}. For this reason, surveys
 describe KD as a family spanning response, feature, relation, and online
 transfer rather than one fixed loss \cite{gou2021kdsurvey,wang2021kdreview}.
 
@@ -499,7 +499,7 @@ This makes relation losses useful when teacher and student widths differ, but
 it also means that they may preserve relative organization without fixing the
 absolute semantic orientation of the feature space.
 
-This distinction directly motivates the J1 combination. The early relational
+That trade-off motivates the J1 combination. The early relational
 anchor preserves coarse spatial organization while permitting different
 channels; balanced principal-component coordinate targets later provide a
 more explicit teacher reference where the representation is becoming
@@ -509,7 +509,7 @@ than redundant: relation losses protect geometry under architectural mismatch,
 while selected coordinate losses specify teacher directions only where the
 development evidence supports doing so.}
 
-\textbf{The resulting design principle is selective transfer: preserve a
+\textbf{The design principle is selective transfer: preserve a
 useful geometric property at evidence-supported states, rather than copying
 every available teacher feature.}
 
@@ -519,7 +519,7 @@ every available teacher feature.}
 
 The central unresolved design question is \textbf{which teacher-derived
 property should be enforced at each stage, and which student transformations
-should remain free to develop their own efficient solution.} Automatic layer
+should remain free to develop an efficient solution.} Automatic layer
 association can help, but association scores do not guarantee that the selected
 knowledge object is causally useful.
 Feature dimensions can be adapted, yet an adapter may absorb a mismatch rather
@@ -529,8 +529,8 @@ also be wrong on a training example, making unconditional imitation
 undesirable. Finally, single-seed comparisons and unmatched schedules can
 confound small reported improvements.
 
-\textbf{The unanswered KD question is therefore not only what to transfer, but
-at which layers to enforce teacher geometry and between which layers to retain
+\textbf{The unanswered KD question is not only what to transfer. It is also
+where to enforce teacher geometry and where to retain
 student-specific computation.} J1 is the project name for a selective
 hierarchical geometry-distillation objective. It combines a global
 teacher-partition signal, an early relational anchor, balanced PC1--32 spatial
@@ -549,9 +549,9 @@ useful, but dense coordinate or flow supervision too early constrained
 immature features; using only the most compressed late state discarded
 intermediate spatial organization; and applying constraints continuously
 through the hierarchy performed worse than the selective configuration
-\cite{chan2026j1}. The final taps therefore place coordinate supervision at
-M1/M2, where spatial organization is becoming semantic, and use L1/L2 mainly
-for mature geometry and affinity flow. This rationale is a result of the
+\cite{chan2026j1}. This evidence led us to place coordinate supervision at
+M1/M2, where spatial organization is becoming semantic, and to use L1/L2 mainly
+for mature geometry and affinity flow. The choice reflects the
 development ablations, not a claim that every architecture has the same named
 transition blocks.
 
@@ -573,8 +573,8 @@ coordinates from dominating lower-variance directions. Frozen random
 hyperplanes transfer partitions rather than exact features. Gradient-ratio
 calibration is related to work on adaptive multi-task weighting and gradient
 conflict management \cite{chen2018gradnorm,kendall2018multitask,
-sener2018multiobjective,yu2020pcgrad}; here it is used to freeze interpretable
-training pressure before benchmark comparison. The current ImageNet-100 result
+sener2018multiobjective,yu2020pcgrad}. In J1, it freezes an interpretable level
+of training pressure before benchmark comparison. The current ImageNet-100 result
 shows that the complete J1 package is a practical peer of ReviewKD, but matched
 component, layer, cost, and generality experiments are still required.
 
@@ -619,7 +619,7 @@ behaviourally useful.}
 
 \subsubsection{Planned literature and pilot stage}
 
-The next phase will therefore begin with a focused literature review and a
+The next phase will begin with a focused literature review and a
 small reproducible baseline set, not a fixed method claim. Candidate objects
 include residual-stream states, patch tokens, value features, attention
 outputs, and hierarchical stage features. \textbf{The transformer investigation
