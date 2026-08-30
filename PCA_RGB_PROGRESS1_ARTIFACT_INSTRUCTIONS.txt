@@ -1,7 +1,36 @@
 CODEX EXECUTION BRIEF: PROGRESS I PCA-RGB FIGURES, TABLES, AND METRICS
-Version: 1.0, 30 August 2026
-Target repository: PhD-Confirmation-Milestone
-Target report chapter: sections/04_experiments.tex
+Version: 1.1, 30 August 2026
+Execution location: experiment machine only
+Report integration location: a different machine; unavailable during this run
+
+TWO-MACHINE WORKFLOW -- READ THIS BEFORE DOING ANYTHING
+
+The experiments and the LaTeX report are on different computers. OneDrive is
+not reliably synchronizing the report repository to the experiment machine.
+Therefore:
+
+- Do not search for main.tex, sections/04_experiments.tex, the milestone
+  repository, or any other report source on the experiment machine.
+- Do not clone, create, edit, compile, or otherwise reconstruct the report
+  repository during this task.
+- Do not treat a missing LaTeX repository as an error, blocker, or incomplete
+  workspace. It is expected to be absent.
+- Work only inside the existing experiment workspace and its caches.
+- Produce a self-contained handoff bundle that can be copied or uploaded to the
+  separate report-editing machine later.
+- The handoff must not contain absolute paths, symlinks, model weights, raw
+  datasets, Hugging Face tokens, or large unpooled feature caches.
+
+Define these paths after discovering the actual experiment root:
+
+    EXPERIMENT_ROOT = directory containing the existing experiment code/outputs
+    HANDOFF_ROOT = <EXPERIMENT_ROOT>/outputs/pca_rgb_progress1_handoff_v1
+    HANDOFF_ZIP = <EXPERIMENT_ROOT>/outputs/
+                  pca_rgb_progress1_handoff_v1_<UTC_TIMESTAMP>.zip
+
+If HANDOFF_ROOT already exists, resume only when its configuration hash matches
+this brief. Otherwise create a new timestamped sibling instead of overwriting
+unrelated or earlier results.
 
 PURPOSE
 
@@ -58,12 +87,13 @@ The user's Windows experiment root is expected to be:
 
     C:\Users\jiazh\OneDrive - Monash University\Documents\Experiments\conv
 
-The report repository is expected to be:
+The report repository is intentionally not available on this computer. Never
+look for `C:\Users\jiazh\OneDrive - Monash University\Desktop\milestone` and
+never stop because that path or its `.tex` files are missing.
 
-    C:\Users\jiazh\OneDrive - Monash University\Desktop\milestone
-
-Before computing anything, locate and validate these resources. Do not assume
-that a listed cache is complete merely because the directory exists.
+Before computing anything, locate and validate the experiment resources only.
+Do not assume that a listed cache is complete merely because the directory
+exists.
 
 Datasets:
 
@@ -176,8 +206,9 @@ REPRODUCIBILITY AND SPLIT RULES
 
 LAYER REGISTRY
 
-Create artifacts/progress1_pca_rgb/manifests/layer_registry_<run_id>.csv before
-fitting PCA. Each row must contain:
+Create
+<HANDOFF_ROOT>/artifacts/progress1_pca_rgb/manifests/layer_registry_<run_id>.csv
+before fitting PCA. Each row must contain:
 
     layer_id, display_order, semantic_slot, module_path, module_type,
     tensor_location_pre_or_post_activation, C, H, W, stride_from_input,
@@ -477,33 +508,83 @@ PCA-TAB-05_imagenet1k_transition.tex:
 - Layer slot, exact tap, CKA, affinity change, semantic gain, candidate status,
   sample count, and compute time.
 
-OUTPUT TREE AND FILE CONTRACT
+OUTPUT TREE, HANDOFF BUNDLE, AND FILE CONTRACT
 
-Create:
+Create this tree under HANDOFF_ROOT, not inside a LaTeX repository:
 
-    artifacts/progress1_pca_rgb/
-      figures/main/
-      figures/appendix/
-      tables/csv/
-      tables/latex/
-      data/metrics/
-      data/pca/
-      manifests/
-      logs/
-      previews/
+    pca_rgb_progress1_handoff_v1/
+      README_HANDOFF.md
+      RUN_SUMMARY.md
+      REPORT_INTEGRATION_GUIDE.md
+      REPORT_RESULTS_DRAFT.md
+      artifact_manifest.json
+      checksums_sha256.txt
+      report_snippets.tex
+      artifacts/progress1_pca_rgb/
+        figures/main/
+        figures/appendix/
+        tables/csv/
+        tables/latex/
+        data/metrics/
+        data/pca_metadata/
+        manifests/
+        configs/
+        logs/
+        previews/
 
 Use stable filenames beginning with PCA-FIG-XX or PCA-TAB-XX as listed above.
 Save metric arrays as compressed NPZ or Parquet, summary tables as CSV, PCA
 metadata as JSON, and configs as YAML. Do not commit large raw feature tensors,
 model weights, tokens, or dataset caches to Git. Add such paths to .gitignore.
 
+The handoff bundle must contain only final/reproducibility artifacts needed by
+the report editor. Exclude raw images when licensing or dataset terms prohibit
+redistribution. In that case include dataset indices, class identifiers, image
+hashes, and a regeneration command; the experiment machine may retain the full
+render locally outside the ZIP.
+
 Create artifact_manifest.json containing, for every artifact: artifact ID,
 relative path, SHA-256, generating command, config path, dataset/split, model
 ID and checkpoint SHA-256, seed(s), layer IDs, sample count, git commit, and UTC
 timestamp. Create report_snippets.tex with ready-to-copy \includegraphics and
 \input statements plus \label targets matching sections/04_experiments.tex.
+These snippets are text deliverables only; do not attempt to insert or compile
+them on the experiment machine.
 
-QUALITY GATES BEFORE REPORT INTEGRATION
+README_HANDOFF.md must explain the bundle structure, the exact report-relative
+destination recommended for each file, and the minimum sequence for the report
+editor: copy figures, copy tables, insert snippets, update captions/claims from
+REPORT_RESULTS_DRAFT.md, compile twice, and inspect the final PDF.
+
+REPORT_INTEGRATION_GUIDE.md must map every placeholder to its files:
+
+    PCA-METHOD-01 -> layer registry and frozen-protocol table/text
+    PCA-FIG-01 / PCA-TAB-01 -> CIFAR-10 depth atlas and registry
+    PCA-FIG-02 / PCA-TAB-02 -> class prototypes and errors
+    PCA-FIG-03 / PCA-TAB-03 -> trained-random control
+    PCA-FIG-04 / PCA-TAB-04 -> CIFAR-100 hierarchy
+    PCA-FIG-05 / PCA-TAB-05 -> ImageNet-1K scale test
+
+For each mapping include: source file, proposed report-relative path, proposed
+caption, proposed \label, width/rotation instruction, section/subsection, and
+which sentence must be softened, retained, or strengthened according to the
+measured result.
+
+REPORT_RESULTS_DRAFT.md must provide report-ready prose, but it must not invent
+positive findings. For every dataset write: protocol paragraph, result
+paragraph with exact values and intervals, interpretation, failure cases,
+claim boundary, and remaining limitation. Clearly distinguish confirmed,
+partially supported, contradicted, and blocked claims.
+
+After all quality gates pass, generate checksums_sha256.txt over every handoff
+file except the checksum file itself. Then create HANDOFF_ZIP with relative
+paths rooted at pca_rgb_progress1_handoff_v1/. Reopen the ZIP, list its members,
+verify all checksums against extracted files in a temporary directory, and
+record the verification in RUN_SUMMARY.md. Never rely on OneDrive sync as the
+handoff mechanism. The final response must give the exact ZIP path and size so
+the user can upload or copy it manually.
+
+QUALITY GATES BEFORE HANDOFF
 
 1. Smoke test: 128 images, two taps, one trained and one random model; no NaN,
    infinite values, degenerate scales, or shape mismatch.
@@ -515,7 +596,9 @@ QUALITY GATES BEFORE REPORT INTEGRATION
 5. Confirm every main figure remains legible when inserted at exactly 6.25 in.
 6. Open every PDF and PNG preview; check clipping, overlap, font embedding,
    panel order, labels, and colour consistency.
-7. Confirm all appendix hyperlinks and LaTeX labels resolve after two builds.
+7. Check that report_snippets.tex has unique labels and only relative paths.
+   Actual hyperlink resolution and full-report compilation are deferred to the
+   report-editing machine.
 8. Confirm every numeric value printed in a figure/table is generated from the
    saved metrics rather than manually typed.
 9. Report failures and counterexamples. Do not omit a dataset, layer, seed, or
@@ -552,12 +635,16 @@ Phase D -- ImageNet-1K:
 - Run streaming PCA under the declared GPU/memory budget.
 - Generate PCA-FIG-05, appendix atlases, and PCA-TAB-05.
 
-Phase E -- integration:
-- Insert only validated artifacts into Section 4.
-- Put oversized full-depth atlases after the bibliography in a landscape
-  appendix, with direct hyperlinks from the compact main-text figures.
-- Rebuild the complete PDF, inspect every page, and ensure references,
-  captions, and claims agree with the measured results.
+Phase E -- handoff packaging only:
+- Do not edit or search for the report.
+- Generate report_snippets.tex, REPORT_RESULTS_DRAFT.md,
+  REPORT_INTEGRATION_GUIDE.md, README_HANDOFF.md, artifact_manifest.json, and
+  checksums_sha256.txt.
+- Put oversized full-depth atlases in figures/appendix and specify their future
+  landscape placement and hyperlink targets in REPORT_INTEGRATION_GUIDE.md.
+- Create and verify HANDOFF_ZIP as described above.
+- Return the exact bundle directory, ZIP path, ZIP size, checksum, completed
+  artifacts, blocked artifacts, missing model requests, and next commands.
 
 STOP CONDITIONS
 
@@ -568,3 +655,9 @@ Hugging Face model is gated and HF_TOKEN is absent; GPU memory remains
 insufficient after tap grouping and CPU-statistic fallback; or the measured
 results contradict the prose. Contradictory results require revising the
 report claim, not altering the analysis or selection rule.
+
+The following are explicitly not stop conditions: main.tex is missing; the
+milestone folder is missing; sections/04_experiments.tex is missing; LaTeX is
+not installed; OneDrive is not synchronized; or the report machine is offline.
+In each of these expected cases, finish the experiment artifacts and verified
+handoff ZIP without attempting report integration.
