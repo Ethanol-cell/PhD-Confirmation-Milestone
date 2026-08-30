@@ -3,7 +3,7 @@
 \subsection{From explanation to transferable geometry}
 
 The third stage asks whether representation geometry has practical training
-value. Classical output KD tells a student which classes the teacher considers
+value. Classical output knowledge distillation (KD) tells a student which classes the teacher considers
 similar, but it does not specify how spatial organization develops. Direct
 feature regression, conversely, may force a compact student to reproduce
 teacher channels or transitions that its architecture cannot efficiently
@@ -47,6 +47,25 @@ For epoch $e$, the verified loss is
 where $\mathcal{A}=\{M1,M2,L1,L2\}$. The terms encode different knowledge
 objects rather than repeated versions of one feature loss.
 
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[lossstep] (input) {Aligned image\\teacher + student};
+\node[lossstep,right=of input] (anchors) {Task and global anchors\\$\mathcal L_{\mathrm{CE}}+6\mathcal L_G$};
+\node[lossstep,right=of anchors] (spatial) {Selected geometry\\$\mathcal L_{E1},\mathcal L_{J32},\mathcal L_{\mathrm{flow}}$};
+\node[lossstep,right=of spatial] (total) {Calibrated and scheduled\\$\mathcal L_{\mathrm{J1}}(e)$};
+\draw[lossarrow] (input) -- (anchors);
+\draw[lossarrow] (anchors) -- (spatial);
+\draw[lossarrow] (spatial) -- (total);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Intuition.} Cross-entropy (CE) keeps the student tied to the labelled
+task, and global teacher-coordinate supervision (TCS) supplies a persistent
+image-level teacher signal. E1, J32, and flow then transfer complementary
+spatial knowledge at deliberately selected depths. Calibration prevents one
+auxiliary loss from dominating merely because of numerical scale, while the
+schedule releases the spatial constraints near the end of training.
+
 The verified semantic taps are listed in \cref{tab:j1-taps}. The labels denote
 specific ConvNeXt stage/block outputs in the production configuration, rather
 than interchangeable depth categories.
@@ -70,15 +89,30 @@ L2 & S3B2  & S3B2 & 768 & $7\times7$\\
 \end{tabular}
 \end{table}
 
-\paragraph{Aligned input and classification.}
+\paragraph{Step 1: aligned input and supervised classification.}
 For image-label pair $(x_i,y_i)$, one stochastic augmentation $a_i$ produces
 $\widetilde{x}_i=a_i(x_i)$, and the exact same tensor is supplied to teacher
 and student. Alignment is necessary because a spatial target at position $p$
 must refer to the same visible content in both models. Cross-entropy with label
 smoothing remains the task anchor and trains every example, including examples
-excluded from unreliable teacher imitation.
+excluded from unreliable teacher imitation. In compact form, the step is
+\[
+\text{one sampled augmentation}
+\;\longrightarrow\;
+\text{identical teacher/student tensors}
+\;\longrightarrow\;
+\mathcal L_{\mathrm{CE}}.
+\]
 
-\paragraph{Global TCS.}
+\textbf{Intuition.} The spatial losses compare corresponding positions. If the
+teacher sees one crop while the student sees another, position $p$ no longer
+describes the same visible content and the target becomes contradictory.
+Alignment is therefore a mathematical requirement for pointwise transfer, not
+only an implementation convenience.
+
+\paragraph{Step 2: global teacher-coordinate supervision (TCS).}
+TCS transfers a partitioned version of the teacher's global representation and
+is documented by the verified J1 specification \cite{chan2026j1}.
 The teacher's globally pooled feature is projected through a frozen centred,
 unwhitened PCA basis to $\bm z_i^{T,G}\in\mathbb{R}^{768}$. A training-only
 student head predicts $\widehat{\bm z}_i^{S,G}\in\mathbb{R}^{768}$. A frozen
@@ -94,7 +128,7 @@ partitions. This partition-based transfer is inspired by random-hyperplane
 locality-sensitive hashing, where sign agreement estimates angular similarity
 without requiring coordinate identity \cite{charikar2002simhash}. Let
 $m_i^T$ indicate that the teacher predicts the augmented image correctly and
-$\ell_i^G$ be mean binary cross-entropy across bits. Then
+$\ell_i^G$ be mean binary cross-entropy (BCE) across bits. Then
 \begin{equation}
     \mathcal{L}_G
     =\frac{\sum_i m_i^T\ell_i^G}
@@ -104,10 +138,45 @@ $\ell_i^G$ be mean binary cross-entropy across bits. Then
 Global TCS remains active for the complete schedule. Its hard partitions retain
 teacher geometry while allowing the student to move within a half-space.
 
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[lossstep] (pool) {Globally pooled\\teacher feature};
+\node[lossstep,right=of pool] (pca) {Frozen centred PCA\\teacher coordinate};
+\node[lossstep,right=of pca] (bits) {Random hyperplanes\\teacher sign bits};
+\node[lossstep,right=of bits] (gate) {Student BCE\\teacher-correct gate};
+\draw[lossarrow] (pool) -- (pca);
+\draw[lossarrow] (pca) -- (bits);
+\draw[lossarrow] (bits) -- (gate);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Intuition.} CE says which class should win, but it does not describe
+where the image lies inside the teacher's semantic space. TCS supplies many
+binary half-space memberships. The student must reproduce those coarse
+partitions but may move freely within a half-space, which is less restrictive
+than exact coordinate regression. The teacher-correct gate prevents an
+incorrect teacher decision from becoming an auxiliary target.
+
 \subsection{Early relational state}
 
-At the E1 state, adaptive average pooling first maps the feature tensor to a
-$q\times q$ grid. Each spatial vector is then normalized:
+At the E1 state, adaptive average pooling (AAP) first maps the feature tensor to
+a fixed $q\times q$ grid. Each pooled spatial vector is then normalized, and
+the resulting vectors are converted into spatial affinities. The complete step
+is summarized below.
+
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[lossstep] (features) {Teacher/student\\E1 feature maps};
+\node[lossstep,right=of features] (pool) {AAP to fixed grids\\then normalize};
+\node[lossstep,right=of pool] (affinity) {Global and local\\spatial affinities};
+\node[lossstep,right=of affinity] (distance) {Centred-cosine distances\\equal branch mean};
+\draw[lossarrow] (features) -- (pool);
+\draw[lossarrow] (pool) -- (affinity);
+\draw[lossarrow] (affinity) -- (distance);
+\end{tikzpicture}
+\end{center}
+
+For pooled feature tensor $\bm X_i$, each spatial vector is normalized:
 \begin{equation}
     \bm u_{i,p}
     =\frac{\bm x_{i,p}}{\|\bm x_{i,p}\|_2+\varepsilon},
@@ -137,6 +206,35 @@ E1 directly updates only the E1-producing and earlier student modules. Later
 features change through the next forward pass, but no loss forces the student
 to copy the teacher's exact E1-to-M1 transformation.
 
+\textbf{Why global and local?} The global branch uses every ordered
+off-diagonal affinity on a $7\times7$ grid, so it captures long-range
+coordination and whole-object topology at manageable quadratic cost. The local
+branch retains a finer $14\times14$ grid but compares only directed
+eight-neighbour pairs, preserving boundaries, parts, and short-range
+continuity. Global relations alone can be too coarse for local structure,
+whereas local relations alone cannot express coordination between distant
+regions. Averaging the two branch losses gives these two questions equal
+importance; it also prevents the much larger global pair set from dominating
+solely through its number of entries. This use of spatial relations follows the
+broader similarity-preserving and relational-distillation principle that a
+student can reproduce geometry without matching teacher channels directly
+\cite{park2019rkd,tung2019similarity}.
+
+\textbf{Why AAP?} Teacher and student feature maps may differ in native size,
+while affinity comparison requires corresponding positions. AAP creates fixed,
+comparable grids, controls the quadratic cost of the global matrix, and reduces
+high-frequency variation before relational comparison. Pooling is deliberately
+performed \emph{before} vector normalization: the pooled vector then represents
+the average feature content of a region. Reversing the order would first give
+weak and noisy cells unit length and could let them distort the regional
+average.
+
+\textbf{Intuition.} E1 does not ask the student to reproduce teacher channel
+values. It asks which early regions should be similar to one another, at both
+whole-image and neighbourhood scales. This creates a stable relational anchor
+while leaving the subsequent E1-to-M1 bridge available for a student-specific
+solution.
+
 \subsection{Late relational flow}
 
 At $M1,M2,L1,L2$, construct global off-diagonal affinity descriptors
@@ -157,11 +255,38 @@ $14\times14$ transition grid. The final loss is
 This term transfers how spatial relations evolve, rather than only matching
 their absolute states.
 
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[lossstep] (features) {Selected layer\\feature maps};
+\node[lossstep,right=of features] (affinity) {Per-layer global/local\\affinity descriptors};
+\node[lossstep,right=of affinity] (change) {Consecutive-layer\\descriptor changes};
+\node[lossstep,right=of change] (compare) {Teacher/student\\flow comparison};
+\draw[lossarrow] (features) -- (affinity);
+\draw[lossarrow] (affinity) -- (change);
+\draw[lossarrow] (change) -- (compare);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Intuition.} State matching asks teacher and student to occupy the same
+representation, which can be unnecessarily restrictive when their channel
+widths and computational paths differ. Flow matching instead asks whether
+spatial relations change in the same direction between selected states. The
+student may therefore use a different absolute representation while preserving
+the teacher's transition pattern, an idea related to inter-layer flow and
+relational knowledge transfer \cite{yim2017fsp,park2019rkd}.
+
+The local term is restricted to $M1\rightarrow M2$ because these endpoints
+share the same $14\times14$ transition grid and therefore support position-wise
+neighbour-change comparison. The global branch uses pooled descriptors and can
+cross the later resolution changes. Combining the branches retains detailed
+transition behaviour where the grids are compatible and long-range evolution
+across the remainder of the hierarchy.
+
 \subsection{Balanced PC1--32 transition coordinate}
 
 The principal design difference from H9 is a unified variance-balanced
-coordinate. At
-layer $\ell$, frozen teacher PCA provides bands
+coordinate. At layer $\ell$, frozen teacher principal component analysis (PCA)
+provides principal-component (PC) bands
 \begin{align}
     \bm z_{i,\ell,p}^{T,(1)}
     &=(\bm f_{i,\ell,p}^T-\bm\mu_\ell)
@@ -170,7 +295,7 @@ layer $\ell$, frozen teacher PCA provides bands
     &=(\bm f_{i,\ell,p}^T-\bm\mu_\ell)
       \bm V_{\ell,17:32}.
 \end{align}
-Teacher-derived RMS scales $s_{\ell,1}$ and $s_{\ell,2}$ are fitted from a
+Teacher-derived root-mean-square (RMS) scales $s_{\ell,1}$ and $s_{\ell,2}$ are fitted from a
 500,000-coordinate internal-training reservoir and shared by teacher and
 student. Separate training-only student heads predict the two 16-dimensional
 bands. For either the teacher coordinates or corresponding student-head
@@ -229,6 +354,28 @@ gating is applied only after bit and spatial reduction:
 \end{equation}
 There is no segmentation mask or additional background threshold.
 
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[lossstep] (features) {Selected teacher/student\\layer features};
+\node[lossstep,right=of features] (bands) {PC1--16 and PC17--32\\RMS balance};
+\node[lossstep,right=of bands] (bits) {Dense hyperplanes\\teacher bits + student logits};
+\node[lossstep,right=of bits] (reduce) {Spatial energy weights\\then teacher gate};
+\draw[lossarrow] (features) -- (bands);
+\draw[lossarrow] (bands) -- (bits);
+\draw[lossarrow] (bits) -- (reduce);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Intuition.} The two PCA bands retain leading and lower-variance
+teacher directions, while RMS balancing prevents PC1--16 from numerically
+overwhelming PC17--32. Dense random hyperplanes turn this coordinate into many
+binary geometric questions: the student must enter the same partitions as the
+teacher but need not reproduce exact coordinate magnitudes
+\cite{charikar2002simhash}. Teacher energy weights emphasize spatial positions
+that carry stronger signal in either band, and the teacher-correct gate is
+applied only after the spatial and bit reductions so that it rejects an
+unreliable image-level target without changing the within-image weighting.
+
 \subsection{Gradient calibration and terminal release}
 
 Raw loss coefficients are not comparable because the terms have different
@@ -263,15 +410,40 @@ The final four epochs retain CE and global TCS only, allowing the student to
 consolidate without active spatial constraints. All auxiliary heads and fitted
 assets are removed at deployment.
 
+\begin{center}
+\begin{tikzpicture}[node distance=5mm]
+\node[lossstep] (raw) {Raw auxiliary\\losses};
+\node[lossstep,right=of raw] (grad) {Measure backbone\\gradient effects};
+\node[lossstep,right=of grad] (calibrate) {Fit target ratios and\\Gram calibration};
+\node[lossstep,right=of calibrate] (schedule) {Freeze coefficients\\schedule and release};
+\draw[lossarrow] (raw) -- (grad);
+\draw[lossarrow] (grad) -- (calibrate);
+\draw[lossarrow] (calibrate) -- (schedule);
+\end{tikzpicture}
+\end{center}
+
+\textbf{Intuition.} A coefficient of $20$ does not imply that one knowledge
+object is twenty times more important than another: the underlying losses may
+produce very different gradients. Calibration instead controls their actual
+pressure on the shared backbone, making comparisons more faithful to the
+transferred object. The shared decay then gradually removes the spatial
+constraints, and the terminal release leaves CE and global TCS to consolidate
+the final classifier and image-level geometry before all training-only assets
+are discarded.
+
 \subsection{ImageNet-100 benchmarking}
 
 The strongest current comparison is shown in
 \cref{tab:j1-multiseed,tab:j1-external}. J1, ReviewKD-120, and H9 have three
 seeds. The remaining external feature-distillation baselines currently have one
-seed each. The external set covers MGD \cite{yang2022mgd}, OFD
-\cite{heo2019ofd}, attention transfer \cite{zagoruyko2017attention}, SemCKD
-\cite{chen2021semckd}, InDistill \cite{sarridis2025indistill}, and FSP
-\cite{yim2017fsp}.
+seed each. The external set covers Masked Generative Distillation (MGD)
+\cite{yang2022mgd}, Overhaul of Feature Distillation (OFD)
+\cite{heo2019ofd}, attention transfer (AT) \cite{zagoruyko2017attention},
+Semantic Calibration for Knowledge Distillation (SemCKD)
+\cite{chen2021semckd}, InDistill \cite{sarridis2025indistill}, and Flow of
+Solution Procedure (FSP) \cite{yim2017fsp}. The tables report negative
+log-likelihood (NLL) and expected calibration error (ECE) alongside Top-1 and
+Top-5 accuracy.
 
 \begin{table}[H]
 \centering
@@ -284,7 +456,9 @@ deviation. ReviewKD-120 is practically tied with J1 under the present evidence.}
 Method & Seeds & Top-1 (\%) & Top-5 (\%) & NLL & ECE\\
 \midrule
 J1           & 3 & \textbf{$94.947\pm0.205$} & \textbf{99.267} & 0.2756 & 0.0849\\
+\midrule
 ReviewKD-120 & 3 & $94.787\pm0.038$ & 99.233 & \textbf{0.2660} & \textbf{0.0848}\\
+\midrule
 H9           & 3 & $93.767\pm0.228$ & 98.903 & 0.3318 & 0.0850\\
 \bottomrule
 \end{tabular}
@@ -301,10 +475,15 @@ ImageNet-100. Comparisons are descriptive until replicated.}
 Method & Top-1 & Top-5 & NLL & ECE & $\Delta$ vs J1 & Best epoch\\
 \midrule
 MGD-ConvNeXt    & 92.43 & 98.56 & 0.3565 & 0.0764 & $-2.52$ & 113\\
+\midrule
 OFD-ConvNeXt    & 91.74 & 97.84 & 0.4304 & 0.0721 & $-3.21$ & 116\\
+\midrule
 AT              & 91.49 & 98.07 & 0.4100 & 0.0764 & $-3.46$ & 115\\
+\midrule
 SemCKD-ConvNeXt & 89.94 & 97.66 & 0.4181 & 0.0331 & $-5.01$ & 119\\
+\midrule
 InDistill       & 89.87 & 97.76 & 0.4334 & 0.0299 & $-5.08$ & 116\\
+\midrule
 FSP-ConvNeXt    & 85.80 & 95.94 & 0.6332 & 0.0604 & $-9.15$ & 113\\
 \bottomrule
 \end{tabular}

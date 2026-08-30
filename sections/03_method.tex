@@ -21,8 +21,9 @@ decision.
 
 \subsection{Datasets, models, and controls}
 
-The representation study currently spans CIFAR-10, CIFAR-100, and
-ImageNet-100 \cite{krizhevsky2009cifar,deng2009imagenet}. CIFAR-10 provides a
+The representation study currently spans the Canadian Institute for Advanced
+Research datasets CIFAR-10 and CIFAR-100, and ImageNet-100
+\cite{krizhevsky2009cifar,deng2009imagenet}. CIFAR-10 provides a
 low-class-count setting in which class-level organization is visually
 inspectable. CIFAR-100 and ImageNet-100 test whether observations survive
 greater class diversity and intra-class variation. CNN experiments include
@@ -82,7 +83,8 @@ interesting. The planned operational definition combines:
     agreement, class-prototype accuracy, or between/within-class separation;
     \item \textbf{spatial structure:} object localization, boundary quality,
     foreground enrichment, and spatial entropy;
-    \item \textbf{representational change:} adjacent-layer CKA, aligned
+    \item \textbf{representational change:} adjacent-layer centred kernel
+    alignment (CKA), aligned
     subspace change, affinity change, or a preregistered change-point score; and
     \item \textbf{robustness:} agreement across seeds, datasets, and reasonable
     choices of PCA dimension and layer sampling.
@@ -95,13 +97,15 @@ the last convolution or final activation is universally optimal.
 \subsection{Explanation evaluation}
 
 \methodname{} is evaluated at native spatial resolution and then bilinearly
-upsampled. Exact-area IoU uses the top $q$ fraction of pixels:
+upsampled. Exact-area intersection over union (IoU) uses the top $q$ fraction
+of pixels:
 \begin{equation}
     \operatorname{IoU}@q
     =\frac{|T_q(M)\cap G|}{|T_q(M)\cup G|},
 \end{equation}
 where $M$ is the continuous map and $G$ is the object mask. The primary
-internal setting is $q=0.20$. AUPRC evaluates the complete ranking and is
+internal setting is $q=0.20$. The area under the precision--recall curve
+(AUPRC) evaluates the complete ranking and is
 informative when foreground pixels are the minority class
 \cite{davis2006prroc,saito2015precisionrecall}; boundary F1 measures contour
 agreement. Causal deletion replaces highly ranked pixels
@@ -117,7 +121,8 @@ target class.
 
 \subsection{Knowledge-distillation evaluation}
 
-All teacher-derived PCA, RMS, hash, and gradient-calibration assets are fitted
+All teacher-derived PCA, root-mean-square (RMS), hash, and gradient-calibration
+assets are fitted
 on internal training data only. Teacher and student receive exactly the same
 stochastic augmented tensor so that spatial coordinates refer to the same
 visible content. The ImageNet-100 study reports Top-1, Top-5, negative

@@ -20,23 +20,23 @@ CNNs contain a representation-transition regime
 trajectory
 & Plausible and partly quantified; requires frozen, basis-invariant transition
 selector across seeds and datasets.\\
-
+\midrule
 Late robust feature geometry localizes objects
 & ResNet paired tests; frozen adaptive-$K$ validation on four held-out CNN
 families after ResNet/ConvNeXt development
 & Quantitatively supported on current ImageNet-derived cohorts; requires
 cross-dataset and expanded faithfulness confirmation.\\
-
+\midrule
 The J1 geometry package benefits student learning
 & J1 exceeds H9 across three seeds; implementation-forensics audit; external
 single-seed benchmarks
 & Consistent with a benefit in the current ConvNeXt ImageNet-100 setting;
 component causality remains open, and J1 is practically tied with ReviewKD.\\
-
+\midrule
 The same phenomenon extends to transformers
 & No closed evidence chain
-& Future hypothesis; architecture and explanatory object deliberately not
-fixed.\\
+& Open investigation across several architecture and representation
+candidates.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -60,21 +60,24 @@ failures. For J1, it means replicating the strongest external baselines,
 quantifying the J1--ReviewKD difference, reporting resource cost, and testing
 generality beyond one teacher--student setting.
 
-\subsection{Flexible transformer investigation}
+\subsection{Transformer investigation across a broad design space}
 
-After the CNN closure, a focused transformer literature review will compare the
+After the CNN closure, a transformer literature review will begin with a broad
+comparison of the
 objects explained by attention rollout, gradient-weighted attention,
 relevance propagation, token-transformation methods, and feature-formation
 methods \cite{abnar2020attentionflow,chefer2021transformer,
 xie2023vitcx,wu2024tokentm,mehri2025libragrad,bousselham2025legrad}. The review
-will define a small reproducible baseline set and identify what can be compared
-fairly with the CNN representation study.
+will cover flat and hierarchical architectures, supervised and self-supervised
+representations, and several candidate explanatory objects. It will then define
+a small reproducible baseline set and identify what can be compared fairly
+with the CNN representation study.
 
 The first pilot will not assume that a CNN feature grid has a direct
 transformer equivalent. Candidate objects include patch tokens before and
 after attention, residual-stream states, value vectors, attention-output
 features, and hierarchical stage outputs. Candidate architectures may include
-a flat supervised ViT, a data-efficient variant, and a hierarchical transformer,
+a flat supervised Vision Transformer (ViT), a data-efficient variant, and a hierarchical transformer,
 but the final selection will depend on reproducible probes and computational
 feasibility.
 
@@ -90,7 +93,10 @@ The pilot has three gates:
     models.
 \end{enumerate}
 
-If PCA-RGB is unstable for token states, the project can use CKA, linear probes,
+These gates prioritize the most promising evidence path after the broad survey;
+they do not presuppose a single architecture or explanatory object. If PCA-RGB
+is unstable for token states, the project can use centred kernel alignment
+(CKA), linear probes,
 affinity change, token clustering, or class-prototype geometry. If
 \methodname{} does not transfer directly, that negative result will identify
 which CNN assumptions---local spatial grids, convolutional common modes, or
@@ -102,8 +108,9 @@ Euclidean channel geometry---do not survive token mixing.
 \centering
 \resizebox{\linewidth}{!}{\input{figures/gantt}}
 \caption{Provisional two-year research plan. Diamonds mark the confirmation,
-transformer-method, and thesis-integration milestones. Directions after the
-literature-and-pilot phase remain conditional on the stated gates.}
+transformer-method, and thesis-integration milestones. The literature-and-pilot
+phase surveys several candidates before evidence selects the most productive
+direction for deeper study.}
 \label{fig:gantt}
 \end{figure}
 
