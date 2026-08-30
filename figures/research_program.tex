@@ -1,0 +1,21 @@
+\begin{tikzpicture}[
+    node distance=7mm,
+    stage/.style={draw,rounded corners,minimum width=0.78\linewidth,
+                  minimum height=10mm,align=center,font=\small},
+    arrow/.style={-{Latex[length=2.3mm]},thick}
+]
+\node[stage,fill=stageblue] (observe)
+    {Observe: dataset-wide PCA-RGB maps across model depth};
+\node[stage,fill=stageblue,below=of observe] (validate)
+    {Validate: controls, quantitative transition measures, and failure analysis};
+\node[stage,fill=stagegreen,below=of validate] (explain)
+    {Explain: class-agnostic robust spatial geometry with Adaptive K-DGRP};
+\node[stage,fill=stageorange,below=of explain] (transfer)
+    {Transfer: selective hierarchical geometry distillation with J1};
+\node[stage,fill=gray!12,below=of transfer] (generalise)
+    {Generalize: test the hypothesis in token-based vision models};
+\draw[arrow] (observe) -- (validate);
+\draw[arrow] (validate) -- (explain);
+\draw[arrow] (explain) -- (transfer);
+\draw[arrow] (transfer) -- (generalise);
+\end{tikzpicture}

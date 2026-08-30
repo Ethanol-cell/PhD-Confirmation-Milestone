@@ -1,7 +1,331 @@
-\section{Conclusion}\label{sec:conclusion}
+\section{Progress III: J1 Geometry Distillation}\label{sec:j1}
 
-This dummy paper demonstrates a clean one-column LaTeX repository suitable for
-method development, derivations, ablations, and result reporting. The modular
-structure allows the same content files to be reused later in a conference
-template. Future edits should replace all placeholder claims and values with
-verified experimental evidence.
+\subsection{From explanation to transferable geometry}
+
+The third stage asks whether representation geometry has practical training
+value. Classical output KD tells a student which classes the teacher considers
+similar, but it does not specify how spatial organization develops. Direct
+feature regression, conversely, may force a compact student to reproduce
+teacher channels or transitions that its architecture cannot efficiently
+realize. \jmethod{} adopts a selective principle: organize space like the
+teacher at a useful early state, permit a student-specific bridge, constrain
+balanced coordinate geometry at selected transition and late states, and match
+relational evolution after semantic maturity.
+
+The production implementation has undergone a separate implementation-forensics
+audit, conducted independently of the training-code execution used to produce
+the benchmark \cite{chan2026j1}. The audit reproduced descriptors, scalar losses, gradients,
+one-step updates, and deployment logits to numerical precision. It corrected
+the written specification of the spatial weights, teacher gate, shared
+schedule, and hard-sign conventions without identifying a scientific code
+error.
+
+\subsection{Verified total objective}
+
+For epoch $e$, the verified loss is
+\begin{equation}
+\mathcal{L}_{\mathrm{J1}}(e)
+=\mathcal{L}_{\mathrm{CE}}+6\mathcal{L}_{G}
++m(e)\left[
+\sum_{\ell\in\mathcal{A}}\gamma_\ell
+\mathcal{L}_{J32}^{(\ell)}
++\lambda_E\mathcal{L}_{E1}
++\lambda_F\mathcal{L}_{\mathrm{flow}}
+\right],
+\label{eq:j1-total}
+\end{equation}
+where $\mathcal{A}=\{M1,M2,L1,L2\}$. The terms encode different knowledge
+objects rather than repeated versions of one feature loss.
+
+The verified semantic taps are listed in \cref{tab:j1-taps}. The labels denote
+specific ConvNeXt stage/block outputs in the production configuration, rather
+than interchangeable depth categories.
+
+\begin{table}[H]
+\centering
+\caption{Verified J1 teacher--student semantic taps and spatial sizes. Student
+channels are reported because the teacher and student widths need not match.}
+\label{tab:j1-taps}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Role & Teacher tap & Student tap & Student channels & Grid\\
+\midrule
+E1 & S1B2  & S1B2 & 192 & $28\times28$\\
+M1 & S2B8  & S2B2 & 384 & $14\times14$\\
+M2 & S2B17 & S2B5 & 384 & $14\times14$\\
+L1 & S3B0  & S3B0 & 768 & $7\times7$\\
+L2 & S3B2  & S3B2 & 768 & $7\times7$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Aligned input and classification.}
+For image-label pair $(x_i,y_i)$, one stochastic augmentation $a_i$ produces
+$\widetilde{x}_i=a_i(x_i)$, and the exact same tensor is supplied to teacher
+and student. Alignment is necessary because a spatial target at position $p$
+must refer to the same visible content in both models. Cross-entropy with label
+smoothing remains the task anchor and trains every example, including examples
+excluded from unreliable teacher imitation.
+
+\paragraph{Global TCS.}
+The teacher's globally pooled feature is projected through a frozen centred,
+unwhitened PCA basis to $\bm z_i^{T,G}\in\mathbb{R}^{768}$. A training-only
+student head predicts $\widehat{\bm z}_i^{S,G}\in\mathbb{R}^{768}$. A frozen
+random-hyperplane bank has $\bm W_G\in\mathbb{R}^{768\times2048}$ and
+$\bm b_G\in\mathbb{R}^{2048}$ and defines teacher bits
+\begin{equation}
+    \bm y_i^{T,G}
+    =\mathbb{1}[\bm z_i^{T,G}\bm W_G+\bm b_G>0].
+\end{equation}
+A student predicts logits
+$\bm h_i^{S,G}=\widehat{\bm z}_i^{S,G}\bm W_G+\bm b_G$ for the same
+partitions. Let
+$m_i^T$ indicate that the teacher predicts the augmented image correctly and
+$\ell_i^G$ be mean binary cross-entropy across bits. Then
+\begin{equation}
+    \mathcal{L}_G
+    =\frac{\sum_i m_i^T\ell_i^G}
+           {\max(\sum_i m_i^T,\varepsilon)}.
+\label{eq:global-tcs}
+\end{equation}
+Global TCS remains active for the complete schedule. Its hard partitions retain
+teacher geometry while allowing the student to move within a half-space.
+
+\subsection{Early relational state}
+
+At the E1 state, adaptive average pooling first maps the feature tensor to a
+$q\times q$ grid. Each spatial vector is then normalized:
+\begin{equation}
+    \bm u_{i,p}
+    =\frac{\bm x_{i,p}}{\|\bm x_{i,p}\|_2+\varepsilon},
+    \qquad
+    \bm G_i=\bm U_i\bm U_i^\top.
+\end{equation}
+The order is pooling, normalization, then affinity. Teacher and student channel
+widths can differ because $G_i(p,r)$ compares spatial positions, not channels.
+
+For descriptors $\bm s$ and $\bm t$, define centred cosine distance
+\begin{equation}
+    D(\bm s,\bm t)
+    =1-\frac{\widetilde{\bm s}^{\top}\widetilde{\bm t}}
+    {\|\widetilde{\bm s}\|_2\,
+     \|\widetilde{\bm t}\|_2+\varepsilon},
+\end{equation}
+where each descriptor has its mean removed. The global E1 descriptor contains
+all ordered off-diagonal affinities on a $7\times7$ grid. The local descriptor
+contains directed eight-neighbour affinities on a $14\times14$ grid. Their
+equal-weight mean is
+\begin{equation}
+    \mathcal{L}_{E1}
+    =\tfrac12\mathcal{L}_{E1}^{\mathrm{global}}
+     +\tfrac12\mathcal{L}_{E1}^{\mathrm{local}}.
+\end{equation}
+E1 directly updates only the E1-producing and earlier student modules. Later
+features change through the next forward pass, but no loss forces the student
+to copy the teacher's exact E1-to-M1 transformation.
+
+\subsection{Late relational flow}
+
+At $M1,M2,L1,L2$, construct global off-diagonal affinity descriptors
+$\bm g_{i,\ell}$. For edge $a\rightarrow b$, the affinity change is
+\begin{equation}
+    \Delta\bm g_{i,a\rightarrow b}
+    =\bm g_{i,b}-\bm g_{i,a}.
+\end{equation}
+Global flow is matched over exactly $M1\rightarrow M2$,
+$M2\rightarrow L1$, and $L1\rightarrow L2$. A local neighbour-flow term is
+used only for $M1\rightarrow M2$, where both endpoints retain a compatible
+$14\times14$ transition grid. The final loss is
+\begin{equation}
+    \mathcal{L}_{\mathrm{flow}}
+    =\tfrac12\mathcal{L}_{\mathrm{flow}}^{\mathrm{global}}
+     +\tfrac12\mathcal{L}_{\mathrm{flow}}^{\mathrm{local}}.
+\end{equation}
+This term transfers how spatial relations evolve, rather than only matching
+their absolute states.
+
+\subsection{Balanced PC1--32 transition coordinate}
+
+The principal design difference from H9 is a unified variance-balanced
+coordinate. At
+layer $\ell$, frozen teacher PCA provides bands
+\begin{align}
+    \bm z_{i,\ell,p}^{T,(1)}
+    &=(\bm f_{i,\ell,p}^T-\bm\mu_\ell)
+      \bm V_{\ell,1:16},\\
+    \bm z_{i,\ell,p}^{T,(2)}
+    &=(\bm f_{i,\ell,p}^T-\bm\mu_\ell)
+      \bm V_{\ell,17:32}.
+\end{align}
+Teacher-derived RMS scales $s_{\ell,1}$ and $s_{\ell,2}$ are fitted from a
+500,000-coordinate internal-training reservoir and shared by teacher and
+student. Separate training-only student heads predict the two 16-dimensional
+bands. For either the teacher coordinates or corresponding student-head
+outputs, the joint coordinate is
+\begin{equation}
+    \bm z_{i,\ell,p}^{32}
+    =\frac{1}{\sqrt{2}}
+      \begin{bmatrix}
+      \bm z_{i,\ell,p}^{(1)}/s_{\ell,1}\\
+      \bm z_{i,\ell,p}^{(2)}/s_{\ell,2}
+      \end{bmatrix}.
+\label{eq:j32-coordinate}
+\end{equation}
+Balancing prevents the high-variance PC1--16 band from overwhelming PC17--32;
+the separate student heads remain, but one dense bank and one loss optimize the
+joint 32-dimensional geometry.
+
+A frozen dense hyperplane bank has
+$\bm W_\ell\in\mathbb{R}^{32\times M_\ell}$, where
+$M_{M1}=M_{M2}=256$ and $M_{L1}=M_{L2}=512$. Its bias is fitted from the
+teacher reservoir as
+\begin{equation}
+ b_{\ell,j}=-\operatorname*{median}_{n}
+ \left[(\bm z_{n,\ell}^{T,32})^\top\bm w_{\ell,j}\right].
+\end{equation}
+Teacher targets use the verified inclusive convention
+$y_{i,\ell,p,j}^{T}=\mathbb{1}[a_{i,\ell,p,j}^{T}\geq0]$, whereas student
+head outputs provide logits $h_{i,\ell,p,j}^{S}$. The per-position mismatch is
+\begin{equation}
+\ell_{i,\ell,p}
+=\frac{1}{M_\ell}\sum_{j=1}^{M_\ell}
+\left[-y_{i,\ell,p,j}^{T}\log\sigma(h_{i,\ell,p,j}^{S})
+-(1-y_{i,\ell,p,j}^{T})\log(1-\sigma(h_{i,\ell,p,j}^{S}))\right].
+\label{eq:j32-bit-loss}
+\end{equation}
+Spatial weights are computed separately in the two bands:
+\begin{equation}
+    w_{i,\ell,p}
+    =\frac12\left[
+      \frac{\|\bm z_{i,\ell,p}^{T,(1)}\|_2+\varepsilon}
+           {\sum_q(\|\bm z_{i,\ell,q}^{T,(1)}\|_2+\varepsilon)}
+      +
+      \frac{\|\bm z_{i,\ell,p}^{T,(2)}\|_2+\varepsilon}
+           {\sum_q(\|\bm z_{i,\ell,q}^{T,(2)}\|_2+\varepsilon)}
+    \right].
+\label{eq:j32-weights}
+\end{equation}
+Each band receives half the spatial importance budget. The per-image loss is
+$L_{i,\ell}^{J32}=\sum_p w_{i,\ell,p}\ell_{i,\ell,p}$, and teacher-correct
+gating is applied only after bit and spatial reduction:
+\begin{equation}
+    \mathcal{L}_{J32}^{(\ell)}
+    =\frac{\sum_i m_i^T L_{i,\ell}^{J32}}
+           {\max(\sum_i m_i^T,1)}.
+\label{eq:j32-gate}
+\end{equation}
+There is no segmentation mask or additional background threshold.
+
+\subsection{Gradient calibration and terminal release}
+
+Raw loss coefficients are not comparable because the terms have different
+scales and parameter paths. Each $J32$ layer coefficient $\gamma_\ell$ is
+fitted to a target backbone-gradient ratio relative to
+$\mathcal{L}_{\mathrm{CE}}+6\mathcal{L}_G$. Targets for
+$M1,M2,L1,L2$ are $(0.050,0.040,0.025,0.015)$. E1 and flow are jointly
+Gram-calibrated so their combined gradient norm is $0.08$ of the calibrated
+base. The frozen coefficients were approximately
+$(\gamma_{M1},\gamma_{M2},\gamma_{L1},\gamma_{L2})
+=(19.2733,77.5578,19.9431,17.1116)$,
+$\lambda_E=9.7376$, and $\lambda_F=0.0028157$. Their scalar magnitudes should
+be interpreted through the achieved gradient ratios, not compared directly.
+This controls training pressure, making ablations more informative about the
+transferred object rather than accidental scalar magnitude.
+
+One shared multiplier controls J32, E1, and flow:
+\begin{equation}
+m(e)=
+\begin{cases}
+1, & 0\leq e\leq100,\\
+(116-e)/16, & 100<e<116,\\
+0, & 116\leq e\leq119.
+\end{cases}
+\label{eq:j1-schedule}
+\end{equation}
+The final four epochs retain CE and global TCS only, allowing the student to
+consolidate without active spatial constraints. All auxiliary heads and fitted
+assets are removed at deployment.
+
+\subsection{ImageNet-100 benchmarking}
+
+The strongest current comparison is shown in
+\cref{tab:j1-multiseed,tab:j1-external}. J1, ReviewKD-120, and H9 have three
+seeds. The remaining external feature-distillation baselines currently have one
+seed each. The external set covers MGD \cite{yang2022mgd}, OFD
+\cite{heo2019ofd}, attention transfer \cite{zagoruyko2017attention}, SemCKD
+\cite{chen2021semckd}, InDistill \cite{sarridis2025indistill}, and FSP
+\cite{yim2017fsp}.
+
+\begin{table}[H]
+\centering
+\caption{Three-seed ImageNet-100 results. Top-1 is mean $\pm$ standard
+deviation. ReviewKD-120 is practically tied with J1 under the present evidence.}
+\label{tab:j1-multiseed}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Method & Seeds & Top-1 (\%) & Top-5 (\%) & NLL & ECE\\
+\midrule
+J1           & 3 & \textbf{$94.947\pm0.205$} & \textbf{99.267} & 0.2756 & 0.0849\\
+ReviewKD-120 & 3 & $94.787\pm0.038$ & 99.233 & \textbf{0.2660} & \textbf{0.0848}\\
+H9           & 3 & $93.767\pm0.228$ & 98.903 & 0.3318 & 0.0850\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Current single-seed external feature-distillation baselines on
+ImageNet-100. Comparisons are descriptive until replicated.}
+\label{tab:j1-external}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Top-1 & Top-5 & NLL & ECE & $\Delta$ vs J1 & Best epoch\\
+\midrule
+MGD-ConvNeXt    & 92.43 & 98.56 & 0.3565 & 0.0764 & $-2.52$ & 113\\
+OFD-ConvNeXt    & 91.74 & 97.84 & 0.4304 & 0.0721 & $-3.21$ & 116\\
+AT              & 91.49 & 98.07 & 0.4100 & 0.0764 & $-3.46$ & 115\\
+SemCKD-ConvNeXt & 89.94 & 97.66 & 0.4181 & 0.0331 & $-5.01$ & 119\\
+InDistill       & 89.87 & 97.76 & 0.4334 & 0.0299 & $-5.08$ & 116\\
+FSP-ConvNeXt    & 85.80 & 95.94 & 0.6332 & 0.0604 & $-9.15$ & 113\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Across three seeds, J1 is $0.160$ percentage points above ReviewKD-120 in mean
+Top-1, but has a larger seed standard deviation and slightly worse NLL and ECE.
+Without a paired test or confidence interval for the difference, the correct
+conclusion is a practical tie. J1 exceeds the immediate H9 ablation by
+$1.180$ points. This is consistent with a benefit from the J1 design package,
+including unified balanced PC1--32 optimization, but does not isolate that
+component without the complete matched ablation. The external results suggest
+a substantial advantage over the tested feature baselines in this setting, but
+their single-seed status prevents a strong statistical ranking. The very low
+ECE of SemCKD and InDistill also
+shows that accuracy and calibration should not be collapsed into one claim.
+
+\subsection{Remaining evidence and claim boundary}
+
+\evidenceplaceholder{J1-STAT-01 and J1-TAB-03: causal benchmark closure}{
+Compute a paired J1--ReviewKD comparison with uncertainty; replicate the
+strongest external baselines; and present the complete AC-CTCS--H9--J1 component
+and layer ablations under matched schedules.}
+
+\evidenceplaceholder{J1-FIG-01 and J1-ANALYSIS-01: representation semantics}{
+Insert a verified computational diagram and fixed image/feature cases showing
+how E1 organization, J32 transition coordinates, and late affinity flow differ
+between CE, H9, ReviewKD, and J1. This analysis must support mechanism claims,
+not select attractive examples.}
+
+\evidenceplaceholder{J1-COST-01 and J1-GENERALITY-01: feasibility and scope}{
+Report training time, peak memory, teacher overhead, fitted-asset cost, and
+deployment cost. Add at least one further teacher--student architecture or
+dataset before making architecture-general claims.}
+
+The current evidence supports J1 as a final method candidate and a
+mechanistically distinct practical peer of ReviewKD. It does not yet support
+the claims that J1 is statistically superior to ReviewKD, that every component
+is necessary in every architecture, or that distillation accuracy proves the
+faithfulness of \methodname{} explanations.

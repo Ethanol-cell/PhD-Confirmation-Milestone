@@ -1,14 +1,186 @@
-\section{Related Work}
-\label{sec:related-work}
+\section{Critical Literature Review}\label{sec:literature}
 
-\paragraph{Knowledge distillation.}
-Classical knowledge distillation trains a student to reproduce the softened
-class distribution of a teacher \cite{hinton2015distilling}. This distribution
-contains relative evidence for non-target classes, often called dark knowledge.
+\subsection{Explanation, attribution, and representation analysis}
 
-\paragraph{Intermediate representation transfer.}
-FitNets introduced hints from intermediate teacher layers
-\cite{romero2015fitnets}. Later approaches match attention, correlations, or
-contrastive relationships instead of requiring direct feature equality
-\cite{zagoruyko2017paying,tian2020contrastive}. Our dummy objective follows this
-general principle but focuses on pairwise spatial geometry.
+Interpretability terminology is used inconsistently. In this report, a
+\emph{representation diagnostic} describes structure inside a network without
+necessarily assigning causal credit for one prediction. An
+\emph{attribution method} assigns importance to input regions or internal
+features for a selected output. A \emph{visual explanation} is the
+human-facing result of such an analysis together with a stated interpretation.
+These distinctions matter because a visually plausible object map may describe
+objectness without identifying the evidence that caused a particular class
+score.
+
+Early network-visualization work reconstructed or optimized image patterns that
+activate internal units, revealing a progression from low-level features to
+higher-level parts \cite{zeiler2014visualizing,yosinski2015deepvis}.
+These studies support layer-wise inspection, but they do not provide a simple
+spatial explanation for an individual decision. Attribution methods instead
+begin with a prediction and distribute relevance over the input or an internal
+map. Examples include layer-wise relevance propagation
+\cite{bach2015pixelwise}, integrated gradients
+\cite{sundararajan2017axiomatic}, perturbation methods such as RISE
+\cite{petsiuk2018rise}, and the CAM family reviewed below.
+
+\subsection{Class activation mapping}
+
+Original CAM uses global-average-pooled convolutional channels and learned
+classifier weights to produce a class-specific spatial map
+\cite{zhou2016cam}. Its architectural constraint motivated Grad-CAM, which
+replaces classifier weights with spatially averaged gradients of a target logit
+with respect to an activation channel \cite{selvaraju2017gradcam}. If
+$A^k_{ij}$ is activation channel $k$ and $Y^c$ is the target logit, Grad-CAM
+uses
+\begin{equation}
+    \alpha_k^c=\frac{1}{HW}\sum_{i,j}
+    \frac{\partial Y^c}{\partial A^k_{ij}},\qquad
+    M^c_{\mathrm{GC}}=\operatorname{ReLU}
+    \left(\sum_k\alpha_k^c A^k\right).
+\end{equation}
+Grad-CAM++ introduces spatially varying higher-order gradient weights to better
+handle multiple occurrences and localization
+\cite{chattopadhay2018gradcampp}. LayerCAM retains positive gradients locally
+instead of reducing them to one channel coefficient, enabling hierarchical
+maps from multiple layers \cite{jiang2021layercam}.
+
+Gradient-free variants address gradient saturation or instability. Score-CAM
+uses the change in class score produced by activation-guided masks
+\cite{wang2020scorecam}, while Ablation-CAM estimates channel importance
+through channel ablation \cite{desai2020ablationcam}. EigenCAM is
+class-agnostic: it extracts the dominant principal direction of an activation
+tensor rather than differentiating a selected output
+\cite{muhammad2020eigencam}. These methods do not answer exactly the same
+question. Class-conditioned maps prioritize evidence for a selected class;
+EigenCAM and \methodname{} describe activation or feature geometry without
+requiring a target.
+
+\subsection{Limitations and evaluation of visual explanations}
+
+CAM variants expose several recurring trade-offs. Late layers are semantically
+mature but spatially coarse. Earlier layers retain boundaries and local detail
+but may not yet be class-discriminative. Upsampling a $7\times7$ map cannot
+recover detail that is absent in the tapped representation. Global gradient
+aggregation may suppress spatially heterogeneous evidence, whereas local
+weighting can be noisy. Gradient-free perturbation can improve robustness at a
+higher computational cost. Most importantly, a map can look plausible without
+being faithful to the model.
+
+Sanity-check research has shown that some saliency methods can remain visually
+similar after model parameters or labels are randomized
+\cite{adebayo2018sanity}. Consequently, evaluation should combine several
+properties:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Localization:} overlap with object masks or pointing-game
+    accuracy, ideally under an exact-area protocol;
+    \item \textbf{Faithfulness:} prediction change under deletion, insertion,
+    or other controlled perturbations;
+    \item \textbf{Class sensitivity:} change when the target class changes,
+    when class attribution is claimed;
+    \item \textbf{Stability:} consistency under small input perturbations and
+    repeated training;
+    \item \textbf{Sanity:} degradation after parameter or label
+    randomization; and
+    \item \textbf{Human utility:} whether the explanation helps a user perform
+    a defined task rather than merely appearing intuitive.
+\end{itemize}
+
+No single metric is sufficient. Fixed-area intersection-over-union measures
+object coverage but not classifier causality. Deleting highly ranked pixels is
+closer to a causal intervention, but the result depends on the perturbation and
+may reward concentrated class evidence over complete object extent. This
+report therefore treats localization and causality as separate axes.
+
+\subsection{Representations across depth}
+
+Representational analysis asks how information is organized rather than which
+pixels caused one output. Linear probes test whether labels can be decoded from
+intermediate states \cite{alain2017linearprobes}. Canonical correlation and
+related methods compare representation subspaces
+\cite{raghu2017svcca,kornblith2019cka}. PCA identifies orthogonal directions of
+maximum dataset variance and can reduce a high-dimensional feature vector to a
+small number of coordinates for visualization. Because PCA axes are defined up
+to sign and can rotate when eigenvalues are close, meaningful comparisons
+require a frozen basis and explicit alignment.
+
+Late classifiers may also exhibit neural-collapse-like organization:
+within-class variability contracts, class means become more separated and
+approach a simplex equiangular geometry, and nearest-class-center prediction
+becomes accurate \cite{papyan2020neuralcollapse}. This provides a useful model
+of class-semantic maturity, but it does not imply that every useful spatial
+prototype is a class mean. The \methodname{} experiments specifically find a
+small number of broad spatial modes whose class purity is low; these modes are
+therefore distinct from the full class simplex.
+
+The open gap is not whether early and late layers differ; that is well
+established. The gap addressed here is whether a reproducible intermediate
+transition can be identified jointly through spatial structure, semantic
+maturity, and geometric change, and whether that transition supplies a useful
+explanatory or transferable object.
+
+\subsection{Knowledge distillation}
+
+Knowledge distillation (KD) trains a compact student using information from a
+larger teacher. Classical KD transfers softened output distributions
+\cite{hinton2015distilling}. FitNets introduced intermediate hints
+\cite{romero2015fitnets}, and attention transfer matches spatial summaries of
+feature energy \cite{zagoruyko2017attention}. FSP matrices transfer relationships
+between successive feature stages \cite{yim2017fsp}, while Overhaul Feature
+Distillation uses selective feature imitation and margin-based handling
+\cite{heo2019ofd}.
+
+More recent methods address layer association and hierarchical transfer.
+SemCKD learns semantic calibration between possible teacher and student layers
+\cite{chen2021semckd}. ReviewKD uses a review path that combines multi-level
+student features and compares them with teacher stages
+\cite{chen2021reviewkd}. MGD masks student features and trains a generator to
+reconstruct teacher representations \cite{yang2022mgd}. These methods establish
+strong baselines, but they also expose a central design tension: direct matching
+may transfer useful structure, yet forcing a smaller student to reproduce every
+teacher state or transition can create negative regularization.
+
+The \jmethod{} direction is selective. It does not claim that more supervised
+layers are always better. It transfers different invariants in different
+semantic zones: an early channel-invariant relational state, balanced
+teacher-coordinate partitions at selected transition and late layers, and the
+change in affinities only after semantic maturity. The E1-to-M1 bridge is left
+student-specific.
+
+\subsection{Vision transformers and future scope}
+
+Vision Transformers (ViTs) replace convolutional grids with patch tokens and
+self-attention \cite{dosovitskiy2021vit}; DeiT improves data-efficient
+supervised training \cite{touvron2021deit}, while Swin introduces a
+hierarchical shifted-window design \cite{liu2021swin}. Attention weights are
+visually tempting but do not automatically measure feature importance.
+Attention rollout composes attention across layers
+\cite{abnar2020attentionflow}, and relevance-propagation methods account for
+attention, residual connections, and class-specific gradients
+\cite{chefer2021transformer}. Current work continues to address gradient flow
+and attribution quality in ViTs \cite{mehri2025libragrad}.
+
+This literature makes a fixed transformer plan premature. A flat ViT, a
+hierarchical Swin model, and a self-supervised foundation model may exhibit
+different transition objects. The future study will therefore begin by asking
+whether spatial/token geometry shows a measurable transition, rather than
+assuming that CNN layers, PCA colour, or \methodname{} can be transferred
+unchanged.
+
+\subsection{Synthesis of research gaps}
+
+Among the methods reviewed here, three areas remain underexplored:
+
+\begin{enumerate}[leftmargin=*]
+    \item output-to-space attribution is much more developed than direct
+    characterization of spatial representation formation across depth;
+    \item class-agnostic, label-free spatial geometry remains underexplored as
+    an explanation principle whose localization and classifier faithfulness are
+    evaluated separately; and
+    \item explicit representation-transition hypotheses are not yet a common
+    basis for deciding where knowledge should be preserved or released in the
+    distillation methods reviewed.
+\end{enumerate}
+
+These gaps motivate the observe--validate--explain--transfer programme in
+\cref{fig:research-program}.

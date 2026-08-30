@@ -1,23 +1,197 @@
-\section{Results and Discussion}
-\label{sec:results}
+\section{Progress II: Adaptive K-DGRP for Visual Explanation}
+\label{sec:kdgrp}
 
-\input{tables/main_results}
+\subsection{Research question and distinction from CAM}
 
-As shown in \cref{tab:main-results}, the dummy full method improves Top-1
-accuracy over both the cross-entropy baseline and classical distillation. The
-same trend is visualized in \cref{fig:results}. These values are deliberately
-synthetic and must not be interpreted as experimental evidence.
+\methodname{} asks whether the representation itself contains a
+class-agnostic geometric signal that identifies object-relevant spatial
+locations \cite{chan2026kdgrp}. Unlike Grad-CAM, it does not require a target
+class or a gradient. Unlike EigenCAM, it does not select the dominant linear
+variance direction. It estimates recurrent modes of the dataset-wide spatial
+feature distribution and measures how far each image location lies from those
+modes.
 
-\begin{figure}[t]
-    \centering
-    \input{figures/results}
-    \caption{Dummy Top-1 accuracy comparison. All values are placeholders.}
-    \label{fig:results}
-\end{figure}
+This distinction controls the claims. \methodname{} is naturally interpreted
+as representation distinctiveness or object-relevant localization. It cannot by
+itself answer which class caused a prediction. Its localization results can be
+compared with CAMs, but a smaller deletion effect is not necessarily a failure:
+class-conditioned CAMs are designed to concentrate causal class evidence,
+whereas a class-agnostic map may cover more of the object.
 
-\input{tables/ablation}
+\subsection{Robust prototype geometry}
 
-The illustrative ablation in \cref{tab:ablation} separates the contribution of
-output-level and geometry-level supervision. A real paper should report means,
-standard deviations or confidence intervals, the number of seeds, and a
-predefined checkpoint-selection protocol.
+Let the selected semantic tap produce
+\begin{equation}
+    \bm F_\ell(x)\in\mathbb{R}^{D\times H\times W},
+\end{equation}
+with spatial vector $\bm f_p\in\mathbb{R}^D$. Across label-free calibration
+images, collect all spatial vectors
+$\mathcal{F}=\{\bm f_n\}_{n=1}^N$. A single dataset-global robust prototype
+is the geometric median
+\begin{equation}
+    \bm c^\star
+    =\arg\min_{\bm c\in\mathbb{R}^D}
+      \sum_{n=1}^N\|\bm f_n-\bm c\|_2.
+    \label{eq:dgrp-median}
+\end{equation}
+Compared with an arithmetic mean, the unsquared objective limits the influence
+of rare, distant spatial vectors.
+
+The multimodal extension alternates nearest-centre assignment
+\begin{equation}
+    a_n=\arg\min_{k\in\{1,\ldots,K\}}
+        \|\bm f_n-\bm c_k\|_2
+\end{equation}
+with geometric-median updates inside each assigned cluster. The raw explanation
+score is
+\begin{equation}
+    R_K(p)=\min_{1\leq k\leq K}
+        \|\bm f_p-\bm c_k\|_2.
+    \label{eq:kdgrp-score}
+\end{equation}
+A high value means that the spatial feature is far from every recurrent robust
+mode. An empirical calibration CDF can map this score to $[0,1]$ for display,
+but its monotonicity preserves exact top-area masks and rank metrics.
+
+The experiments found that normalizing by cluster radius, converting distance
+to a cluster-conditional tail score, or manually combining presumed
+foreground/background centres reduced localization. Mode scale was itself
+informative: broad modes were more foreground-associated. Raw distance in
+\cref{eq:kdgrp-score} therefore survived the ablation sequence.
+
+\subsection{Adaptive mode-count selection}
+
+Fixed $K=4$ worked well for ResNet-50 but over-fragmented ConvNeXt features.
+The final method considers $K\in\{1,2,4,8\}$. On a held-out calibration
+partition, cluster occupancy is
+\begin{equation}
+    \pi_k=\frac{N_k}{N},\qquad \sum_k\pi_k=1.
+\end{equation}
+Occupancy entropy and effective mode count are
+\begin{equation}
+    H_K=-\sum_k\pi_k\log(\pi_k+\varepsilon),
+    \qquad K_{\mathrm{eff}}=\exp(H_K),
+\end{equation}
+with utilization $U_K=K_{\mathrm{eff}}/K$. Starting at $K=1$, a larger
+candidate is admitted only when
+\begin{equation}
+    \min_k\pi_k\geq0.02,
+    \qquad U_K\geq0.75.
+    \label{eq:kselector}
+\end{equation}
+The search stops at the first failure, then the selected number of centres is
+refitted on the full calibration cohort. The selector controls complexity
+without segmentation masks or class labels.
+
+\subsection{Completed internal evidence}
+
+On a 600-image ResNet-50 cohort, K4-DGRP achieved IoU@20 of $0.32946$ and
+AUPRC of $0.69623$. Paired bootstrap differences in IoU@20 (K-DGRP minus
+baseline) were $-0.002529$ against EigenCAM, 95\% CI
+$[-0.008263,0.003440]$, and $-0.001025$ against Grad-CAM++, 95\% CI
+$[-0.006821,0.004865]$. The intervals crossed zero. Grad-CAM and LayerCAM were
+higher by $0.009370$, 95\% CI $[0.003211,0.015723]$, and $0.011319$, 95\% CI
+$[0.005895,0.016888]$, respectively \cite{chan2026kdgrp}. The supplied internal
+report does not document multiplicity adjustment, so these intervals are
+treated as descriptive evidence of competitiveness rather than a complete
+confirmatory test.
+
+The mode-count selector was developed using ResNet and ConvNeXt, frozen, and
+then evaluated on four unseen CNN families. The selected map remained in a
+narrow localization range across architectures:
+
+For protocol traceability, the ResNet prototypes were fitted from 10,000
+label-free calibration images and evaluated on a fresh 600-image
+ImageNet-derived cohort with object masks used only for evaluation. ConvNeXt
+was development data rather than a held-out architecture: its K1, K2, K4, and
+K8 IoU@20 values were $0.329204$, $0.328438$, $0.328241$, and $0.326222$.
+For every architecture, the tap was the final unpooled semantic tensor passed
+to the classifier head; calibration vectors were split deterministically into
+centre-fitting and selector subsets before the selected $K$ was refitted on
+the full label-free calibration cohort \cite{chan2026kdgrp}. The confirmatory
+rerun in \cref{sec:plan} will consolidate per-architecture cohort sizes, split
+hashes, and the complete inference specification.
+
+\begin{table}[H]
+\centering
+\caption{Frozen adaptive-mode validation at matched semantic taps. Values are
+internal IoU@20 results from the completed technical study. Bold identifies the
+highest number in each row, not statistical significance.}
+\label{tab:kdgrp-multiarch}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Model & K-DGRP & EigenCAM & Grad-CAM & Grad-CAM++ & LayerCAM\\
+\midrule
+VGG16-BN          & 0.33435 & 0.27376 & 0.32793 & \textbf{0.33576} & 0.33306\\
+RegNetY-8GF       & 0.34113 & 0.24777 & 0.35232 & 0.35442 & \textbf{0.35481}\\
+MobileNetV3-L     & 0.35191 & 0.22665 & 0.33055 & 0.35771 & \textbf{0.36389}\\
+EfficientNetV2-S  & 0.33502 & 0.19730 & \textbf{0.35584} & 0.35472 & 0.35460\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The selector chose $K=2$ for all four previously unseen models. Its mean
+post-hoc oracle regret was $0.000147$ IoU and maximum regret was $0.000350$.
+Its point estimate exceeded EigenCAM on all four models. It was close to the
+gradient CAMs on VGG, exceeded Grad-CAM on MobileNet, and trailed the strongest
+gradient CAMs on RegNet, MobileNet, and EfficientNetV2. These are point-estimate
+comparisons; the corresponding per-model paired intervals are not reproduced
+here. Robust-distance maps from independently trained architectures also
+showed same-image spatial Spearman correlations ranging from approximately
+$0.55$ to $0.79$ for the reported pairs.
+
+These results indicate that robust distance is more architecture-general than a
+fixed mode count. They do not yet establish cross-dataset generalization,
+class-specific attribution, or complete causal faithfulness.
+
+\subsection{Neural collapse and interpretation}
+
+Late ResNet features became increasingly class-organized: within-class to
+between-class scatter decreased, simplex error decreased, and nearest-class
+centre accuracy increased toward the final stage. Nevertheless, K-DGRP centres
+were not class-simplex vertices. For 100 classes the centred class means span up
+to 99 dimensions, while four robust centres describe a much lower-cardinality
+spatial/common-mode geometry. Centre class purity was low at useful $K$, and
+class-only or residual-only alternatives underperformed raw distance.
+
+The current interpretation is therefore that discriminative training creates a
+late feature space containing both class-semantic organization and broad
+recurrent spatial modes. Object interiors, parts, and boundaries are more
+variable than common background or context and often lie farther from the
+nearest robust mode. The explanation score captures this structured novelty
+rather than distance from a class centroid.
+
+\subsection{Evidence required for the CVPR paper}
+
+The existing technical evidence establishes a strong method candidate, but the
+paper protocol will be rerun and extended before publication.
+
+\evidenceplaceholder{KDGRP-TAB-01: confirmatory benchmark}{
+Rerun the frozen method on a sealed cohort with localization, insertion,
+deletion, prediction-drop, class-sensitivity, runtime, and paired confidence
+intervals. Preserve matched semantic taps and report the selected $K$ before
+using segmentation ground truth. State every cohort size and mask source,
+calibration/development/evaluation split, split hash, selector-freezing point,
+bootstrap count, interval definition, and multiplicity policy.}
+
+\evidenceplaceholder{KDGRP-FIG-01 and KDGRP-ANALYSIS-01: semantic atlas}{
+Insert a fixed qualitative grid containing successes, disagreements with CAMs,
+small objects, multiple objects, clutter, and failures. Add semantic analysis
+of what high-distance regions represent. Do not select cases after viewing the
+final metric.}
+
+\evidenceplaceholder{KDGRP-TAB-02 and KDGRP-FIG-02: error and sanity analysis}{
+Compare correct and incorrect predictions; run parameter- and label-randomized
+sanity checks; test feature norm as a trivial baseline; and distinguish
+objectness from predicted-class causality.}
+
+\evidenceplaceholder{KDGRP-GENERALITY-01: cross-dataset confirmation}{
+Execute the frozen Pascal VOC or equivalent prospective protocol, comparing
+source-domain and target-domain unlabeled prototypes without retuning selector
+thresholds on validation masks.}
+
+The intended paper claim is deliberately precise: a class-agnostic,
+gradient-free score based on adaptive robust feature modes reaches a similar
+object-localization regime to strong CAM methods across diverse CNNs. It should
+not be summarized as universally outperforming CAMs.

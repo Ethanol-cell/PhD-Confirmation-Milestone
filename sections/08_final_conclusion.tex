@@ -1,0 +1,35 @@
+\section{Conclusion}\label{sec:final-conclusion}
+
+This confirmation report proposes a representation-centric account of
+explainability in deep vision models. The central hypothesis is that trained
+models develop a transition regime in which generic visual features become
+class-relevant spatial geometry. Dataset-wide PCA-RGB provides the initial
+observation, but the project explicitly recognizes that visualization alone is
+not proof. Quantitative transition measures, trained--random controls, held-out
+wrong-prediction analysis, and cross-dataset validation are required to answer
+RQ1.
+
+\methodname{} provides the first methodological use of the observation. Its
+distance from adaptive dataset-global robust modes is simple, class-agnostic,
+and gradient-free. Completed internal evidence shows competitive object
+localization on ResNet-50 and four held-out CNN families after selector
+development on ResNet and ConvNeXt, while also revealing architecture
+heterogeneity and a residual advantage for class-conditioned CAMs on some
+models. The planned CVPR study will add the faithfulness, sanity, semantic, and
+cross-dataset evidence needed to define the method's explanatory scope.
+
+\jmethod{} provides a second, distinct test of representation geometry. It
+transfers an early relational state, balanced PC1--32 coordinates at selected
+transition and late layers, and late affinity flow, while preserving a
+student-specific bridge and releasing spatial constraints near training end.
+The audited implementation achieves strong ImageNet-100 results and a
+three-seed gain over H9. This is consistent with a benefit from the J1 design
+package, although the contribution of each component remains to be isolated.
+J1 is presently a practical peer rather than a demonstrated winner over
+ReviewKD.
+
+The next two years will prioritize closure of these CNN claims before
+investigating token-based models. Transformer work will remain flexible until a
+focused review and reproducible pilot establish the correct representation,
+transition measure, and evaluation target. This staged plan is feasible because
+each phase has an explicit evidence gate, publication outcome, and contingency.

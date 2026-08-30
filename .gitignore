@@ -1,4 +1,7 @@
 build/
+output/
+tmp/
+figures/*.pdf
 *.aux
 *.bbl
 *.blg
