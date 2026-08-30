@@ -22,10 +22,13 @@ human-defined direction; a prototype method can retrieve representative
 examples; and a representation diagnostic can describe how internal geometry
 changes with depth. All may be useful, but they do not make the same claim.
 \textbf{This report therefore separates representation diagnostics,
-attribution, and human-facing explanation.} PCA-RGB is primarily a
-representation diagnostic. Adaptive K-DGRP is a class-agnostic spatial
-explanation of representation distinctiveness. CAM methods are usually
-class-conditioned attribution or localization methods. J1 is an intervention:
+attribution, and human-facing explanation.} Principal component analysis with
+red--green--blue rendering (PCA-RGB) is primarily a representation diagnostic.
+Adaptive K Dataset-Global Robust Prototypes (K-DGRP) is a class-agnostic
+spatial explanation of representation distinctiveness. Class activation
+mapping (CAM) methods are usually class-conditioned attribution or localization
+methods. J1, the project name for the final selective hierarchical
+geometry-distillation candidate, is an intervention:
 it tests whether selected internal geometry is useful for knowledge transfer.
 
 The distinction also prevents a common category error. A visually plausible
@@ -86,7 +89,8 @@ measures the resulting score change \cite{zeiler2014visualizing}. Meaningful
 Perturbation optimizes a deletion mask while regularizing its area and
 smoothness \cite{fong2017meaningful}; Extremal Perturbations instead searches
 for a smooth region of prescribed area that maximally preserves or changes the
-target response \cite{fong2019extremal}. RISE samples randomized masks and
+target response \cite{fong2019extremal}. Randomized Input Sampling for
+Explanation (RISE) samples randomized masks and
 weights them by black-box output scores \cite{petsiuk2018rise}. Because these
 approaches query the forward function, they can provide more direct behavioral
 evidence than a visually attractive gradient. Their weakness is that masking,
@@ -94,8 +98,9 @@ blurring, inpainting, or replacing pixels can create out-of-distribution
 inputs, so the result partly reflects the perturbation operator.
 
 Model-agnostic surrogates approximate a complex predictor near an example.
-LIME fits a sparse local linear model to perturbed samples
-\cite{ribeiro2016lime}. SHAP connects additive feature attribution with
+Local Interpretable Model-agnostic Explanations (LIME) fits a sparse local
+linear model to perturbed samples \cite{ribeiro2016lime}. SHapley Additive
+exPlanations (SHAP) connects additive feature attribution with
 Shapley-value principles and identifies a common structure shared by several
 attribution schemes \cite{lundberg2017shap}. These tools offer a clear local
 feature-weight interpretation, but image explanations still depend on the
@@ -118,9 +123,11 @@ approximation assumptions.
 
 Concept-based methods move from individual pixels toward semantic units.
 Network Dissection measures alignment between individual units and a labelled
-concept vocabulary \cite{bau2017networkdissection}. TCAV defines a concept
+concept vocabulary \cite{bau2017networkdissection}. Testing with Concept
+Activation Vectors (TCAV) defines a concept
 activation vector from examples and measures directional sensitivity of a
-class score to that vector \cite{kim2018tcav}. ACE automates candidate concept
+class score to that vector \cite{kim2018tcav}. Automatic Concept-based
+Explanations (ACE) automates candidate concept
 discovery by segmenting and clustering image regions before applying a
 concept-sensitivity test \cite{ghorbani2019ace}. Concept Bottleneck Models
 place predicted concepts in the forward path so that a user can inspect or
@@ -192,7 +199,7 @@ evaluation axes.}
 Several studies demonstrate that explanation quality cannot be inferred from
 appearance. Model-parameter and data randomization tests reveal that some
 saliency methods remain visually similar after learned parameters or labels are
-destroyed \cite{adebayo2018sanity}. ROAR removes features judged important,
+destroyed \cite{adebayo2018sanity}. RemOve And Retrain (ROAR) removes features judged important,
 retrains the model, and evaluates the resulting loss of predictive information
 to reduce artifacts from using a fixed model on corrupted inputs
 \cite{hooker2019roar}. Infidelity measures disagreement between attribution and
@@ -217,7 +224,8 @@ pointing-game accuracy rewards only a peak location.
 \textbf{No explanation family is uniformly faithful under every definition.}
 The correct response is not to select one favorable metric, but to state the
 intended explanatory object and assemble convergent tests. The K-DGRP paper
-therefore requires exact-area IoU and AUPRC for localization; insertion and
+therefore requires exact-area intersection over union (IoU) and area under the
+precision--recall curve (AUPRC) for localization; insertion and
 deletion for behavioral response; class-sensitivity tests for the boundary
 between objectness and target attribution; feature-norm and random-map
 baselines; parameter and label randomization; stability across seeds and
@@ -232,7 +240,8 @@ representations rather than attribute an output. Linear probes measure how
 readily task information can be decoded at different depths
 \cite{alain2017linearprobes}. Representational similarity analysis compares
 pairwise dissimilarity structure between representational spaces
-\cite{kriegeskorte2008rsa}. SVCCA and projection-weighted CCA align
+\cite{kriegeskorte2008rsa}. Singular-vector canonical correlation analysis
+(SVCCA) and projection-weighted canonical correlation analysis (PWCCA) align
 subspaces learned by different layers, models, or training times
 \cite{raghu2017svcca,morcos2018pwcca}. Centred kernel alignment (CKA) provides
 an invariant similarity measure with favorable empirical behavior for neural
@@ -244,7 +253,8 @@ when interpreting similarity scores
 PCA-RGB is simpler and more spatially direct. Principal component analysis
 finds orthogonal directions of maximal variance, originating in classical
 work by Pearson and Hotelling \cite{pearson1901pca,hotelling1933pca}. Mapping
-the first three scores to RGB makes a high-dimensional feature grid visually
+the first three scores to red, green, and blue (RGB) makes a high-dimensional
+feature grid visually
 inspectable. In this project, one dataset-wide basis is fitted per layer, so
 images can be compared within that layer. Because each layer has its own basis,
 colour is not aligned across depth; adjacent-layer claims must instead use
@@ -296,7 +306,8 @@ single training process \cite{lan2018one}. Self-distillation applies auxiliary
 classifiers or earlier generations within one architecture
 \cite{zhang2019byot}, and self-supervised auxiliary tasks can enrich the
 distillation signal \cite{xu2020sskd}. Decoupled KD separates target-class and
-non-target-class contributions, showing that the conventional KL term combines
+non-target-class contributions, showing that the conventional
+Kullback--Leibler (KL) term combines
 distinct forms of transfer \cite{zhao2022dkd}.
 
 Output KD is attractive because teacher and student need only share a label
@@ -320,7 +331,8 @@ Feature distillation supplies intermediate supervision. FitNets use a learned
 regressor to match a teacher hint layer and help optimize a thin student
 \cite{romero2015fitnets}. Attention Transfer matches normalized spatial
 attention summaries rather than raw channels \cite{zagoruyko2017attention}.
-FSP matrices encode correlations between pairs of layers and transfer a form of
+Flow of Solution Procedure (FSP) matrices encode correlations between pairs of
+layers and transfer a form of
 feature-flow structure \cite{yim2017fsp}. Factor Transfer paraphrases teacher
 features into factors and trains a student translator to reproduce them
 \cite{kim2018factortransfer}. These methods establish that useful knowledge
@@ -341,15 +353,19 @@ Boundary transfer focuses on which side of a teacher neuron's activation
 boundary the student occupies rather than forcing exact regression
 \cite{heo2019activation}.
 
-More recent feature methods address selectivity and cross-layer mismatch. OFD
+More recent feature methods address selectivity and cross-layer mismatch.
+Overhaul of Feature Distillation (OFD)
 uses margin-based partial feature transfer and teacher-derived transforms
 \cite{heo2019ofd}. ReviewKD aggregates multi-level student features and
 revisits teacher knowledge across levels \cite{chen2021reviewkd}. SemCKD learns
 semantic calibration weights between possible teacher and student layer pairs
-\cite{chen2021semckd}. SimKD aligns student features to a teacher classifier
-that is reused at inference \cite{chen2022simkd}. MGD masks student features
+\cite{chen2021semckd}. Knowledge distillation with the Reused Teacher
+Classifier (SimKD) aligns student features to a teacher classifier
+that is reused at inference \cite{chen2022simkd}. Masked Generative Distillation
+(MGD) masks student features
 and reconstructs teacher features through a generator
-\cite{yang2022mgd}. CAT-KD transfers class-attention maps and emphasizes
+\cite{yang2022mgd}. Class Attention Transfer knowledge distillation (CAT-KD)
+transfers class-attention maps and emphasizes
 class-relevant spatial structure \cite{guo2023catkd}. InDistill explicitly
 targets information-flow preservation across intermediate stages
 \cite{sarridis2025indistill}.
@@ -399,7 +415,7 @@ development ablations, not a claim that every architecture has the same named
 transition blocks.
 
 J1 also addresses loss interaction. Its teacher-correct gate avoids imitating
-unreliable teacher targets. PCA-band RMS balancing stops high-variance
+unreliable teacher targets. PCA-band root-mean-square (RMS) balancing stops high-variance
 coordinates from dominating lower-variance directions. Frozen random
 hyperplanes transfer partitions rather than exact features. Gradient-ratio
 calibration is related to work on adaptive multi-task weighting and gradient
@@ -439,9 +455,10 @@ mehri2025libragrad,bousselham2025legrad}.
 The next phase will therefore begin with a focused literature review and a
 small reproducible baseline set, not a fixed method claim. Candidate objects
 include residual-stream states, patch tokens, value features, attention
-outputs, and hierarchical stage features. \textbf{The transformer direction
-will remain flexible until a measurement gate, semantic gate, and utility gate
-identify a stable transition object.} A negative result for direct PCA-RGB or
+outputs, and hierarchical stage features. \textbf{The transformer investigation
+will begin broadly and become more focused when a measurement gate, semantic
+gate, and utility gate identify a stable transition object.} A negative result
+for direct PCA-RGB or
 K-DGRP transfer would still clarify which properties depend on convolutional
 locality and which generalize across vision architectures.
 

@@ -26,6 +26,8 @@
 \graphicspath{{figures/}}
 \setlist{nosep}
 \setlength{\emergencystretch}{2em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em plus 0.15em minus 0.10em}
 
 \definecolor{placeholderorange}{HTML}{A85A00}
 \definecolor{placeholderfill}{HTML}{FFF5E8}
@@ -42,6 +44,13 @@
     \end{center}}
 \newcommand{\methodname}{Adaptive K-DGRP}
 \newcommand{\jmethod}{J1}
+\tikzset{
+    lossstep/.style={draw,rounded corners,fill=stageblue,
+        minimum height=8mm,text width=31mm,align=center,font=\scriptsize},
+    lossstepwide/.style={draw,rounded corners,fill=stagegreen,
+        minimum height=8mm,text width=38mm,align=center,font=\scriptsize},
+    lossarrow/.style={-{Latex[length=2mm]},thick,draw=gray!75}
+}
 
 \title{Understanding and Exploiting Spatial Representation Transitions\\
 in Deep Vision Models\\[0.8em]
@@ -60,7 +69,7 @@ Monash University Malaysia}
 \begin{abstract}
 Deep vision models can classify images accurately while leaving unclear how
 their internal spatial representations develop into class-discriminative
-decisions. Most class activation mapping methods localize evidence for a chosen
+decisions. Most class activation mapping (CAM) methods localize evidence for a chosen
 output, but do not directly characterize the representational changes that
 precede that output. This PhD project investigates a complementary,
 representation-centric hypothesis: trained vision models contain a transition
@@ -68,32 +77,36 @@ regime in which generic visual features are reorganized into class-relevant
 spatial geometry, and this geometry can be used both to explain models and to
 transfer knowledge.
 
-The first research stage uses dataset-wide, layer-specific principal-component
-bases to visualize convolutional representations as PCA-RGB maps. Preliminary
+The first research stage uses dataset-wide, layer-specific principal component
+analysis (PCA) bases, with the first three coordinates rendered as red, green,
+and blue (PCA-RGB) maps. Preliminary
 observations distinguish early feature-preserving states, intermediate
 transition states, and late class-oriented states. Trained-versus-random
 controls and CIFAR-10 misclassification examples support further investigation,
 while the weaker visual regularity on CIFAR-100 and ImageNet-100 motivates
 quantitative rather than purely visual transition criteria. The second stage
-develops \methodname, a class-agnostic, gradient-free explanation method that
+develops Adaptive K Dataset-Global Robust Prototypes (K-DGRP), a class-agnostic,
+gradient-free explanation method that
 scores spatial features by distance from dataset-global robust modes. Completed
 internal experiments show competitive object localization on ResNet-50 and
-four held-out CNN families after selector development on ResNet and ConvNeXt,
+four held-out convolutional neural network (CNN) families after selector
+development on ResNet and ConvNeXt,
 although class-conditioned CAMs remain stronger on some architectures and
 additional faithfulness validation is required. The third stage studies
 knowledge distillation (KD), in which a compact student learns from a stronger
 teacher. It introduces \jmethod{}, the project name for a selective hierarchical
 geometry-distillation objective. Rather than copying every teacher feature,
-\jmethod{} transfers an early relational state, balanced PC1--32 transition
-coordinates, and late affinity flow. On ImageNet-100, \jmethod{} attains
+\jmethod{} transfers an early relational state, balanced principal-component
+coordinates 1--32 (PC1--32) at selected transition and late layers, and late
+affinity flow. On ImageNet-100, \jmethod{} attains
 $94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically tied
 with ReviewKD-120 under the current evidence.
 
 \textbf{The immediate next stage is to complete and submit two papers: one on
 \methodname{} and one on \jmethod{}.} Transformer investigation will follow
-these publication efforts and remains intentionally flexible until a focused
-literature review and reproducible pilot study identify the most informative
-architectures and explanatory objects.
+these publication efforts. A focused literature review and reproducible pilot
+will first survey the broad design space, after which the project will
+concentrate on the most informative architectures and explanatory objects.
 \end{abstract}
 
 \clearpage
@@ -102,6 +115,8 @@ architectures and explanatory objects.
 \tableofcontents
 \listoffigures
 \listoftables
+\clearpage
+\input{sections/00_abbreviations}
 \clearpage
 \pagenumbering{arabic}
 

@@ -3,7 +3,8 @@
 
 \subsection{Research question and distinction from CAM}
 
-\methodname{} asks whether the representation itself contains a
+Adaptive K Dataset-Global Robust Prototypes (K-DGRP) asks whether the
+representation itself contains a
 class-agnostic geometric signal that identifies object-relevant spatial
 locations \cite{chan2026kdgrp}. Unlike Grad-CAM, it does not require a target
 class or a gradient. Unlike EigenCAM, it does not select the dominant linear
@@ -35,8 +36,28 @@ is the geometric median
     \label{eq:dgrp-median}
 \end{equation}
 which can be computed by Weiszfeld-type iterations \cite{weiszfeld1937median}.
-Compared with an arithmetic mean, the unsquared objective limits the influence
-of rare, distant spatial vectors.
+Starting from an initial centre $\bm c^{(0)}$, one stabilized update is
+\begin{equation}
+    \bm c^{(t+1)}
+    =
+    \frac{
+      \sum_{n=1}^{N}
+      \bm f_n\big/\bigl(\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon\bigr)
+    }{
+      \sum_{n=1}^{N}
+      1\big/\bigl(\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon\bigr)
+    }.
+    \label{eq:weiszfeld-update}
+\end{equation}
+
+The update is a weighted average in which a point receives weight inversely
+proportional to its current distance from the centre. Nearby, repeatedly
+observed feature vectors therefore pull strongly, while a rare distant vector
+cannot dominate through a squared distance. The small $\varepsilon$ prevents a
+division by zero if an iterate reaches a data point. Iteration stops when the
+centre displacement falls below a fixed tolerance or a maximum iteration count
+is reached. Compared with an arithmetic mean, this unsquared geometric-median
+objective is consequently more resistant to rare, distant spatial vectors.
 
 The multimodal extension borrows the alternating assignment/update structure of
 prototype clustering \cite{macqueen1967kmeans}: it alternates nearest-centre assignment
@@ -44,15 +65,17 @@ prototype clustering \cite{macqueen1967kmeans}: it alternates nearest-centre ass
     a_n=\arg\min_{k\in\{1,\ldots,K\}}
         \|\bm f_n-\bm c_k\|_2
 \end{equation}
-with geometric-median updates inside each assigned cluster. The raw explanation
-score is
+with a separate Weiszfeld update inside each assigned cluster. Assignment and
+robust-centre updating repeat until the memberships or centres stabilize. The
+raw explanation score is
 \begin{equation}
     R_K(p)=\min_{1\leq k\leq K}
         \|\bm f_p-\bm c_k\|_2.
     \label{eq:kdgrp-score}
 \end{equation}
 A high value means that the spatial feature is far from every recurrent robust
-mode. An empirical calibration CDF can map this score to $[0,1]$ for display,
+mode. An empirical calibration cumulative distribution function (CDF) can map
+this score to $[0,1]$ for display,
 but its monotonicity preserves exact top-area masks and rank metrics.
 
 The experiments found that normalizing by cluster radius, converting distance
@@ -88,9 +111,10 @@ without segmentation masks or class labels.
 
 \subsection{Completed internal evidence}
 
-On a 600-image ResNet-50 cohort, K4-DGRP achieved IoU@20 of $0.32946$ and
-AUPRC of $0.69623$. Paired bootstrap differences in IoU@20 (K-DGRP minus
-baseline) were $-0.002529$ against EigenCAM, 95\% CI
+On a 600-image ResNet-50 cohort, K4-DGRP achieved intersection over union at
+20\% selected area (IoU@20) of $0.32946$ and area under the precision--recall
+curve (AUPRC) of $0.69623$. Paired bootstrap differences in IoU@20 (K-DGRP minus
+baseline) were $-0.002529$ against EigenCAM, 95\% confidence interval (CI)
 $[-0.008263,0.003440]$, and $-0.001025$ against Grad-CAM++, 95\% CI
 $[-0.006821,0.004865]$. The intervals crossed zero. Grad-CAM and LayerCAM were
 higher by $0.009370$, 95\% CI $[0.003211,0.015723]$, and $0.011319$, 95\% CI

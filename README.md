@@ -10,7 +10,8 @@ programme across three connected stages:
 3. J1 geometry distillation as an application of the observed transitions.
 
 The immediate project stage is to complete the Adaptive K-DGRP and J1 papers;
-the later transformer direction remains deliberately flexible.
+the later transformer stage begins with a broad literature review and pilot,
+then concentrates on the most informative architecture and explanatory object.
 
 Orange evidence boxes mark figures, reruns, semantic analyses, or statistical
 checks that still need to be inserted. They are intentionally explicit so that
@@ -46,7 +47,7 @@ latexmk -pdf -outdir=build main.tex
 - `sections/04_experiments.tex`: current PCA-RGB observations and controls
 - `sections/05_results.tex`: Adaptive K-DGRP method and completed evidence
 - `sections/06_conclusion.tex`: verified J1 objective and ImageNet-100 benchmark
-- `sections/07_research_plan.tex`: claim--evidence map and flexible two-year plan
+- `sections/07_research_plan.tex`: claim--evidence map and staged two-year plan
 - `sections/08_final_conclusion.tex`: overall conclusion
 - `figures/`: editable TikZ source for the research programme and Gantt chart
 - `references.bib`: BibTeX references

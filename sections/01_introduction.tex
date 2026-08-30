@@ -31,7 +31,8 @@ that earlier and broader question.
 The work began with dataset-wide principal component analysis (PCA) of
 intermediate convolutional features. For each layer, a basis is fitted using
 one dataset-wide pool of spatial vectors sampled across the training split. The
-first three coordinates are rendered as red, green, and blue channels, allowing
+first three coordinates are rendered as red, green, and blue channels to form
+PCA red--green--blue (PCA-RGB) maps, allowing
 within-layer comparisons across images because all images share the same
 layer-specific basis. The resulting maps suggested a recurring qualitative
 progression: early maps preserve local image structure; intermediate maps
@@ -39,7 +40,8 @@ undergo conspicuous spatial reorganization; and late maps become more
 class-oriented.
 
 Several observations made this progression scientifically interesting. A
-randomly initialized CNN can retain visible image structure at unexpectedly
+randomly initialized convolutional neural network (CNN) can retain visible
+image structure at unexpectedly
 late depth, indicating that architecture alone can propagate structured
 signals. Training changes that structure into a more class-discriminative
 organization. On CIFAR-10, images from the same class can show similar
@@ -50,7 +52,8 @@ depth, but intermediate reorganization remains observable. These findings
 motivate a transition-layer hypothesis, while also demonstrating why visual
 inspection alone is insufficient.
 
-The hypothesis led to two methodological directions. The first, \methodname,
+The hypothesis led to two methodological directions. The first, Adaptive K
+Dataset-Global Robust Prototypes (K-DGRP),
 asks whether the geometry of late unpooled spatial features can itself provide
 an explanation. It models recurrent dataset-global feature modes using robust
 prototypes and scores each spatial position by its distance from the nearest
@@ -97,7 +100,7 @@ the depth of vision models, and to use this understanding to develop visual
 explanation and knowledge-transfer methods.
 \end{quote}
 
-Four research questions organize the programme:
+Four research questions (RQs) organize the programme:
 
 \begin{description}[leftmargin=1.3cm,style=nextline]
     \item[RQ1] How do learned spatial representations evolve across CNN depth,
