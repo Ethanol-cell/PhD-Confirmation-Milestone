@@ -43,14 +43,17 @@ latexmk -pdf -outdir=build main.tex
 - `sections/02_related_work.tex`: broad critical review of attribution,
   perturbation, concept/prototype explanation, CAM, representation analysis,
   neural collapse, knowledge distillation, and transformer explanation
-- `sections/03_method.tex`: research design and PCA-RGB methodology
-- `sections/04_experiments.tex`: current PCA-RGB observations and controls
+- `sections/03_method.tex`: overall research design and evaluation framework
+- `sections/04_experiments.tex`: PCA-RGB construction, observations, controls,
+  and planned CIFAR-10/CIFAR-100/ImageNet-1K evidence
 - `sections/05_results.tex`: Adaptive K-DGRP method and completed evidence
 - `sections/06_conclusion.tex`: verified J1 objective and ImageNet-100 benchmark
 - `sections/07_research_plan.tex`: claim--evidence map and staged two-year plan
 - `sections/08_final_conclusion.tex`: overall conclusion
 - `figures/`: editable TikZ source for the research programme and Gantt chart
 - `references.bib`: BibTeX references
+- `PCA_RGB_PROGRESS1_ARTIFACT_INSTRUCTIONS.txt`: standalone execution brief for
+  the Progress I figures, tables, streaming PCA, metrics, and appendix artifacts
 - `.vscode/settings.json`: LaTeX Workshop configuration
 
 ## Evidence status

@@ -1,117 +1,226 @@
 \section{Progress I: Representation-Transition Discovery}\label{sec:pca-progress}
 
-\subsection{Qualitative depth progression}
+\textbf{Progress I asks where a trained CNN changes from preserving visual
+structure to organizing features around the classification task.} The evidence
+is developed in a fixed order: construct comparable within-layer PCA-RGB maps;
+inspect the complete CIFAR-10 depth progression; test class prototypes and
+errors; compare trained and random networks; and then assess whether the
+transition remains measurable on CIFAR-100 and ImageNet-1K.
 
-Dataset-wide PCA-RGB atlases were constructed by applying
-\cref{eq:pca-rgb} at multiple CNN states. Three recurring regimes were
-observed. Early layers retain edges, colour contrast, and local texture. Middle
-states exhibit stronger regional grouping and rapid changes in spatial
-organization. Late states become compact and class-oriented, although the
-degree to which this remains visually recognizable depends on the dataset.
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[node distance=5mm]
+        \node[lossstep] (fit) {Fit one streaming PCA basis per layer};
+        \node[lossstep,right=of fit] (atlas) {Build a fixed cross-depth atlas};
+        \node[lossstep,right=of atlas] (test) {Test prototypes, errors, and random controls};
+        \node[lossstep,right=of test] (scale) {Validate on more complex datasets};
+        \draw[lossarrow] (fit) -- (atlas);
+        \draw[lossarrow] (atlas) -- (test);
+        \draw[lossarrow] (test) -- (scale);
+    \end{tikzpicture}
+    \caption{Evidence flow for Progress I. Visual inspection generates the
+    hypothesis, while frozen quantitative tests determine which claims survive.}
+    \label{fig:pca-progress-flow}
+\end{figure}
 
-This progression is provisionally described as
+\subsection{Dataset-wide, layer-specific PCA-RGB construction}
+
+For layer $\ell$, image $x_i$, and spatial position $p$, let
+\begin{equation}
+    \bm f^{(\ell)}_{i,p}\in\mathbb{R}^{D_\ell}
+\end{equation}
+be the channel vector. A dataset-wide feature population
+$\mathcal{F}_\ell=\{\bm f^{(\ell)}_{i,p}\}$ is sampled from the training split.
+Its mean $\bm\mu_\ell$ and orthonormal principal component analysis (PCA)
+basis $\bm V_\ell=[\bm v_{\ell,1},\bm v_{\ell,2},\ldots]$ are estimated with
+streaming statistics so that the complete feature population need not be held
+in memory \cite{pearson1901pca,hotelling1933pca}.
+
+The first three signed coordinates are
+\begin{equation}
+    \bm z^{(\ell)}_{i,p}
+    = (\bm f^{(\ell)}_{i,p}-\bm\mu_\ell)
+      \bm V_{\ell,1:3}\in\mathbb{R}^{3},
+    \qquad
+    \bm C^{(\ell)}_{i,p}=\phi_\ell(\bm z^{(\ell)}_{i,p}),
+    \label{eq:pca-rgb}
+\end{equation}
+where $\phi_\ell$ is a frozen layer-specific display transform mapping the
+three coordinates to red, green, and blue (RGB). The basis, component signs,
+and robust display limits are fitted on training data and then reused without
+change for every validation or test image.
+
+\textbf{The alignment is dataset-wide within each layer, not shared across
+layers.} All images at layer $\ell$ use the same $\bm V_\ell$ and
+$\phi_\ell$, so same-layer colour and coordinate comparisons are defined. Each
+layer nevertheless has its own basis. A red region at layer $\ell$ is therefore
+not assumed to represent the same direction as red at layer $\ell+1$.
+Cross-depth claims use explained variance, class separation, prototype
+agreement, representational similarity, or other basis-invariant quantities
+rather than raw colour identity.
+
+\evidenceplaceholder{PCA-METHOD-01: frozen PCA-RGB protocol}{
+Insert the validated layer registry, training-split sample counts, streaming
+covariance settings, deterministic component-sign rule, and exact definition
+of $\phi_\ell$. Confirm that test labels and test features are not used to fit
+the bases or display limits.}
+
+\subsection{CIFAR-10 full-depth discovery}
+
+CIFAR-10 is examined first because its ten classes make class-level structure
+visually inspectable. A fixed set of images is propagated through every
+registered spatial state of the selected trained CNN. The complete atlas is
+used to identify three descriptive regimes: early feature extraction,
+intermediate representation transition, and late class organization.
+
+This progression is provisionally summarized as
 \begin{equation}
     \text{feature extraction}
     \longrightarrow
-    \text{representation transition}
+    \text{spatial and semantic reorganization}
     \longrightarrow
-    \text{class organization}.
+    \text{class-oriented representation}.
+    \label{eq:pca-progression}
 \end{equation}
-The labels are explanatory summaries rather than yet-frozen layer categories.
-They will be validated using the semantic, spatial, and change measures in
-\cref{sec:framework}.
+The terms describe observed behaviour rather than fixed architectural block
+names. A candidate transition is supported only when rapid representational
+change coincides with increasing semantic maturity while useful spatial
+variation remains.
 
-\evidenceplaceholder{PCA-FIG-01: cross-depth atlas}{
-Insert a fixed, non-cherry-picked grid of early, candidate-transition, and late
-PCA-RGB maps for the same images. Include CIFAR-10, CIFAR-100, and
-ImageNet-100; state the layer taps, basis-fitting split, display transform, and
-model seed.}
+The main text will show six preregistered stages spanning the progression. The
+all-layer atlas may be placed on a landscape appendix page if it becomes
+unreadable at the report's normal text width; the main figure will link
+directly to that appendix panel.
 
-\subsection{Randomly initialized control}
+\evidenceplaceholder{PCA-FIG-01 and PCA-TAB-01: CIFAR-10 depth atlas}{
+Insert the fixed ConvNeXT-Small CIFAR-10 atlas, a compact six-stage main-text
+figure, and an all-layer appendix figure. Report every tap, feature shape,
+explained-variance ratio, basis-fitting split, display transform, model
+checkpoint, and selection manifest.}
 
-The random-network experiment shows that recognizable image structure can
-survive into late CNN layers even without supervised learning. Convolutions,
-residual paths, downsampling, and nonlinearities impose an architectural image
-prior; visible structure at depth therefore cannot be interpreted as learned
-semantics by itself. In the trained network, however, later features reorganize
-into more class-discriminative patterns. The appropriate conclusion is that
-architecture propagates structure while training changes its semantic
-organization.
+\subsection{CIFAR-10 class prototypes and wrong predictions}
 
-This control does not yet establish the location or causal importance of the
-transition. A stronger test will compare multiple random initializations with
-multiple trained seeds using the same layers and basis-fitting protocol.
-Semantic probe accuracy, class separation, adjacent-layer change, and
-foreground localization will determine whether the trained network departs
-systematically from its random counterpart.
+The late-layer observation is tested at the class level. For each training
+example, the signed PCA coordinate map is pooled into
+\begin{equation}
+    \bm r_i^{(\ell)}
+    = \frac{1}{|\mathcal{P}_\ell|}
+      \sum_{p\in\mathcal{P}_\ell}\bm z^{(\ell)}_{i,p},
+    \qquad
+    \bm c_k^{(\ell)}
+    = \frac{1}{N_k}\sum_{i:y_i=k}\bm r_i^{(\ell)},
+    \label{eq:pca-class-prototype}
+\end{equation}
+where $\bm c_k^{(\ell)}$ is the class prototype in the frozen layer basis.
+For visualization, signed maps are averaged before clipping and RGB conversion;
+averaging already clipped RGB pixels would introduce a nonlinear display bias.
+A class mean map is shown beside a medoid example and a variability map so that
+an apparently smooth mean is not mistaken for a typical individual image.
 
-\evidenceplaceholder{PCA-FIG-02 and PCA-TAB-01: trained--random control}{
-Insert matched trained and random PCA-RGB maps across several initialization
-seeds, followed by quantitative curves for semantic maturity, spatial
-structure, and adjacent-layer change. Report uncertainty and predefine the
-transition selector.}
+\textbf{The expected CIFAR-10 result is not merely that examples look similar,
+but that within-class dispersion decreases and held-out prototype agreement
+increases toward late layers.} This will be quantified with within-class
+dispersion, between-class separation, their ratio, nearest-prototype accuracy,
+and bootstrap confidence intervals. Because every statistic is computed in one
+frozen layer basis, the test does not rely on comparing colours across depth.
 
-\subsection{CIFAR-10 class organization and errors}
-
-CIFAR-10 provides the clearest qualitative class-level pattern. Because one
-dataset-wide basis is reused for every image at a given layer, same-layer colour
-organization can be compared across examples. Selected late-layer maps from the
-same class appear similar, suggesting that the dominant feature coordinates
-capture recurring class structure. In selected errors, the map appears closer
-to the predicted class than to the ground-truth class. This is consistent with
-the representation supporting the model's decision rather than merely encoding
-the annotation.
-
-The current wrong-prediction analysis is semantic and qualitative. A
-confirmatory analysis will construct class prototypes from a training split,
-then evaluate every held-out error. For representation descriptor
-$\bm r_i^{(\ell)}$ and class prototype $\bm c_k^{(\ell)}$, the relevant
-comparison is
+Misclassifications provide a stronger semantic test. For a held-out example
+with true class $y_i$ and predicted class $\hat y_i$, define
 \begin{equation}
     \Delta_i^{(\ell)}
     = d(\bm r_i^{(\ell)},\bm c_{y_i}^{(\ell)})
-      -d(\bm r_i^{(\ell)},\bm c_{\hat y_i}^{(\ell)}),
+      -d(\bm r_i^{(\ell)},\bm c_{\hat y_i}^{(\ell)}).
+    \label{eq:pca-error-margin}
 \end{equation}
-where $y_i$ is the true class and $\hat y_i$ is the predicted class. Positive
-$\Delta_i$ means the example is closer to the predicted-class prototype. The
-analysis must use held-out images and include confidence intervals, confusion
-pairs, prediction confidence, and failure cases.
+Positive $\Delta_i^{(\ell)}$ means that the representation is closer to the
+predicted-class prototype than to the labelled-class prototype. The analysis
+will evaluate every held-out error and will separately display strong
+predicted-class alignment, ambiguous cases, and counterexamples according to a
+frozen selection rule.
 
-\evidenceplaceholder{PCA-FIG-03 and PCA-TAB-02: wrong-prediction analysis}{
-Insert fixed semantic case studies and the full held-out predicted-versus-true
-class prototype analysis. Until this table is complete, describe the result as
-an observation from selected cases rather than a general property.}
+\evidenceplaceholder{PCA-FIG-02 and PCA-TAB-02: class prototypes and errors}{
+Insert all ten CIFAR-10 class prototype summaries, quantitative depth curves,
+and fixed wrong-prediction panels. Report nearest-prototype accuracy, within-
+and between-class dispersion, the distribution of
+$\Delta_i^{(\ell)}$, confidence intervals, confusion pairs, prediction
+confidence, and the complete case-selection rule.}
 
-\subsection{CIFAR-100 and ImageNet-100}
+\subsection{Matched trained--random control}
 
-On CIFAR-100 and ImageNet-100, visually uniform same-class late-layer colours
-are less obvious. It is tempting to attribute this directly to dataset
-complexity, but several explanations remain confounded: class count,
-intra-class variation, spatial resolution, model capacity, basis variance, and
-distributed rather than prototype-like class geometry. The defensible present
-finding is narrower: simple class-consistent colour organization weakens, while
-intermediate spatial reorganization remains visible.
+A randomly initialized CNN can retain recognizable image structure at
+unexpected depth because convolutions, residual paths, downsampling, and
+nonlinearities impose architectural structure. \textbf{Visible spatial pattern
+alone is therefore not evidence that the network learned class semantics.}
 
-This actually strengthens the need for a representation-transition framework.
-A useful transition should not depend on a human being able to assign a colour
-to each class. Quantitative measures can detect increasing class organization
-in a high-dimensional subspace even when a three-dimensional projection is
-visually ambiguous. Neural-collapse diagnostics, for example, evaluate
-within-class contraction and class-mean geometry without assuming that the
-first three principal directions contain the complete class simplex.
+The control uses the identical architecture, tap registry, preprocessing, and
+PCA-fitting protocol for trained and random models. Several trained seeds and
+several independently initialized random seeds are compared. The visual panels
+are paired by image and layer, while quantitative curves test class separation,
+nearest-prototype accuracy, adjacent-layer change, and the error-alignment
+margin. The expected discriminant is not whether a random map contains edges,
+but whether trained representations develop reproducible class organization
+beyond the random architectural baseline.
 
-\evidenceplaceholder{PCA-FIG-04 and PCA-TAB-03: complex-dataset evidence}{
-Insert representative CIFAR-100 and ImageNet-100 transition maps plus
-basis-invariant transition metrics. Include robustness to PCA dimension,
-display scaling, layer sampling, architecture, and seed.}
+\evidenceplaceholder{PCA-FIG-03 and PCA-TAB-03: trained--random control}{
+Insert matched trained and random panels at the same taps and quantitative
+depth curves across seeds. Report mean, standard deviation, paired bootstrap
+confidence intervals, random-label permutation baselines, and the frozen
+transition-selection rule.}
 
-\subsection{Current interpretation}
+\subsection{CIFAR-100: hierarchy and increased class complexity}
 
-The completed observations motivate, but do not yet fully prove, RQ1. The most
-important advance is the shift from treating one final heatmap as the entire
-explanation to studying the formation of spatial geometry. The next evidence
-must establish three points: a transition is reproducibly measurable; its
-location is not selected retrospectively from the evaluation mask; and the
-geometry at or after that transition carries information useful for
-localization or transfer. The \methodname{} and \jmethod{} studies address the
-last point from different directions.
+CIFAR-100 tests whether the transition persists when one hundred fine classes
+are nested within twenty coarse classes. Existing exploratory results show
+weaker visually uniform late-layer colours than on CIFAR-10, but intermediate
+spatial reorganization remains observable. The confirmatory analysis will use
+the cached ConvNeXT-Base run where its metadata matches the frozen protocol and
+will recompute any missing or incompatible statistics.
+
+Fine- and coarse-label metrics are reported together. A layer may fail to form
+a compact fine-class prototype while still separating coarse semantic groups;
+this is more informative than concluding from an ambiguous three-coordinate
+rendering that no class structure exists. Neural-collapse diagnostics,
+high-dimensional class separation, and prototype agreement will therefore
+complement PCA-RGB panels.
+
+\evidenceplaceholder{PCA-FIG-04 and PCA-TAB-04: CIFAR-100 hierarchy}{
+Insert selected all-depth maps, fine- and coarse-class prototype summaries,
+trained--random comparisons, and depth curves. Put the complete all-layer or
+all-class atlas in the landscape appendix and link it from the main figure.}
+
+\subsection{ImageNet-1K: large-scale validation}
+
+The previous pilot used ImageNet-100; the next large-scale test uses the full
+ImageNet-1K validation setting. Visually identical late-layer class colours are
+not assumed. ImageNet-1K has greater intra-class variation, background
+variation, object scale variation, and class count, so the first three
+principal coordinates may not display the complete semantic geometry.
+
+The primary question is instead whether a measurable transition remains:
+semantic separation should increase, spatial organization should change, and
+the location of the strongest change should be reproducible across selected
+CNN families. Main-text panels will use a fixed, semantically stratified class
+and image manifest. Quantitative statistics will use the full available
+validation cohort, subject to declared compute limits; the appendix will hold
+the larger atlas and layer registry.
+
+\evidenceplaceholder{PCA-FIG-05 and PCA-TAB-05: ImageNet-1K scale test}{
+Insert fixed representative panels and full-cohort quantitative curves for the
+primary cached ImageNet CNN. Report the exact public model identifier or local
+checkpoint hash, validation sample count, tap registry, compute budget, and
+robustness to PCA dimension, architecture, seed, and display calibration.}
+
+\subsection{Current interpretation and claim boundary}
+
+The completed observations motivate, but do not yet fully prove, RQ1.
+\textbf{The important shift is from treating a final heatmap as the entire
+explanation to studying how spatial geometry is formed across depth.} The next
+evidence must establish that the transition is measurable, that its location
+is not selected retrospectively from a desirable visualization, and that its
+geometry supports localization or knowledge transfer.
+
+The PCA-RGB maps remain a discovery and communication device. Same-layer
+prototype agreement, trained--random differences, and basis-invariant depth
+metrics supply the confirmatory evidence. The \methodname{} and \jmethod{}
+studies then test the practical value of transition-related geometry through
+explanation and knowledge transfer, respectively.

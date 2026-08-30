@@ -65,9 +65,10 @@ report does not treat all visual maps as interchangeable explanations.}
 
 \subsubsection{Claim boundaries}
 
-The distinction also prevents a common category error. A visually plausible
-map is not automatically faithful to a classifier, and a faithful sensitivity
-map is not automatically understandable or useful to a person. The report uses
+\textbf{The distinction also prevents a common category error: a visually
+plausible map is not automatically faithful to a classifier, and a faithful
+sensitivity map is not automatically understandable or useful to a person.}
+The report uses
 ``explanation'' when a method connects an internal or input-space object to a
 stated explanatory question, and it states the question explicitly. For
 K-DGRP, that question is which spatial features are distinctive relative to
@@ -479,13 +480,34 @@ targets information-flow preservation across intermediate stages
 \subsubsection{Lessons for this thesis}
 
 The literature supports two conclusions relevant to this thesis. First,
-feature geometry, spatial attention, pairwise relations, and inter-layer change
-can all carry transferable information. Second, copying more states is not
-automatically better. Teacher and student can differ in depth, width,
-downsampling schedule, receptive field, and optimization trajectory. An exact
-coordinate constraint at every layer may suppress a student-specific efficient
-path, while a relation loss can preserve useful organization without requiring
-channel equality.
+\textbf{feature geometry, spatial attention, pairwise relations, and inter-layer
+change can all carry transferable information.} Second, \textbf{copying more
+teacher states is not automatically better.} Teacher and student can differ in
+depth, width, downsampling schedule, receptive field, and optimization
+trajectory. An exact coordinate constraint at every layer may suppress a
+student-specific efficient path.
+
+A \emph{relation loss} avoids requiring one student channel to reproduce one
+teacher channel. It first constructs relationships---for example, pairwise
+distances between examples, spatial-position affinities within a feature map,
+or correlations between two stages---and then penalizes disagreement between
+the teacher and student relationship structures
+\cite{yim2017fsp,park2019rkd,tung2019similarity}. Intuitively, direct feature
+matching asks the student to copy the teacher's coordinates, whereas relation
+matching asks it to preserve which examples or spatial locations are similar.
+This makes relation losses useful when teacher and student widths differ, but
+it also means that they may preserve relative organization without fixing the
+absolute semantic orientation of the feature space.
+
+This distinction directly motivates the J1 combination. The early relational
+anchor preserves coarse spatial organization while permitting different
+channels; balanced principal-component coordinate targets later provide a
+more explicit teacher reference where the representation is becoming
+class-relevant; and late relational-flow terms preserve how mature affinities
+change between stages. \textbf{The intended design is complementary rather
+than redundant: relation losses protect geometry under architectural mismatch,
+while selected coordinate losses specify teacher directions only where the
+development evidence supports doing so.}
 
 \textbf{The resulting design principle is selective transfer: preserve a
 useful geometric property at evidence-supported states, rather than copying
@@ -493,11 +515,13 @@ every available teacher feature.}
 
 \subsection{KD limitations and positioning of J1}
 
-\subsubsection{Where to constrain and where to release}
+\subsubsection{Which teacher geometry to enforce and which student pathways to leave unconstrained}
 
-The central unresolved design question is where to constrain a student and
-where to let it differ. Automatic layer association can help, but association
-scores do not guarantee that the selected knowledge object is causally useful.
+The central unresolved design question is \textbf{which teacher-derived
+property should be enforced at each stage, and which student transformations
+should remain free to develop their own efficient solution.} Automatic layer
+association can help, but association scores do not guarantee that the selected
+knowledge object is causally useful.
 Feature dimensions can be adapted, yet an adapter may absorb a mismatch rather
 than transfer teacher structure. Large auxiliary coefficients can produce an
 apparent method gain that is actually a gradient-scale effect. A teacher can
@@ -505,8 +529,9 @@ also be wrong on a training example, making unconditional imitation
 undesirable. Finally, single-seed comparisons and unmatched schedules can
 confound small reported improvements.
 
-\textbf{The unanswered KD question is not only what to transfer, but where to
-constrain and where to release.} J1 is the project name for a selective
+\textbf{The unanswered KD question is therefore not only what to transfer, but
+at which layers to enforce teacher geometry and between which layers to retain
+student-specific computation.} J1 is the project name for a selective
 hierarchical geometry-distillation objective. It combines a global
 teacher-partition signal, an early relational anchor, balanced PC1--32 spatial
 coordinates at selected transition and late states, and relational flow after
@@ -537,9 +562,12 @@ has already discarded useful intermediate spatial organization.}
 \subsubsection{Reliability, balance, and validation}
 
 J1 also addresses loss interaction. Its teacher-correct gate avoids imitating
-unreliable teacher targets. \textbf{Global TCS learns only from examples for
-which the teacher prediction is correct; an incorrectly predicted example is
-excluded from TCS but remains available to the supervised CE loss.} PCA-band
+unreliable teacher targets. Global Teacher-Coordinate Supervision (TCS)
+\cite{chan2026j1} uses frozen teacher-defined coordinate partitions as a
+dataset-level geometric target. \textbf{Global TCS learns only from examples
+for which the teacher prediction is correct; an incorrectly predicted example
+is excluded from the TCS loss but remains available to the supervised CE loss.}
+PCA-band
 root-mean-square (RMS) balancing stops high-variance
 coordinates from dominating lower-variance directions. Frozen random
 hyperplanes transfer partitions rather than exact features. Gradient-ratio

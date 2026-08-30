@@ -1,63 +1,62 @@
 \section*{List of Abbreviations}
 \addcontentsline{toc}{section}{List of Abbreviations}
 
-This list gives the expansion and project-specific meaning of abbreviations
-used throughout the report. Method names such as J1 and stage labels such as E1
-are included because they function like abbreviations in the technical
-discussion.
+This list gives the expansion and concise meaning or function of abbreviations
+used throughout the report. General terms are defined generally; project
+method names and stage labels are described in their specific technical sense.
 
 \small
 \begin{longtable}{@{}L{0.11\linewidth}L{0.31\linewidth}L{0.52\linewidth}@{}}
 \toprule
-\textbf{Term} & \textbf{Full form} & \textbf{Meaning in this report}\\
+\textbf{Term} & \textbf{Full form} & \textbf{Meaning / function}\\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Term} & \textbf{Full form} & \textbf{Meaning in this report}\\
+\textbf{Term} & \textbf{Full form} & \textbf{Meaning / function}\\
 \midrule
 \endhead
-AAP & Adaptive average pooling & Converts feature maps to a fixed spatial grid before relational comparison.\\ \midrule
+AAP & Adaptive average pooling & Resamples variable-size feature maps to a fixed spatial grid by averaging within output regions.\\ \midrule
 ACE & Automatic Concept-based Explanations & Discovers and tests candidate visual concepts.\\ \midrule
 AC-CTCS & Affinity-coordinate channel teacher-coordinate supervision & Earlier hierarchical distillation line from which J1 developed.\\ \midrule
-AUPRC & Area under the precision--recall curve & Threshold-free ranking metric used for foreground localization.\\ \midrule
-BCE & Binary cross-entropy & Compares each teacher hyperplane bit with the corresponding student logit.\\ \midrule
+AUPRC & Area under the precision--recall curve & Summarizes the precision--recall trade-off across decision thresholds.\\ \midrule
+BCE & Binary cross-entropy & Measures the discrepancy between binary targets and predicted probabilities or logits.\\ \midrule
 CAM & Class activation mapping & Family of spatial attribution methods constructed from convolutional features.\\ \midrule
 CAT-KD & Class Attention Transfer knowledge distillation & Transfers class-attention maps from teacher to student.\\ \midrule
-CDF & Cumulative distribution function & Calibrates a raw score to a display range without changing its ranking.\\ \midrule
-CE & Cross-entropy & Supervised classification loss that anchors J1 to the task labels.\\ \midrule
+CDF & Cumulative distribution function & Gives the probability that a random variable is less than or equal to a specified value.\\ \midrule
+CE & Cross-entropy & Measures the discrepancy between a categorical target distribution and a predicted distribution.\\ \midrule
 CI & Confidence interval & Uncertainty range for an estimated metric or paired difference.\\ \midrule
 CKA & Centred kernel alignment & Representation-similarity measure used to compare layers or models.\\ \midrule
-CNN & Convolutional neural network & Main architecture family studied in the completed work.\\ \midrule
+CNN & Convolutional neural network & Neural network that learns spatial features using convolutional operations.\\ \midrule
 DGRP & Dataset-global robust prototype & Geometric median of a dataset-wide spatial-feature distribution or one of its modes.\\ \midrule
 E1 & Early relational state 1 & Selected early J1 tap at which spatial affinities are transferred.\\ \midrule
-ECE & Expected calibration error & Summarizes disagreement between confidence and empirical accuracy.\\ \midrule
-F1 & Harmonic mean of precision and recall & Boundary F1 assesses contour alignment.\\ \midrule
+ECE & Expected calibration error & Summarizes the gap between predictive confidence and empirical accuracy across confidence bins.\\ \midrule
+F1 & Harmonic mean of precision and recall & Balances precision and recall in one score.\\ \midrule
 FSP & Flow of Solution Procedure & KD method based on relations between consecutive feature states.\\ \midrule
-IoU & Intersection over union & Overlap between a selected explanation region and an object mask.\\ \midrule
+IoU & Intersection over union & Measures overlap by dividing intersection area by union area.\\ \midrule
 J1 & Project name; not an abbreviation & Final selective hierarchical geometry-distillation candidate.\\ \midrule
 J32 & Joint 32-coordinate objective in J1 & Variance-balanced principal-component coordinate over PC1--32.\\ \midrule
 K-DGRP & Adaptive K Dataset-Global Robust Prototypes & Selects $K$ robust feature-space modes and scores distance to the nearest mode.\\ \midrule
-KD & Knowledge distillation & Trains a student model using knowledge supplied by a teacher model.\\ \midrule
-KL & Kullback--Leibler divergence & Commonly matches teacher and student predictive distributions.\\ \midrule
+KD & Knowledge distillation & Trains a student model using signals supplied by a teacher model.\\ \midrule
+KL & Kullback--Leibler divergence & Measures how one probability distribution differs from a reference distribution.\\ \midrule
 LIME & Local Interpretable Model-agnostic Explanations & Fits a local surrogate around one prediction.\\ \midrule
 LRP & Layer-wise relevance propagation & Redistributes a prediction backward through a network.\\ \midrule
 MGD & Masked Generative Distillation & Reconstructs teacher features from masked student features.\\ \midrule
-NLL & Negative log-likelihood & Evaluates the probability assigned to the correct class.\\ \midrule
+NLL & Negative log-likelihood & Penalizes low probability assigned to the observed outcome.\\ \midrule
 OFD & Overhaul of Feature Distillation & Selective feature-matching KD method.\\ \midrule
 PC & Principal component & Orthogonal direction of variance obtained through PCA.\\ \midrule
 PCA & Principal component analysis & Orthogonal variance decomposition of a feature distribution.\\ \midrule
 PCA-RGB & PCA red--green--blue rendering & Maps the first three PCA coordinates to colour channels for visualization.\\ \midrule
 RGB & Red, green, and blue & Three display channels used in PCA-RGB.\\ \midrule
 RISE & Randomized Input Sampling for Explanation & Estimates importance from many randomized input masks.\\ \midrule
-RQ & Research question & RQ1--RQ4 organize the four questions of the PhD programme.\\ \midrule
-RMS & Root mean square & Scale used to balance PCA coordinate bands in J1.\\ \midrule
+RQ & Research question & A focused question that specifies what a study seeks to answer.\\ \midrule
+RMS & Root mean square & Magnitude statistic obtained by taking the square root of the mean squared values.\\ \midrule
 ROAR & RemOve And Retrain & Evaluates attribution by removing selected information and retraining the model.\\ \midrule
 SHAP & SHapley Additive exPlanations & Additive feature-attribution framework based on Shapley values.\\ \midrule
 SimKD & Knowledge distillation with a reused teacher classifier & Aligns student features to the teacher's classifier.\\ \midrule
 SVCCA & Singular-vector canonical correlation analysis & Compares neural representation subspaces.\\ \midrule
 TCAV & Testing with Concept Activation Vectors & Measures sensitivity to a user-defined concept direction.\\ \midrule
-TCS & Teacher-coordinate supervision & Transfers teacher geometry through frozen coordinate partitions, only for teacher-correct predictions.\\ \midrule
-ViT & Vision Transformer & Represents an image as patch tokens processed by transformer blocks.\\
+TCS & Teacher-coordinate supervision & Transfers teacher feature geometry through fixed coordinate-partition targets.\\ \midrule
+ViT & Vision Transformer & Processes an image as a sequence of patch tokens using transformer blocks.\\
 \bottomrule
 \end{longtable}
 \normalsize
