@@ -1,7 +1,17 @@
-# One-column research paper template
+# PhD Confirmation Milestone Report
 
-This repository is a clean, modular LaTeX starting point for a technical paper.
-All numerical results and scientific claims are dummy content.
+This repository contains the working LaTeX source for the confirmation report
+**Understanding and Exploiting Spatial Representation Transitions in Deep
+Vision Models**. The report develops a representation-centred explainability
+programme across three connected stages:
+
+1. dataset-wide, layer-specific PCA-RGB analysis of CNN representations;
+2. Adaptive K-DGRP for class-agnostic, gradient-free localization; and
+3. J1 geometry distillation as an application of the observed transitions.
+
+Orange evidence boxes mark figures, reruns, semantic analyses, or statistical
+checks that still need to be inserted. They are intentionally explicit so that
+unfinished evidence cannot be mistaken for a completed result.
 
 ## Compile in VS Code
 
@@ -15,8 +25,8 @@ required additional LaTeX passes.
 
 ## Compile in a terminal
 
-Compile the manuscript (the example figures are generated directly from their
-TikZ/PGFPlots source):
+Compile the manuscript (the programme diagram and Gantt chart are generated
+directly from TikZ source):
 
 ```bash
 latexmk -pdf -outdir=build main.tex
@@ -25,12 +35,28 @@ latexmk -pdf -outdir=build main.tex
 ## Structure
 
 - `main.tex`: paper entry point and packages
-- `sections/`: individually editable paper sections
-- `tables/`: reusable table fragments
-- `figures/`: editable TikZ/PGFPlots figure source files
+- `sections/01_introduction.tex`: motivation, questions, objectives, and scope
+- `sections/02_related_work.tex`: critical review of CAM, representation
+  analysis, distillation, and transformer explanation
+- `sections/03_method.tex`: research design and PCA-RGB methodology
+- `sections/04_experiments.tex`: current PCA-RGB observations and controls
+- `sections/05_results.tex`: Adaptive K-DGRP method and completed evidence
+- `sections/06_conclusion.tex`: verified J1 objective and ImageNet-100 benchmark
+- `sections/07_research_plan.tex`: claim--evidence map and flexible two-year plan
+- `sections/08_final_conclusion.tex`: overall conclusion
+- `figures/`: editable TikZ source for the research programme and Gantt chart
 - `references.bib`: BibTeX references
 - `.vscode/settings.json`: LaTeX Workshop configuration
 
+## Evidence status
+
+The benchmark values supplied for J1, ReviewKD-120, H9, and the external
+feature-distillation baselines are included exactly as provided. The report
+describes single-seed comparisons as preliminary and treats J1 and
+ReviewKD-120 as a practical tie under the current evidence. PCA-RGB semantic
+examples, the Adaptive K-DGRP confirmatory rerun, and J1 representation analyses
+remain labelled placeholders pending final artifacts.
+
 To use this at `C:\Users\jiazh\OneDrive - Monash University\Desktop\milestone`,
-extract or copy the repository into that location, then open the folder itself
-in VS Code.
+clone or pull the repository into that location, then open the folder itself in
+VS Code.

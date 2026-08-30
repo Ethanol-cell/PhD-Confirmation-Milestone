@@ -1,70 +1,136 @@
-\section{Method}
-\label{sec:method}
+\section{Research Framework and Methodology}\label{sec:framework}
 
-\subsection{Problem Formulation}
+\subsection{Overall design}
 
-Let $(\bm{x}_i,y_i)$ be an image and its label. A frozen teacher $f_T$ and a
-trainable student $f_S$ produce logits $\bm{z}_i^T$ and $\bm{z}_i^S$. The student
-is trained with the total objective
+The project uses a staged empirical design. Exploratory visualization generates
+hypotheses, but confirmatory claims require frozen metrics, held-out data,
+matched baselines, and explicit controls. The same core object---spatial
+representation geometry---is examined in three roles:
 
+\begin{enumerate}[leftmargin=*]
+    \item as a descriptive object in dataset-wide PCA-RGB analysis;
+    \item as an explanatory object in \methodname{}; and
+    \item as a transferable training object in \jmethod{}.
+\end{enumerate}
+
+The stages are related but not interchangeable. A visually coherent PCA map is
+not automatically an attribution. A localization map is not automatically
+class-causal. A distillation gain establishes training utility but does not
+prove that the corresponding visualization faithfully explains an individual
+decision.
+
+\subsection{Datasets, models, and controls}
+
+The representation study currently spans CIFAR-10, CIFAR-100, and
+ImageNet-100 \cite{krizhevsky2009cifar,deng2009imagenet}. CIFAR-10 provides a
+low-class-count setting in which class-level organization is visually
+inspectable. CIFAR-100 and ImageNet-100 test whether observations survive
+greater class diversity and intra-class variation. CNN experiments include
+ResNet \cite{he2016resnet}, ConvNeXt \cite{liu2022convnext}, VGG, RegNet,
+MobileNet, and EfficientNet families where appropriate.
+
+Controls include randomly initialized networks with the same architecture,
+repeated trained seeds, correct and incorrect predictions, and matched semantic
+taps. The random control separates structure induced by architecture from
+structure learned through supervised training. It does not, by itself, prove
+that one intermediate layer is causally necessary.
+
+\subsection{Dataset-wide layer-specific PCA-RGB}
+
+For layer $\ell$, image $x_i$, and spatial position $p$, let
 \begin{equation}
-\mathcal{L}
-=
-\mathcal{L}_{\mathrm{CE}}
-+ \lambda_{\mathrm{KD}}\mathcal{L}_{\mathrm{KD}}
-+ \lambda_{\mathrm{geo}}\mathcal{L}_{\mathrm{geo}}.
-\label{eq:total-loss}
+    \bm f^{(\ell)}_{i,p}\in\mathbb{R}^{D_\ell}
 \end{equation}
-
-The first term is ordinary cross-entropy:
-
+be the channel vector. A dataset-wide reservoir
+$\mathcal{F}_\ell=\{\bm f^{(\ell)}_{i,p}\}$, constructed by sampling spatial
+vectors across the training split, is used to fit mean
+$\bm\mu_\ell$ and orthonormal PCA basis
+$\bm V_\ell=[\bm v_{\ell,1},\bm v_{\ell,2},\ldots]$. The displayed
+coordinates are
 \begin{equation}
-\mathcal{L}_{\mathrm{CE}}
-= -\frac{1}{N}\sum_{i=1}^{N}\log p_S(y_i\mid\bm{x}_i).
+    \bm z^{(\ell)}_{i,p}
+    = (\bm f^{(\ell)}_{i,p}-\bm\mu_\ell)
+      \bm V_{\ell,1:3}\in\mathbb{R}^{3},
+    \qquad
+    \bm C^{(\ell)}_{i,p}=\phi_\ell(\bm z^{(\ell)}_{i,p}),
+    \label{eq:pca-rgb}
 \end{equation}
+where $\phi_\ell$ is a frozen layer-specific display transform mapping the
+three coordinates to RGB.
 
-For output-level transfer, softened probabilities at temperature $\tau$ are
+All images at a given layer share the same basis; therefore within-layer colour
+comparisons are meaningful after the sign convention and display transform are
+frozen. Each layer has its own basis, so a red region at layer $\ell$ is not
+automatically the same feature direction as a red region at layer
+$\ell+1$. Cross-depth conclusions will use basis-invariant metrics or explicit
+subspace alignment rather than colour identity alone.
 
+\evidenceplaceholder{PCA-METHOD-01: display calibration}{
+Document the reservoir size, per-image and per-position sampling rule, and
+random seed. Also state the exact frozen definition of $\phi_\ell$, including
+clipping or percentile limits, sign handling, scaling, interpolation, and
+whether the same calibration partition is used for every reported image.}
+
+\subsection{Operationalizing a representation transition}
+
+A transition layer should not be selected only because its visualization looks
+interesting. The planned operational definition combines:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{semantic maturity:} linear-probe accuracy, logit-decoding
+    agreement, class-prototype accuracy, or between/within-class separation;
+    \item \textbf{spatial structure:} object localization, boundary quality,
+    foreground enrichment, and spatial entropy;
+    \item \textbf{representational change:} adjacent-layer CKA, aligned
+    subspace change, affinity change, or a preregistered change-point score; and
+    \item \textbf{robustness:} agreement across seeds, datasets, and reasonable
+    choices of PCA dimension and layer sampling.
+\end{itemize}
+
+A candidate transition regime is where semantic maturity rises while
+object-relevant spatial variation remains available. This avoids assuming that
+the last convolution or final activation is universally optimal.
+
+\subsection{Explanation evaluation}
+
+\methodname{} is evaluated at native spatial resolution and then bilinearly
+upsampled. Exact-area IoU uses the top $q$ fraction of pixels:
 \begin{equation}
-q_{i,c}^{M}(\tau)
-= \frac{\exp(z_{i,c}^{M}/\tau)}
-{\sum_{k}\exp(z_{i,k}^{M}/\tau)}, \qquad M\in\{T,S\},
+    \operatorname{IoU}@q
+    =\frac{|T_q(M)\cap G|}{|T_q(M)\cup G|},
 \end{equation}
+where $M$ is the continuous map and $G$ is the object mask. The primary
+internal setting is $q=0.20$. AUPRC evaluates the complete ranking; boundary
+F1 measures contour agreement. Causal deletion replaces highly ranked pixels
+with a frozen perturbation and measures predicted-class margin loss. Paired
+bootstrap confidence intervals resample images rather than treating pixels as
+independent.
 
-and the distillation loss is
+The paper-ready rerun will add insertion, class sensitivity, parameter
+randomization, and correct-versus-incorrect analyses. This is particularly
+important because \methodname{} is class-agnostic: its natural claim is
+object-relevant representation distinctiveness, not attribution to an arbitrary
+target class.
 
-\begin{equation}
-\mathcal{L}_{\mathrm{KD}}
-= \frac{\tau^2}{N}\sum_{i=1}^{N}
-\operatorname{KL}\!\left(
-\bm{q}_{i}^{T}(\tau)\,\|\,\bm{q}_{i}^{S}(\tau)
-\right).
-\end{equation}
+\subsection{Knowledge-distillation evaluation}
 
-\subsection{Spatial Geometry Transfer}
+All teacher-derived PCA, RMS, hash, and gradient-calibration assets are fitted
+on internal training data only. Teacher and student receive exactly the same
+stochastic augmented tensor so that spatial coordinates refer to the same
+visible content. The ImageNet-100 study reports Top-1, Top-5, negative
+log-likelihood (NLL), expected calibration error (ECE), seed count, and
+checkpoint selection. Multi-seed means and standard deviations are used when
+available. Single-seed external baselines are descriptive and do not support
+formal superiority claims.
 
-At a selected layer, let $\bm{a}_{i,p}^{M}\in\mathbb{R}^{d}$ denote the aligned
-feature vector at spatial position $p$. We first normalize it:
+\subsection{Reproducibility and threats to validity}
 
-\begin{equation}
-\widehat{\bm{a}}_{i,p}^{M}
-= \frac{\bm{a}_{i,p}^{M}}
-{\lVert\bm{a}_{i,p}^{M}\rVert_2+\varepsilon}.
-\end{equation}
-
-The cosine relation between positions $p$ and $q$ is
-$r_{i,pq}^{M}=(\widehat{\bm{a}}_{i,p}^{M})^{\top}
-\widehat{\bm{a}}_{i,q}^{M}$. The geometry loss matches these relations:
-
-\begin{equation}
-\mathcal{L}_{\mathrm{geo}}
-= \frac{1}{N|\mathcal{P}|}
-\sum_{i=1}^{N}\sum_{(p,q)\in\mathcal{P}}
-\left(r_{i,pq}^{S}-r_{i,pq}^{T}\right)^2.
-\label{eq:geometry-loss}
-\end{equation}
-
-Unlike direct feature regression, \cref{eq:geometry-loss} preserves how spatial
-positions relate to one another while allowing teacher and student features to
-use different coordinate systems. The complete objective is given in
-\cref{eq:total-loss}.
+The main threats are post-hoc layer selection, PCA sign or scaling instability,
+using the same cohort for method development and confirmation, augmentation
+misalignment, unequal training budgets, and overinterpreting single-seed
+baselines. To address them, the final studies will separate calibration,
+development, and sealed evaluation roles; freeze selectors before accessing
+ground truth; preserve exact configuration hashes; and report failed or
+rejected variants as part of the evidence chain. Cross-dataset confirmation is
+required before architecture-general observations are presented as
+distribution-general findings.

@@ -7,8 +7,11 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{float}
 \usepackage[section]{placeins}
 \usepackage{enumitem}
 \usepackage{xcolor}
@@ -16,27 +19,90 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
 \graphicspath{{figures/}}
+\setlist{nosep}
+\setlength{\emergencystretch}{2em}
 
-\title{A Clean One-Column Research Paper}
-\author{Jia Zheng Chan \\
-School of Information Technology, Monash University Malaysia}
-\date{\today}
+\definecolor{placeholderorange}{HTML}{A85A00}
+\definecolor{placeholderfill}{HTML}{FFF5E8}
+\definecolor{stageblue}{HTML}{DCEBFA}
+\definecolor{stagegreen}{HTML}{DFF3E4}
+\definecolor{stageorange}{HTML}{FBE6CE}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\evidenceplaceholder}[2]{%
+    \begin{center}
+    \setlength{\fboxsep}{8pt}%
+    \fcolorbox{placeholderorange}{placeholderfill}{%
+        \parbox{0.90\linewidth}{\textbf{#1}\par #2}}%
+    \end{center}}
+\newcommand{\methodname}{Adaptive K-DGRP}
+\newcommand{\jmethod}{J1}
+
+\title{Understanding and Exploiting Spatial Representation Transitions\\
+in Deep Vision Models\\[0.8em]
+\large PhD Confirmation Milestone Report}
+\author{Jia Zheng Chan\\
+School of Information Technology\\
+Monash University Malaysia}
+\date{Draft: \today}
 
 \begin{document}
 
+\hypersetup{pageanchor=false}
+\pagenumbering{gobble}
 \maketitle
 
 \begin{abstract}
-This dummy manuscript demonstrates a clean one-column structure for developing
-a technical research paper. It includes modular sections, mathematical notation,
-figures, tables, cross-references, and a BibTeX bibliography. Replace the example
-text and results with the content of your own project.
+Deep vision models can classify images accurately while leaving unclear how
+their internal spatial representations develop into class-discriminative
+decisions. Most class activation mapping methods localize evidence for a chosen
+output, but do not directly characterize the representational changes that
+precede that output. This PhD project investigates a complementary,
+representation-centric hypothesis: trained vision models contain a transition
+regime in which generic visual features are reorganized into class-relevant
+spatial geometry, and this geometry can be used both to explain models and to
+transfer knowledge.
+
+The first research stage uses dataset-wide, layer-specific principal-component
+bases to visualize convolutional representations as PCA-RGB maps. Preliminary
+observations distinguish early feature-preserving states, intermediate
+transition states, and late class-oriented states. Trained-versus-random
+controls and CIFAR-10 misclassification examples support further investigation,
+while the weaker visual regularity on CIFAR-100 and ImageNet-100 motivates
+quantitative rather than purely visual transition criteria. The second stage
+develops \methodname, a class-agnostic, gradient-free explanation method that
+scores spatial features by distance from dataset-global robust modes. Completed
+internal experiments show competitive object localization on ResNet-50 and
+four held-out CNN families after selector development on ResNet and ConvNeXt,
+although class-conditioned CAMs remain stronger on some architectures and
+additional faithfulness validation is required. The third stage applies
+the representation insight to knowledge distillation. The verified \jmethod{}
+objective transfers an early relational state, balanced PC1--32 transition
+coordinates, and late affinity flow. On ImageNet-100, \jmethod{} attains
+$94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically tied
+with ReviewKD-120 under the current evidence.
+
+The remaining programme will consolidate the CNN evidence, complete the
+\methodname{} paper, strengthen the causal and statistical analysis of
+\jmethod{}, and investigate whether comparable transitions occur in
+token-based vision models. Transformer directions are intentionally kept
+flexible until a focused literature review and reproducible pilot study identify
+the most informative architectures and explanatory objects.
 \end{abstract}
+
+\clearpage
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+\tableofcontents
+\listoffigures
+\listoftables
+\clearpage
+\pagenumbering{arabic}
 
 \input{sections/01_introduction}
 \input{sections/02_related_work}
@@ -44,6 +110,8 @@ text and results with the content of your own project.
 \input{sections/04_experiments}
 \input{sections/05_results}
 \input{sections/06_conclusion}
+\input{sections/07_research_plan}
+\input{sections/08_final_conclusion}
 
 \bibliographystyle{plain}
 \bibliography{references}

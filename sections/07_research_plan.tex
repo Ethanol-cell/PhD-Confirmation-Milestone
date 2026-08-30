@@ -1,0 +1,167 @@
+\section{Synthesis and Future Research Plan}\label{sec:plan}
+
+\subsection{Claim--evidence synthesis}
+
+The three completed strands answer different parts of one programme.
+\Cref{tab:claim-evidence} separates observations from claims that are already
+quantitatively supported and from work that remains open.
+
+\begin{table}[H]
+\centering
+\caption{Current claim--evidence status.}
+\label{tab:claim-evidence}
+\small
+\begin{tabularx}{\linewidth}{L{0.23\linewidth}L{0.29\linewidth}Y}
+\toprule
+Claim & Present evidence & Status and next requirement\\
+\midrule
+CNNs contain a representation-transition regime
+& Dataset-wide PCA-RGB depth patterns; random control; semantic-maturity
+trajectory
+& Plausible and partly quantified; requires frozen, basis-invariant transition
+selector across seeds and datasets.\\
+
+Late robust feature geometry localizes objects
+& ResNet paired tests; frozen adaptive-$K$ validation on four held-out CNN
+families after ResNet/ConvNeXt development
+& Quantitatively supported on current ImageNet-derived cohorts; requires
+cross-dataset and expanded faithfulness confirmation.\\
+
+The J1 geometry package benefits student learning
+& J1 exceeds H9 across three seeds; implementation-forensics audit; external
+single-seed benchmarks
+& Consistent with a benefit in the current ConvNeXt ImageNet-100 setting;
+component causality remains open, and J1 is practically tied with ReviewKD.\\
+
+The same phenomenon extends to transformers
+& No closed evidence chain
+& Future hypothesis; architecture and explanatory object deliberately not
+fixed.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This framing is intentionally conservative. The PhD contribution does not
+depend on every method winning every benchmark. It depends on establishing
+which geometric properties are reproducible, what question each map answers,
+and when those properties produce a useful intervention.
+
+\subsection{Remaining CNN work}
+
+The first priority is to close the current evidence rather than continue
+unbounded formula search. For the PCA-RGB study, this means freezing the
+display protocol and transition selector, quantifying wrong-prediction
+alignment over the complete error set, and separating class count from other
+dataset differences. For \methodname{}, it means a prospective cross-dataset
+study with the mode-count selector frozen before segmentation evaluation,
+expanded faithfulness and sanity tests, and a fixed semantic atlas containing
+failures. For J1, it means replicating the strongest external baselines,
+quantifying the J1--ReviewKD difference, reporting resource cost, and testing
+generality beyond one teacher--student setting.
+
+\subsection{Flexible transformer investigation}
+
+After the CNN closure, a focused transformer literature review will compare the
+objects explained by attention rollout, gradient-weighted attention,
+relevance propagation, token-transformation methods, and feature-formation
+methods \cite{abnar2020attentionflow,chefer2021transformer,
+xie2023vitcx,wu2024tokentm,mehri2025libragrad,bousselham2025legrad}. The review
+will define a small reproducible baseline set and identify what can be compared
+fairly with the CNN representation study.
+
+The first pilot will not assume that a CNN feature grid has a direct
+transformer equivalent. Candidate objects include patch tokens before and
+after attention, residual-stream states, value vectors, attention-output
+features, and hierarchical stage outputs. Candidate architectures may include
+a flat supervised ViT, a data-efficient variant, and a hierarchical transformer,
+but the final selection will depend on reproducible probes and computational
+feasibility.
+
+The pilot has three gates:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Measurement gate:} identify a basis-invariant signal of
+    token representation change that is stable across seeds.
+    \item \textbf{Semantic gate:} show that the candidate transition relates
+    to class or object structure rather than attention visualization alone.
+    \item \textbf{Utility gate:} demonstrate either improved explanation
+    faithfulness or transferable geometry before expanding to larger foundation
+    models.
+\end{enumerate}
+
+If PCA-RGB is unstable for token states, the project can use CKA, linear probes,
+affinity change, token clustering, or class-prototype geometry. If
+\methodname{} does not transfer directly, that negative result will identify
+which CNN assumptions---local spatial grids, convolutional common modes, or
+Euclidean channel geometry---do not survive token mixing.
+
+\subsection{Two-year schedule}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{\input{figures/gantt}}
+\caption{Provisional two-year research plan. Diamonds mark the confirmation,
+transformer-method, and thesis-integration milestones. Directions after the
+literature-and-pilot phase remain conditional on the stated gates.}
+\label{fig:gantt}
+\end{figure}
+
+The schedule in \cref{fig:gantt} is organized into six four-month blocks:
+
+\begin{description}[leftmargin=2.6cm,style=nextline]
+    \item[Sep--Dec 2026] Complete the confirmation report, freeze the CNN
+    evidence protocol, and prepare the J1/CNN manuscript.
+    \item[Jan--Apr 2027] Conduct the transformer explainability literature
+    review and reproduce a small baseline set.
+    \item[May--Aug 2027] Test representation-transition measures on selected
+    token-based architectures.
+    \item[Sep--Dec 2027] Develop and evaluate one transformer-compatible
+    explanation direction if the measurement and semantic gates pass.
+    \item[Jan--Apr 2028] Test geometric transfer or cross-architecture
+    generalization, conditioned on the earlier findings.
+    \item[May--Aug 2028] Consolidate final experiments, integrate thesis
+    chapters, and close evidence gaps.
+\end{description}
+
+\subsection{Publication plan}
+
+Three publication targets align with the research questions:
+
+\begin{enumerate}[leftmargin=*]
+    \item a CVPR-oriented \methodname{} paper on adaptive robust feature modes
+    for class-agnostic CNN explanation;
+    \item a J1 paper on selective hierarchical, variance-balanced geometry
+    distillation, after benchmark replication and generality tests; and
+    \item a transformer representation-transition paper, with its exact method
+    determined by the literature review and pilot gates.
+\end{enumerate}
+
+The first two papers are independent enough to publish separately but are
+linked in the thesis through representation geometry. The third should test the
+scope of the thesis hypothesis rather than introduce an unrelated transformer
+method.
+
+\subsection{Risks and contingencies}
+
+The major scientific risk is that the apparent transition does not admit one
+universal layer selector. In that case, the thesis can characterize
+architecture-dependent transition regimes rather than force universality.
+Another risk is that \methodname{} remains strong for localization but weak
+for class causality. The contribution should then be positioned explicitly as
+class-agnostic object-relevant representation explanation. If J1 remains tied
+with ReviewKD, its contribution must rest on verified selective geometry,
+causal ablations, and transfer conditions rather than a state-of-the-art claim.
+Finally, if transformer geometry differs fundamentally, the thesis can explain
+that boundary and develop architecture-specific representations under one
+evaluation framework.
+
+\subsection{Professional development and reporting requirements}
+
+The final confirmation submission will include the required academic-integrity
+and GenAI-use statements, research training record, publication record, and
+resource plan.
+
+\evidenceplaceholder{PROFDEV-TAB-01: researcher training}{
+Insert completed Monash Doctoral Program activities, research-methods or ethics
+training, conference participation, teaching-related development where
+relevant, and planned training for the next reporting period.}
