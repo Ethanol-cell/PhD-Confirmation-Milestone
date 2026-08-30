@@ -53,8 +53,8 @@ change for every validation or test image.
 \textbf{The alignment is dataset-wide within each layer, not shared across
 layers.} All images at layer $\ell$ use the same $\bm V_\ell$ and
 $\phi_\ell$, so same-layer colour and coordinate comparisons are defined. Each
-layer nevertheless has its own basis. A red region at layer $\ell$ is therefore
-not assumed to represent the same direction as red at layer $\ell+1$.
+layer nevertheless has its own basis. A red region at layer $\ell$ should not
+be interpreted as the same direction as a red region at layer $\ell+1$.
 Cross-depth claims use explained variance, class separation, prototype
 agreement, representational similarity, or other basis-invariant quantities
 rather than raw colour identity.
@@ -73,7 +73,7 @@ registered spatial state of the selected trained CNN. The complete atlas is
 used to identify three descriptive regimes: early feature extraction,
 intermediate representation transition, and late class organization.
 
-This progression is provisionally summarized as
+We provisionally summarize this progression as
 \begin{equation}
     \text{feature extraction}
     \longrightarrow
@@ -119,7 +119,7 @@ an apparently smooth mean is not mistaken for a typical individual image.
 
 \textbf{The expected CIFAR-10 result is not merely that examples look similar,
 but that within-class dispersion decreases and held-out prototype agreement
-increases toward late layers.} This will be quantified with within-class
+increases toward late layers.} We will test this expectation using within-class
 dispersion, between-class separation, their ratio, nearest-prototype accuracy,
 and bootstrap confidence intervals. Because every statistic is computed in one
 frozen layer basis, the test does not rely on comparing colours across depth.
@@ -149,8 +149,8 @@ confidence, and the complete case-selection rule.}
 
 A randomly initialized CNN can retain recognizable image structure at
 unexpected depth because convolutions, residual paths, downsampling, and
-nonlinearities impose architectural structure. \textbf{Visible spatial pattern
-alone is therefore not evidence that the network learned class semantics.}
+nonlinearities impose architectural structure. \textbf{A visible spatial
+pattern alone does not show that the network has learned class semantics.}
 
 The control uses the identical architecture, tap registry, preprocessing, and
 PCA-fitting protocol for trained and random models. Several trained seeds and
@@ -180,8 +180,8 @@ Fine- and coarse-label metrics are reported together. A layer may fail to form
 a compact fine-class prototype while still separating coarse semantic groups;
 this is more informative than concluding from an ambiguous three-coordinate
 rendering that no class structure exists. Neural-collapse diagnostics,
-high-dimensional class separation, and prototype agreement will therefore
-complement PCA-RGB panels.
+high-dimensional class separation, and prototype agreement will complement
+the PCA-RGB panels.
 
 \evidenceplaceholder{PCA-FIG-04 and PCA-TAB-04: CIFAR-100 hierarchy}{
 Insert selected all-depth maps, fine- and coarse-class prototype summaries,
@@ -212,7 +212,8 @@ robustness to PCA dimension, architecture, seed, and display calibration.}
 
 \subsection{Current interpretation and claim boundary}
 
-The completed observations motivate, but do not yet fully prove, RQ1.
+The completed observations support further investigation of RQ1, but they do
+not yet establish it.
 \textbf{The important shift is from treating a final heatmap as the entire
 explanation to studying how spatial geometry is formed across depth.} The next
 evidence must establish that the transition is measurable, that its location
@@ -222,5 +223,6 @@ geometry supports localization or knowledge transfer.
 The PCA-RGB maps remain a discovery and communication device. Same-layer
 prototype agreement, trained--random differences, and basis-invariant depth
 metrics supply the confirmatory evidence. The \methodname{} and \jmethod{}
-studies then test the practical value of transition-related geometry through
-explanation and knowledge transfer, respectively.
+studies then test two practical uses of transition-related geometry.
+\methodname{} uses it for explanation, whereas \jmethod{} uses it for knowledge
+transfer.
