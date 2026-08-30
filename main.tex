@@ -69,33 +69,33 @@ Monash University Malaysia}
 \maketitle
 
 \begin{abstract}
-Deep vision models can classify images accurately while leaving unclear how
-their internal spatial representations develop into class-discriminative
-decisions. Most class activation mapping (CAM) methods localize evidence for a chosen
-output, but do not directly characterize the representational changes that
-precede that output. This PhD project investigates a complementary,
-representation-centric hypothesis: trained vision models contain a transition
-regime in which generic visual features are reorganized into class-relevant
-spatial geometry, and this geometry can be used both to explain models and to
-transfer knowledge.
+Deep vision models can classify images accurately, but their accuracy does not
+reveal how internal spatial representations develop into class-discriminative
+decisions. Most class activation mapping (CAM) methods localize evidence for a
+chosen output without directly characterizing the representational changes that
+precede it. This PhD project investigates a complementary
+representation-centric hypothesis. Trained vision models may contain a
+transition regime in which generic visual features are reorganized into
+class-relevant spatial geometry that can support both explanation and knowledge
+transfer.
 
 The first research stage uses dataset-wide, layer-specific principal component
-analysis (PCA) bases, with the first three coordinates rendered as red, green,
-and blue (PCA-RGB) maps. Preliminary
-observations distinguish early feature-preserving states, intermediate
-transition states, and late class-oriented states. Trained-versus-random
-controls and CIFAR-10 misclassification examples support further investigation,
-while the weaker visual regularity on CIFAR-100 and ImageNet-100 motivates
-quantitative rather than purely visual transition criteria. The second stage
+analysis (PCA). Its first three coordinates are rendered as red, green, and blue
+(PCA-RGB) maps. Preliminary observations distinguish early feature-preserving
+states, intermediate transition states, and late class-oriented states.
+Comparisons between trained and random networks, together with CIFAR-10
+misclassification examples, support further investigation. The weaker visual
+regularity on CIFAR-100 and ImageNet-100 motivates quantitative rather than
+purely visual transition criteria. The second stage
 develops Adaptive K Dataset-Global Robust Prototypes (K-DGRP), a class-agnostic,
 gradient-free explanation method that
 scores spatial features by distance from dataset-global robust modes. Completed
 internal experiments show competitive object localization on ResNet-50 and
-four held-out convolutional neural network (CNN) families after selector
-development on ResNet and ConvNeXt,
-although class-conditioned CAMs remain stronger on some architectures and
-additional faithfulness validation is required. The third stage studies
-knowledge distillation (KD), in which a compact student learns from a stronger
+four held-out convolutional neural network (CNN) families. The selector was
+developed on ResNet and ConvNeXt before evaluation on the held-out families.
+Class-conditioned CAMs remain stronger on some architectures, and further
+faithfulness validation is still required. The third stage studies knowledge
+distillation (KD), in which a compact student learns from a stronger
 teacher. It introduces \jmethod{}, the project name for a selective hierarchical
 geometry-distillation objective. Rather than copying every teacher feature,
 \jmethod{} transfers an early relational state, balanced principal-component
@@ -107,8 +107,8 @@ with ReviewKD-120 under the current evidence.
 \textbf{The immediate next stage is to complete and submit two papers: one on
 \methodname{} and one on \jmethod{}.} Transformer investigation will follow
 these publication efforts. A focused literature review and reproducible pilot
-will first survey the broad design space, after which the project will
-concentrate on the most informative architectures and explanatory objects.
+will first survey the broad design space. The project will then concentrate on
+the most informative architectures and explanatory objects.
 \end{abstract}
 
 \clearpage
