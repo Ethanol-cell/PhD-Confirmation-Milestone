@@ -12,9 +12,9 @@ variance direction. It estimates recurrent modes of the dataset-wide spatial
 feature distribution and measures how far each image location lies from those
 modes.
 
-This distinction controls the claims. \methodname{} is naturally interpreted
-as representation distinctiveness or object-relevant localization. It cannot by
-itself answer which class caused a prediction. Its localization results can be
+This distinction defines the scope of our claims. \methodname{} measures
+representation distinctiveness or object-relevant localization. On its own,
+it cannot identify which class caused a prediction. Its localization results can be
 compared with CAMs, but a smaller deletion effect is not necessarily a failure:
 class-conditioned CAMs are designed to concentrate causal class evidence,
 whereas a class-agnostic map may cover more of the object.
@@ -35,7 +35,8 @@ is the geometric median
       \sum_{n=1}^N\|\bm f_n-\bm c\|_2.
     \label{eq:dgrp-median}
 \end{equation}
-which can be computed by Weiszfeld-type iterations \cite{weiszfeld1937median}.
+We compute this centre with Weiszfeld-type iterations
+\cite{weiszfeld1937median}.
 Starting from an initial centre $\bm c^{(0)}$, one stabilized update is
 \begin{equation}
     \bm c^{(t+1)}
@@ -51,16 +52,16 @@ Starting from an initial centre $\bm c^{(0)}$, one stabilized update is
 \end{equation}
 
 The update is a weighted average in which a point receives weight inversely
-proportional to its current distance from the centre. Nearby, repeatedly
-observed feature vectors therefore pull strongly, while a rare distant vector
-cannot dominate through a squared distance. The small $\varepsilon$ prevents a
+proportional to its current distance from the centre. Feature vectors that
+occur repeatedly near the current centre exert the strongest pull. A rare,
+distant vector cannot dominate through a squared distance. The small $\varepsilon$ prevents a
 division by zero if an iterate reaches a data point. Iteration stops when the
 centre displacement falls below a fixed tolerance or a maximum iteration count
 is reached. Compared with an arithmetic mean, this unsquared geometric-median
-objective is consequently more resistant to rare, distant spatial vectors.
+objective is more resistant to rare, distant spatial vectors.
 
-The multimodal extension borrows the alternating assignment/update structure of
-prototype clustering \cite{macqueen1967kmeans}: it alternates nearest-centre assignment
+The multimodal extension uses the alternating assignment and update structure
+of prototype clustering \cite{macqueen1967kmeans}. It begins with nearest-centre assignment
 \begin{equation}
     a_n=\arg\min_{k\in\{1,\ldots,K\}}
         \|\bm f_n-\bm c_k\|_2
@@ -81,8 +82,8 @@ but its monotonicity preserves exact top-area masks and rank metrics.
 The experiments found that normalizing by cluster radius, converting distance
 to a cluster-conditional tail score, or manually combining presumed
 foreground/background centres reduced localization. Mode scale was itself
-informative: broad modes were more foreground-associated. Raw distance in
-\cref{eq:kdgrp-score} therefore survived the ablation sequence.
+informative: broad modes were more foreground-associated. For this reason, we
+retained the raw distance in \cref{eq:kdgrp-score} after the ablation sequence.
 
 \subsection{Adaptive mode-count selection}
 
@@ -98,8 +99,8 @@ Occupancy entropy and effective mode count are
     \qquad K_{\mathrm{eff}}=\exp(H_K),
 \end{equation}
 using Shannon entropy to summarize occupancy balance
-\cite{shannon1948entropy}, with utilization $U_K=K_{\mathrm{eff}}/K$. Starting at $K=1$, a larger
-candidate is admitted only when
+\cite{shannon1948entropy}, with utilization $U_K=K_{\mathrm{eff}}/K$. The
+selector starts at $K=1$ and admits a larger candidate only when
 \begin{equation}
     \min_k\pi_k\geq0.02,
     \qquad U_K\geq0.75.
@@ -123,9 +124,9 @@ report does not document multiplicity adjustment, so these intervals are
 treated as descriptive evidence of competitiveness rather than a complete
 confirmatory test.
 
-The mode-count selector was developed using ResNet and ConvNeXt, frozen, and
-then evaluated on four unseen CNN families. The selected map remained in a
-narrow localization range across architectures:
+We developed the mode-count selector using ResNet and ConvNeXt. After freezing
+it, we evaluated it on four unseen CNN families. The selected map remained in
+a narrow localization range across architectures:
 
 For protocol traceability, the ResNet prototypes were fitted from 10,000
 label-free calibration images and evaluated on a fresh 600-image
@@ -182,7 +183,8 @@ to 99 dimensions, while four robust centres describe a much lower-cardinality
 spatial/common-mode geometry. Centre class purity was low at useful $K$, and
 class-only or residual-only alternatives underperformed raw distance.
 
-\textbf{This is related to, but not an instance of, neural collapse.} The
+\textbf{This relates to neural collapse, but it is not an instance of that
+phenomenon.} The
 terminal class-centre geometry studied in neural-collapse work concerns pooled
 or sample-level class representations, whereas K-DGRP models recurrent modes
 among unpooled spatial vectors. The distinction explains why a small $K$ can be
@@ -190,7 +192,7 @@ useful even when the classifier has 100 classes
 \cite{papyan2020neuralcollapse,zhu2021neuralcollapse,
 han2022neuralcollapse,fang2021layerpeeled,kothapalli2023neuralcollapse}.
 
-The current interpretation is therefore that discriminative training creates a
+We currently interpret this evidence as showing that discriminative training creates a
 late feature space containing both class-semantic organization and broad
 recurrent spatial modes. Object interiors, parts, and boundaries are more
 variable than common background or context and often lie farther from the
