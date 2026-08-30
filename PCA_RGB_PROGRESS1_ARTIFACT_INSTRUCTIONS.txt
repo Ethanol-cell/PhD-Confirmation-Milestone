@@ -1,0 +1,570 @@
+CODEX EXECUTION BRIEF: PROGRESS I PCA-RGB FIGURES, TABLES, AND METRICS
+Version: 1.0, 30 August 2026
+Target repository: PhD-Confirmation-Milestone
+Target report chapter: sections/04_experiments.tex
+
+PURPOSE
+
+Create every paper-ready artifact needed to support Progress I of the PhD
+confirmation report. The scientific question is where a trained convolutional
+neural network (CNN) changes from preserving generic visual structure to
+organizing spatial features around the classification task. The artifact set
+must support or reject this proposed sequence:
+
+    feature extraction -> spatial/semantic transition -> class organization
+
+Do not treat an attractive principal component analysis red-green-blue
+(PCA-RGB) map as proof. The required evidence consists of a frozen qualitative
+atlas, held-out class/prototype tests, trained-versus-random controls, and
+basis-invariant depth metrics.
+
+The required dataset order is:
+
+1. CIFAR-10: full-depth discovery, same-class prototypes, wrong predictions,
+   and trained-versus-random comparison.
+2. CIFAR-100: test fine-class and coarse-class structure under higher class
+   complexity.
+3. ImageNet-1K: large-scale validation of the transition; do not assume that
+   late-layer class colours will be visually uniform.
+
+The earlier ImageNet-100 pilot may be reported as prior exploratory evidence,
+but it is not a substitute for the requested ImageNet-1K run.
+
+NON-NEGOTIABLE CLAIM BOUNDARIES
+
+- Fit a separate dataset-wide basis for every layer. All examples at layer l
+  share that layer's basis, but layer l and layer l+1 do not share a basis.
+- Never infer cross-layer semantic identity from RGB colour identity. Cross-
+  layer conclusions must use basis-invariant metrics or an explicitly fitted
+  alignment.
+- Fit PCA, signs, and display limits on training/calibration data only. Freeze
+  them before viewing held-out results.
+- Average signed PCA coordinate maps before clipping and RGB conversion. Never
+  average already clipped RGB images.
+- A random network may preserve edges or shapes. Visible structure is not
+  evidence of learned semantics. The trained-random claim must rest on class
+  organization and reproducibility metrics.
+- The wrong-prediction observation is currently semantic. Do not call it
+  causal or faithful attribution. Report the full held-out error distribution,
+  not only selected examples.
+- Do not claim that dataset complexity causes weaker late-layer colours unless
+  architecture, preprocessing, and model-quality confounds have been addressed.
+- Do not cherry-pick layers, images, classes, seeds, or failures. Create and
+  save selection manifests before rendering final panels.
+
+WORKSPACE INVENTORY TO CHECK FIRST
+
+The user's Windows experiment root is expected to be:
+
+    C:\Users\jiazh\OneDrive - Monash University\Documents\Experiments\conv
+
+The report repository is expected to be:
+
+    C:\Users\jiazh\OneDrive - Monash University\Desktop\milestone
+
+Before computing anything, locate and validate these resources. Do not assume
+that a listed cache is complete merely because the directory exists.
+
+Datasets:
+
+- CIFAR-10 Hugging Face cache:
+  ~/.cache/huggingface/datasets/uoft-cs___cifar10
+  Existing tensor conversion may contain only test.tmp; rebuild a complete,
+  atomic tensor cache if the train split is missing.
+- CIFAR-100 complete tensor cache:
+  outputs/_dataset_cache/cifar100_hf_tensor_cache
+  Expected: 50,000 training and 10,000 test examples with fine and coarse labels.
+- ImageNet-1K processed cache:
+  ~/.cache/huggingface/datasets/ILSVRC___imagenet-1k
+  Verify available split names, sample counts, image decoding, and class mapping.
+- ImageNet-100 pilot cache:
+  ~/.cache/huggingface/datasets/clane9___imagenet-100
+
+Reusable analysis caches:
+
+- outputs/deeper_cnn_semantic_pca_rgb
+  Expected CIFAR-10 ConvNeXT cache: approximately 30 selected-layer PCA and
+  normalization pairs, predictions, and pooled train/test features.
+- outputs/cifar100_deeper_coarse_fine_semantic
+  Expected CIFAR-100 ConvNeXT cache: approximately 24 PCA bases, 24 global
+  normalization files, predictions, pooled features, and hierarchy metrics.
+- The ResNet-18 CIFAR-10 cache is expected to contain five coarse taps from
+  conv1 through layer4. Use this only as a secondary architecture-controlled
+  sensitivity run, not as the full-depth primary atlas.
+
+For every reused file, validate dataset name, split, model identifier,
+checkpoint hash, preprocessing hash, tap name, tensor shape, PCA dimension,
+sample count, random seed, and code/config version. If any item is missing,
+mark the cache as legacy and recompute that artifact. Never silently combine
+features, PCA bases, display limits, or predictions from different runs.
+
+MODEL PLAN AND MODEL ACQUISITION
+
+Primary models:
+
+- CIFAR-10: ConvNeXT-Small, Hugging Face repository
+  clr4takeoff/convnext-small-cifar10. Expected measured Top-1 accuracy is about
+  97.75%; verify it locally rather than copying this number.
+- CIFAR-100: ConvNeXT-Base, Hugging Face repository
+  anonauthors/cifar100-ConvNeXt-base. Expected measured Top-1 accuracy is about
+  90.56%; verify it locally.
+- ImageNet-1K: first prefer an already cached ConvNeXT-Small checkpoint with a
+  traceable timm model name. If it is absent, use the public Hugging Face model
+  timm/convnext_small.fb_in22k_ft_in1k. A simpler official fallback is
+  torchvision.models.convnext_small with
+  ConvNeXt_Small_Weights.IMAGENET1K_V1.
+
+Secondary architecture-controlled sensitivity:
+
+- Use the locally trained CIFAR-adapted ResNet-18 seeds 0, 1, and 2 for
+  CIFAR-10 and CIFAR-100.
+- For ImageNet-1K, use torchvision.models.resnet18 with
+  ResNet18_Weights.IMAGENET1K_V1, or public Hugging Face repository
+  timm/resnet18.a1_in1k when the matching cached timm checkpoint exists.
+- Do not interpret differences between differently trained model sources as a
+  pure dataset effect. State training-recipe and accuracy differences.
+
+If a required model is not available, stop that model-specific run and return
+a model request containing: dataset, architecture, exact Hugging Face repo_id,
+revision/commit if known, required filename or loading API, estimated download
+size, license/gating status, and why the model is needed. The user has offered
+to provide a Hugging Face token if a gated model is required. Do not request a
+token for public models. If a token is supplied, read it only from the HF_TOKEN
+environment variable. Never print it, put it in a command argument, save it in
+the repository, add it to Git credentials, or include it in logs/configs.
+
+Safe Hugging Face loading pattern:
+
+    from huggingface_hub import snapshot_download
+    import os
+
+    token = os.environ.get("HF_TOKEN")
+    path = snapshot_download(
+        repo_id=REPO_ID,
+        revision=PINNED_REVISION,
+        token=token,
+        local_files_only=False,
+    )
+
+Pin the resolved revision and record SHA-256 checksums for locally loaded
+checkpoint files. Use local_files_only=True after the first verified download.
+
+REPRODUCIBILITY AND SPLIT RULES
+
+1. Record Python, PyTorch, torchvision, timm, transformers, datasets, CUDA, GPU,
+   driver, operating system, git commit, and command line in run_metadata.json.
+2. Set and record Python, NumPy, PyTorch CPU, and PyTorch CUDA seeds. Use
+   deterministic algorithms where practical and record any unavoidable
+   nondeterministic operation.
+3. Use model-native evaluation preprocessing. Save normalization mean/std,
+   resize, crop, interpolation, antialias setting, colour space, and input size.
+4. Verify model accuracy before feature analysis. Abort if accuracy differs by
+   more than 0.5 percentage points from a previously validated local value
+   unless the preprocessing difference is understood and documented.
+5. PCA calibration uses training data only. Held-out test/validation data is
+   used only after bases and display limits are frozen. If ImageNet training
+   images are unavailable, reserve a declared calibration subset before any
+   analysis and exclude it from final evaluation; label this limitation.
+6. For class prototypes, estimate prototypes from training/calibration data and
+   evaluate agreement and errors on test/validation data.
+7. Use three trained seeds where available and at least three random
+   initialization seeds. The random models must share the exact architecture,
+   tap registry, input preprocessing, and classifier dimensions of the trained
+   model but must not load learned weights.
+8. Save one manifest per figure with dataset indices, labels, predictions,
+   confidence, checkpoint hash, layer IDs, and selection-rule version.
+
+LAYER REGISTRY
+
+Create artifacts/progress1_pca_rgb/manifests/layer_registry_<run_id>.csv before
+fitting PCA. Each row must contain:
+
+    layer_id, display_order, semantic_slot, module_path, module_type,
+    tensor_location_pre_or_post_activation, C, H, W, stride_from_input,
+    stage_name, is_downsample_transition, parameter_count_to_layer,
+    cumulative_depth_fraction
+
+Capture spatial tensors after the stem, after every block, immediately after
+each downsampling transition, and at the final pre-pooling spatial state. Do
+not include pooled vectors in PCA-RGB maps.
+
+For the primary ConvNeXT-Small CIFAR-10 atlas, use the following semantic taps
+in the compact main-text figure, resolved to exact module paths by the registry:
+
+    column 0: input image
+    column 1: stem output
+    column 2: last block of stage 1
+    column 3: output of downsampling transition 2 / first tensor of stage 3
+    column 4: middle block of stage 3 (block index 13 for a 27-block stage)
+    column 5: output of downsampling transition 3 / first tensor of stage 4
+    column 6: last spatial block before global pooling
+
+If the loaded implementation numbers stages differently, do not guess. Resolve
+by tensor shape and architecture structure, preserve the semantic positions
+above, and record the exact module paths. The appendix must contain every
+registered tap in display order. Split more than 18 taps across continuation
+pages rather than shrinking labels below 7 pt.
+
+STREAMING PCA IMPLEMENTATION
+
+Run feature extraction on the GPU in model.eval() with torch.inference_mode().
+Use automatic mixed precision for the forward pass only when it does not change
+predictions; cast sampled feature vectors to float64 before accumulation. Never
+materialize the full dataset x spatial positions x channels matrix.
+
+For a layer with batch feature tensor F of shape [B,C,H,W], move channels last
+and flatten sampled positions to X of shape [m,C]. Use a deterministic,
+spatially stratified sampler. Cap the total sampled vectors per layer at:
+
+- CIFAR-10: 250,000 vectors, balanced across classes and images.
+- CIFAR-100: 500,000 vectors, balanced across fine classes.
+- ImageNet-1K: 1,000,000 vectors, balanced across classes as far as the
+  available training/calibration split permits.
+
+Use all spatial positions when H*W is smaller than the requested per-image
+sample count. Otherwise sample one point from each cell of a deterministic
+approximately uniform grid, with the run seed controlling within-cell offsets.
+Record the realized count for every layer.
+
+Maintain count n, mean mu, and centred second-moment matrix M2 with blockwise
+parallel/Welford updates. For existing state (n, mu, M2) and a block X with m
+rows, block mean mu_b, and M2_b=(X-mu_b)^T(X-mu_b):
+
+    delta = mu_b - mu
+    mu_new = mu + delta * m/(n+m)
+    M2_new = M2 + M2_b + outer(delta,delta) * n*m/(n+m)
+    n_new = n + m
+    Sigma = M2/(n-1)
+
+Use torch.linalg.eigh(Sigma), sort eigenvalues descending, and retain at least
+the first 32 components. Accumulate on the GPU in float64 when memory permits.
+If a covariance matrix does not fit, keep feature extraction on GPU and move
+only block sufficient statistics to a CPU float64 accumulator. Process tap
+groups under an explicit memory budget; do not fall back to storing all raw
+features. Log GPU peak memory and samples/second.
+
+Fix each eigenvector sign deterministically: locate its largest absolute
+loading and require that loading to be positive. Record the selected loading
+index and sign. When adjacent eigenvalues are nearly tied (relative gap below
+1e-4), mark individual components unstable and base scientific comparisons on
+their joint subspace rather than their arbitrary ordering.
+
+Validate the streaming implementation on a small tensor by comparing its mean,
+covariance, eigenvalues, and subspace with an exact in-memory calculation.
+Required tolerances are 1e-8 for mean/covariance in float64 and principal-angle
+error below 1e-5 radians for well-separated components.
+
+FROZEN PCA-RGB DISPLAY TRANSFORM
+
+Project signed scores z=(f-mu)V_1:3. For each layer and component, estimate the
+1st and 99th percentiles from the same training/calibration feature stream used
+for PCA. Freeze these six values. Map each coordinate independently to [0,1]:
+
+    rgb_j = clip((z_j - q01_j)/(q99_j - q01_j), 0, 1)
+
+If q99_j-q01_j < 1e-12, mark the component degenerate and stop the figure
+generation for that layer. Do not normalize per image or per class. Render a
+native-resolution map and a bilinearly upsampled display map; quantitative
+spatial computations use native maps unless a metric explicitly requires a
+common grid. Save the unclipped float32 coordinate map when storage permits.
+
+CLASS PROTOTYPES AND METRICS
+
+Let z_i,p^(l) be the frozen d-dimensional PCA coordinate at spatial position p,
+using d=32 for quantitative tests and d=3 only for RGB display. Define the
+pooled descriptor and training class prototype:
+
+    r_i^(l) = (1/P_l) sum_p z_i,p^(l)
+    c_k^(l) = (1/N_k) sum_{i:y_i=k} r_i^(l)
+
+Standardize each retained coordinate with training-set scale before Euclidean
+distance so PC1 cannot dominate only because it has higher variance. Report an
+unstandardized sensitivity result separately.
+
+For each layer compute:
+
+1. Explained variance ratio EVR_j=lambda_j/sum_q lambda_q for j=1,2,3,32 and
+   cumulative EVR_3 and EVR_32.
+2. Within-class dispersion
+      S_W = (1/N) sum_i ||r_i-c_yi||_2^2.
+3. Between-class dispersion
+      S_B = (1/K) sum_k ||c_k-c_bar||_2^2.
+4. Fisher-style separation F=S_B/(S_W+1e-12).
+5. Nearest-class-prototype accuracy on held-out examples.
+6. Neural-collapse NC1, trace(Sigma_W)/trace(Sigma_B), plus an NC2
+   class-mean equiangularity residual when K-1 does not exceed the tested
+   subspace dimension. Clearly state when NC2 is not identifiable.
+7. Same-class map similarity: centred cosine similarity between each signed
+   three-coordinate map and its training class mean map after adaptive average
+   pooling to a common 8x8 grid. Report within-class and between-class
+   distributions; do not use RGB pixel similarity.
+
+For class visualization, compute the signed mean map, per-pixel standard
+deviation map, and medoid example for every CIFAR-10 class. Use exactly 500
+training images per CIFAR-10 class for the prototype. For CIFAR-100 use all
+available training images per class, reporting both 100 fine prototypes and 20
+coarse prototypes. For ImageNet-1K use the available training/calibration
+examples per class and record unequal counts.
+
+WRONG-PREDICTION ANALYSIS
+
+For every held-out error define:
+
+    Delta_i^(l) = d(r_i,c_yi) - d(r_i,c_yhat_i)
+
+Positive Delta means closer to the predicted-class prototype. Report:
+
+- proportion with Delta>0 and a 95% stratified bootstrap confidence interval;
+- median Delta and bootstrap interval;
+- true-prototype and predicted-prototype nearest-neighbour ranks;
+- results by confidence quartile and confusion pair;
+- comparison with correct predictions and a label-permutation baseline.
+
+The qualitative figure must contain six CIFAR-10 errors chosen by a frozen
+stratified rule: two from the upper quartile of positive Delta, two nearest
+zero, and two negative-Delta counterexamples. Break ties by dataset index.
+Never choose examples for visual attractiveness.
+
+TRAINED-RANDOM AND TRANSITION METRICS
+
+For trained and random models compute all class metrics above. Additionally:
+
+- Linear centred kernel alignment (CKA) between adjacent layers from a fixed
+  held-out image cohort, using spatially pooled and standardized features:
+
+      CKA(X,Y) = ||X^T Y||_F^2 /
+                 (||X^T X||_F ||Y^T Y||_F).
+
+- Spatial affinity-change score. Adaptively pool each layer to 8x8, normalize
+  each spatial feature vector, form G_l=U_l U_l^T, and compute
+
+      AChange_l = 1 - cos(vec(center(G_l)), vec(center(G_l+1))).
+
+- Semantic gain between consecutive taps: change in log(Fisher separation)
+  and change in nearest-prototype accuracy.
+
+Do not collapse these measures into one score for the primary analysis. Define
+a candidate transition interval before inspecting final maps as taps where
+AChange is in the top 20% of that model's adjacent-layer values, semantic gain
+is positive, and the feature map remains at least 4x4. Report all qualifying
+taps and sensitivity to top-10%, top-20%, and top-30% thresholds.
+
+Use 2,000 image-level stratified bootstrap replicates for 95% confidence
+intervals. For trained-random differences, pair on dataset examples and layer
+semantic slots. Across multiple layer tests, report Holm-adjusted p-values as a
+secondary aid; emphasize effect sizes and intervals. Aggregate seeds with mean
+and standard deviation and show individual seed traces faintly.
+
+FIGURE DESIGN STANDARD
+
+The LaTeX report uses A4 paper with 1-inch margins. The usable portrait text
+width is approximately 6.27 inches (159 mm). Use these fixed export rules:
+
+- Full-width main figure: 6.25 inches wide; maximum 7.30 inches high.
+- Half-width figure, only if needed: 3.05 inches wide.
+- Landscape appendix figure: 9.65 inches wide and at most 6.10 inches high.
+- Prefer vector PDF for axes, text, curves, and diagram elements. Image mosaics
+  may contain raster panels embedded in PDF.
+- Also export PNG previews at 300 dpi: at least 1875 px wide for a 6.25-inch
+  figure and 2895 px wide for a 9.65-inch landscape figure.
+- Use an embedded serif font compatible with the report, preferably STIX Two
+  Text/STIXGeneral. Base text 8 pt, tick labels 7.5 pt, axis labels 8.5 pt,
+  panel titles 9 pt, figure-level title 10 pt, and panel letters 10 pt bold.
+  Never use text below 7 pt in the final-size figure.
+- Put panel letters '(a)', '(b)', etc. 1.5 mm from the upper-left of each panel.
+- Use 2.5 mm horizontal and 3 mm vertical gutters. Use 0.6 pt axis strokes,
+  1.2 pt primary curves, and 0.8 pt secondary/seed curves.
+- Use colour-blind-safe Okabe-Ito colours for quantitative plots. Trained:
+  #0072B2; random: #D55E00; CIFAR-10: #009E73; CIFAR-100: #CC79A7;
+  ImageNet-1K: #E69F00. Use solid versus dashed lines as a redundant encoding.
+- Input images and PCA maps must be square with identical displayed size. Do
+  not add independent colour bars to RGB maps. A small legend must state that
+  R/G/B are PC1/PC2/PC3 under a layer-specific frozen basis.
+- Use concise labels. Layer labels must use registry layer_id plus a readable
+  semantic label, for example 'L14 | downsample 2'.
+
+REQUIRED FIGURES AND EXACT PANEL LAYOUTS
+
+PCA-FIG-01_main_cifar10_atlas.pdf -- 6.25 x 4.70 in.
+- Grid: 4 image rows x 7 columns.
+- Columns, left to right: input; stem; stage 1 last block; downsample 2/stage 3
+  entry; stage 3 middle; downsample 3/stage 4 entry; final spatial block.
+- Rows: four test images selected before analysis by seed 20260830, constrained
+  to four different classes and correct predictions. Save indices in manifest.
+- Column headings on top; true/predicted label at the left of each row.
+- Caption must state checkpoint, basis split, and that bases differ by layer.
+
+PCA-FIG-01_appendix_cifar10_all_layers_part01.pdf and part02.pdf -- each
+9.65 x 6.10 in, landscape.
+- Use 6 fixed image rows.
+- Maximum 15 layer columns plus input per page. Continue on additional pages if
+  the registry has more than 30 taps; never exceed 15 feature columns per page.
+- Preserve identical image order, panel size, and layer display order.
+- Add a continuation title and a hyperlink target for the report appendix.
+
+PCA-FIG-02a_cifar10_class_prototypes.pdf -- 6.25 x 6.70 in.
+- Ten class cells in a 5-row x 2-column arrangement, alphabetical class order.
+- Each cell contains, left to right: signed mean rendered with frozen limits,
+  medoid PCA-RGB map, and scalar variability heatmap; then the class name and
+  sample count below.
+- Use the final spatial layer in the main panel. Put transition-layer versions
+  in the appendix.
+
+PCA-FIG-02b_cifar10_wrong_predictions.pdf -- 6.25 x 7.20 in.
+- Six rows x five columns: input; sample late PCA-RGB; true-class mean map;
+  predicted-class mean map; distance/margin mini-bar.
+- Row labels give dataset index, true label, predicted label, confidence, and
+  Delta. Use the frozen 2/2/2 selection strata defined above.
+
+PCA-FIG-03_trained_random.pdf -- 6.25 x 5.10 in.
+- Four image rows x seven columns: input; trained transition 1; random
+  transition 1; trained transition 2; random transition 2; trained late;
+  random late.
+- Use the same checkpoint architecture and the random seed with median
+  quantitative performance; show all seeds in the accompanying curve figure.
+
+PCA-FIG-03_metrics.pdf -- 6.25 x 5.80 in.
+- 2 x 2 panels: (a) Fisher separation, (b) nearest-prototype accuracy,
+  (c) adjacent-layer spatial affinity change, (d) wrong-prediction alignment.
+- X axis is normalized depth and also marks downsampling transitions with thin
+  vertical grey lines. Trained and random curves use the fixed styles above.
+
+PCA-FIG-04_cifar100.pdf -- 6.25 x 6.80 in.
+- Panel (a), top 55%: 4 image rows x 7 columns using the same semantic slots as
+  PCA-FIG-01.
+- Panel (b), bottom left: fine-versus-coarse nearest-prototype accuracy by depth.
+- Panel (c), bottom right: fine-versus-coarse Fisher separation and NC1.
+- Select four different coarse classes and four different fine classes by a
+  fixed seed; save indices. Put all 100 fine-class prototype summaries and the
+  complete layer atlas in landscape appendix pages.
+
+PCA-FIG-05_imagenet1k.pdf -- 6.25 x 7.10 in.
+- Panel (a): 4 ImageNet validation rows x input plus six semantic layer slots.
+- Classes must represent four different high-level groups (animal, vehicle,
+  household object, and natural/food category) chosen by a fixed manifest, not
+  by map appearance.
+- Panel (b): Fisher separation and nearest-prototype accuracy by depth.
+- Panel (c): CKA and affinity-change curves with candidate transitions shaded.
+- Put the larger 20-class, all-layer atlas in landscape appendix continuation
+  figures with no more than 12 feature columns per page because ImageNet labels
+  are longer.
+
+TABLES
+
+Generate both CSV and LaTeX for every table. LaTeX files must be directly
+usable with \input{}. Use booktabs, no vertical rules, and a thin \midrule
+between every body row because the user specifically requested visible row
+separation in text-heavy tables. Use \small and tabularx/longtable when needed;
+do not reduce below \footnotesize.
+
+PCA-TAB-01_layer_registry.tex:
+- One row per tap: ID, module path, semantic slot, CxHxW, normalized depth,
+  downsample flag, PCA sample count, EVR3, EVR32.
+
+PCA-TAB-02_cifar10_semantics.tex:
+- Selected early, transition, and late taps; S_W, S_B, Fisher ratio, nearest-
+  prototype accuracy, NC1, same-class map similarity, and 95% intervals.
+
+PCA-TAB-03_error_and_random_control.tex:
+- Error alignment rate/median Delta by tap; trained and random mean +/- SD;
+  trained-random difference and paired 95% interval.
+
+PCA-TAB-04_cifar100_hierarchy.tex:
+- Fine and coarse prototype accuracy, separation, NC1, transition interval,
+  model seed, and uncertainty.
+
+PCA-TAB-05_imagenet1k_transition.tex:
+- Layer slot, exact tap, CKA, affinity change, semantic gain, candidate status,
+  sample count, and compute time.
+
+OUTPUT TREE AND FILE CONTRACT
+
+Create:
+
+    artifacts/progress1_pca_rgb/
+      figures/main/
+      figures/appendix/
+      tables/csv/
+      tables/latex/
+      data/metrics/
+      data/pca/
+      manifests/
+      logs/
+      previews/
+
+Use stable filenames beginning with PCA-FIG-XX or PCA-TAB-XX as listed above.
+Save metric arrays as compressed NPZ or Parquet, summary tables as CSV, PCA
+metadata as JSON, and configs as YAML. Do not commit large raw feature tensors,
+model weights, tokens, or dataset caches to Git. Add such paths to .gitignore.
+
+Create artifact_manifest.json containing, for every artifact: artifact ID,
+relative path, SHA-256, generating command, config path, dataset/split, model
+ID and checkpoint SHA-256, seed(s), layer IDs, sample count, git commit, and UTC
+timestamp. Create report_snippets.tex with ready-to-copy \includegraphics and
+\input statements plus \label targets matching sections/04_experiments.tex.
+
+QUALITY GATES BEFORE REPORT INTEGRATION
+
+1. Smoke test: 128 images, two taps, one trained and one random model; no NaN,
+   infinite values, degenerate scales, or shape mismatch.
+2. Streaming-PCA unit test passes the tolerances specified above.
+3. Repeat a small run twice and require identical manifests, selections, PCA
+   signs, summary metrics within numeric tolerance, and artifact hashes where
+   rendering is deterministic.
+4. Confirm PCA and display metadata says train/calibration, never test/validation.
+5. Confirm every main figure remains legible when inserted at exactly 6.25 in.
+6. Open every PDF and PNG preview; check clipping, overlap, font embedding,
+   panel order, labels, and colour consistency.
+7. Confirm all appendix hyperlinks and LaTeX labels resolve after two builds.
+8. Confirm every numeric value printed in a figure/table is generated from the
+   saved metrics rather than manually typed.
+9. Report failures and counterexamples. Do not omit a dataset, layer, seed, or
+   metric because it weakens the proposed transition story.
+10. Produce a concise RUN_SUMMARY.md listing completed artifacts, blocked runs,
+    missing models/data, compute time, peak GPU memory, key findings, and exact
+    next commands.
+
+EXECUTION ORDER
+
+Phase A -- inventory and validation:
+- Inspect caches, checkpoints, dataset splits, and existing code.
+- Build the layer registry and verify model accuracy.
+- Emit a validation report before long GPU jobs.
+
+Phase B -- CIFAR-10 first:
+- Validate/recompute full-depth streaming PCA for trained ConvNeXT-Small.
+- Freeze display calibration and selection manifests.
+- Generate atlas, class prototypes, wrong-prediction metrics, and figures.
+- Run three matched random seeds and quantitative comparisons.
+- Generate PCA-FIG-01 through PCA-FIG-03 and PCA-TAB-01 through PCA-TAB-03.
+
+Phase C -- CIFAR-100:
+- Validate the existing ConvNeXT-Base fine/coarse cache.
+- Recompute incompatible items only.
+- Generate hierarchy metrics, trained-random controls, PCA-FIG-04, and
+  PCA-TAB-04.
+
+Phase D -- ImageNet-1K:
+- Validate the cached dataset and primary model.
+- If the model is missing, return the exact public Hugging Face/torchvision
+  request described above; ask for HF_TOKEN only if the selected repository is
+  gated.
+- Run streaming PCA under the declared GPU/memory budget.
+- Generate PCA-FIG-05, appendix atlases, and PCA-TAB-05.
+
+Phase E -- integration:
+- Insert only validated artifacts into Section 4.
+- Put oversized full-depth atlases after the bibliography in a landscape
+  appendix, with direct hyperlinks from the compact main-text figures.
+- Rebuild the complete PDF, inspect every page, and ensure references,
+  captions, and claims agree with the measured results.
+
+STOP CONDITIONS
+
+Stop and report rather than improvising when: a checkpoint cannot be traced;
+dataset class mappings differ; test data appears in a PCA fit; preprocessing
+cannot reproduce model accuracy; a cache lacks required metadata; a requested
+Hugging Face model is gated and HF_TOKEN is absent; GPU memory remains
+insufficient after tap grouping and CPU-statistic fallback; or the measured
+results contradict the prose. Contradictory results require revising the
+report claim, not altering the analysis or selection rule.
