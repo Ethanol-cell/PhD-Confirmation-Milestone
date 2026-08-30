@@ -135,8 +135,13 @@ $\ell_i^G$ be mean binary cross-entropy (BCE) across bits. Then
            {\max(\sum_i m_i^T,\varepsilon)}.
 \label{eq:global-tcs}
 \end{equation}
-Global TCS remains active for the complete schedule. Its hard partitions retain
-teacher geometry while allowing the student to move within a half-space.
+\textbf{Global TCS learns only from teacher-correct predictions.} If the
+teacher predicts the augmented image incorrectly, then $m_i^T=0$ and that image
+contributes no TCS loss. The same image still contributes to supervised CE, so
+the ground-truth label can train the student without forcing it to imitate the
+teacher's error. Global TCS remains active for the complete schedule. Its hard
+partitions retain teacher geometry while allowing the student to move within a
+half-space.
 
 \begin{center}
 \begin{tikzpicture}[node distance=5mm]
@@ -154,8 +159,9 @@ teacher geometry while allowing the student to move within a half-space.
 where the image lies inside the teacher's semantic space. TCS supplies many
 binary half-space memberships. The student must reproduce those coarse
 partitions but may move freely within a half-space, which is less restrictive
-than exact coordinate regression. The teacher-correct gate prevents an
-incorrect teacher decision from becoming an auxiliary target.
+than exact coordinate regression. \textbf{The teacher-correct gate is therefore
+a reliability filter: TCS transfers geometry only when the teacher also gets
+the class decision right.}
 
 \subsection{Early relational state}
 
