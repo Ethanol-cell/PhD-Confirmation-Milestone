@@ -34,10 +34,12 @@ is the geometric median
       \sum_{n=1}^N\|\bm f_n-\bm c\|_2.
     \label{eq:dgrp-median}
 \end{equation}
+which can be computed by Weiszfeld-type iterations \cite{weiszfeld1937median}.
 Compared with an arithmetic mean, the unsquared objective limits the influence
 of rare, distant spatial vectors.
 
-The multimodal extension alternates nearest-centre assignment
+The multimodal extension borrows the alternating assignment/update structure of
+prototype clustering \cite{macqueen1967kmeans}: it alternates nearest-centre assignment
 \begin{equation}
     a_n=\arg\min_{k\in\{1,\ldots,K\}}
         \|\bm f_n-\bm c_k\|_2
@@ -72,7 +74,8 @@ Occupancy entropy and effective mode count are
     H_K=-\sum_k\pi_k\log(\pi_k+\varepsilon),
     \qquad K_{\mathrm{eff}}=\exp(H_K),
 \end{equation}
-with utilization $U_K=K_{\mathrm{eff}}/K$. Starting at $K=1$, a larger
+using Shannon entropy to summarize occupancy balance
+\cite{shannon1948entropy}, with utilization $U_K=K_{\mathrm{eff}}/K$. Starting at $K=1$, a larger
 candidate is admitted only when
 \begin{equation}
     \min_k\pi_k\geq0.02,
@@ -155,6 +158,14 @@ to 99 dimensions, while four robust centres describe a much lower-cardinality
 spatial/common-mode geometry. Centre class purity was low at useful $K$, and
 class-only or residual-only alternatives underperformed raw distance.
 
+\textbf{This is related to, but not an instance of, neural collapse.} The
+terminal class-centre geometry studied in neural-collapse work concerns pooled
+or sample-level class representations, whereas K-DGRP models recurrent modes
+among unpooled spatial vectors. The distinction explains why a small $K$ can be
+useful even when the classifier has 100 classes
+\cite{papyan2020neuralcollapse,zhu2021neuralcollapse,
+han2022neuralcollapse,fang2021layerpeeled,kothapalli2023neuralcollapse}.
+
 The current interpretation is therefore that discriminative training creates a
 late feature space containing both class-semantic organization and broad
 recurrent spatial modes. Object interiors, parts, and boundaries are more
@@ -162,10 +173,10 @@ variable than common background or context and often lie farther from the
 nearest robust mode. The explanation score captures this structured novelty
 rather than distance from a class centroid.
 
-\subsection{Evidence required for the CVPR paper}
+\subsection{Evidence required for publication}
 
 The existing technical evidence establishes a strong method candidate, but the
-paper protocol will be rerun and extended before publication.
+paper protocol will be rerun and extended before submission.
 
 \evidenceplaceholder{KDGRP-TAB-01: confirmatory benchmark}{
 Rerun the frozen method on a sealed cohort with localization, insertion,

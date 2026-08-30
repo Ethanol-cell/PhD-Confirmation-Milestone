@@ -12,6 +12,16 @@ teacher at a useful early state, permit a student-specific bridge, constrain
 balanced coordinate geometry at selected transition and late states, and match
 relational evolution after semantic maturity.
 
+\textbf{The transition taps were selected empirically rather than assumed.}
+Earlier experiments tested supervision at early, transition, and late states.
+Early relational guidance was useful, but applying coordinate or flow
+constraints too early, extending them continuously through the full hierarchy,
+or relying only on the most compressed late state performed worse than the
+selective transition-centred configuration. The final design therefore anchors
+E1, leaves the E1-to-M1 bridge student-specific, applies coordinate supervision
+at M1/M2 where spatial organization is becoming semantic, and uses L1/L2 mainly
+to constrain mature geometry and late relational flow \cite{chan2026j1}.
+
 The production implementation has undergone a separate implementation-forensics
 audit, conducted independently of the training-code execution used to produce
 the benchmark \cite{chan2026j1}. The audit reproduced descriptors, scalar losses, gradients,
@@ -80,7 +90,9 @@ $\bm b_G\in\mathbb{R}^{2048}$ and defines teacher bits
 \end{equation}
 A student predicts logits
 $\bm h_i^{S,G}=\widehat{\bm z}_i^{S,G}\bm W_G+\bm b_G$ for the same
-partitions. Let
+partitions. This partition-based transfer is inspired by random-hyperplane
+locality-sensitive hashing, where sign agreement estimates angular similarity
+without requiring coordinate identity \cite{charikar2002simhash}. Let
 $m_i^T$ indicate that the teacher predicts the augmented image correctly and
 $\ell_i^G$ be mean binary cross-entropy across bits. Then
 \begin{equation}
@@ -222,7 +234,11 @@ There is no segmentation mask or additional background threshold.
 Raw loss coefficients are not comparable because the terms have different
 scales and parameter paths. Each $J32$ layer coefficient $\gamma_\ell$ is
 fitted to a target backbone-gradient ratio relative to
-$\mathcal{L}_{\mathrm{CE}}+6\mathcal{L}_G$. Targets for
+$\mathcal{L}_{\mathrm{CE}}+6\mathcal{L}_G$. This design is informed by
+multi-objective and adaptive loss-balancing work, but freezes the calibrated
+ratios rather than learning them online
+\cite{chen2018gradnorm,kendall2018multitask,sener2018multiobjective,
+yu2020pcgrad}. Targets for
 $M1,M2,L1,L2$ are $(0.050,0.040,0.025,0.015)$. E1 and flow are jointly
 Gram-calibrated so their combined gradient norm is $0.08$ of the calibrated
 base. The frozen coefficients were approximately
