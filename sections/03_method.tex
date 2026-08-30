@@ -45,7 +45,8 @@ be the channel vector. A dataset-wide reservoir
 $\mathcal{F}_\ell=\{\bm f^{(\ell)}_{i,p}\}$, constructed by sampling spatial
 vectors across the training split, is used to fit mean
 $\bm\mu_\ell$ and orthonormal PCA basis
-$\bm V_\ell=[\bm v_{\ell,1},\bm v_{\ell,2},\ldots]$. The displayed
+$\bm V_\ell=[\bm v_{\ell,1},\bm v_{\ell,2},\ldots]$
+\cite{pearson1901pca,hotelling1933pca}. The displayed
 coordinates are
 \begin{equation}
     \bm z^{(\ell)}_{i,p}
@@ -100,11 +101,13 @@ upsampled. Exact-area IoU uses the top $q$ fraction of pixels:
     =\frac{|T_q(M)\cap G|}{|T_q(M)\cup G|},
 \end{equation}
 where $M$ is the continuous map and $G$ is the object mask. The primary
-internal setting is $q=0.20$. AUPRC evaluates the complete ranking; boundary
-F1 measures contour agreement. Causal deletion replaces highly ranked pixels
+internal setting is $q=0.20$. AUPRC evaluates the complete ranking and is
+informative when foreground pixels are the minority class
+\cite{davis2006prroc,saito2015precisionrecall}; boundary F1 measures contour
+agreement. Causal deletion replaces highly ranked pixels
 with a frozen perturbation and measures predicted-class margin loss. Paired
 bootstrap confidence intervals resample images rather than treating pixels as
-independent.
+independent \cite{efron1993bootstrap}.
 
 The paper-ready rerun will add insertion, class sensitivity, parameter
 randomization, and correct-versus-incorrect analyses. This is particularly
@@ -121,7 +124,8 @@ visible content. The ImageNet-100 study reports Top-1, Top-5, negative
 log-likelihood (NLL), expected calibration error (ECE), seed count, and
 checkpoint selection. Multi-seed means and standard deviations are used when
 available. Single-seed external baselines are descriptive and do not support
-formal superiority claims.
+formal superiority claims. ECE is treated as a separate calibration measure
+rather than a substitute for accuracy \cite{guo2017calibration}.
 
 \subsection{Reproducibility and threats to validity}
 

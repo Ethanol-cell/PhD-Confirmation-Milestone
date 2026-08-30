@@ -80,19 +80,20 @@ scores spatial features by distance from dataset-global robust modes. Completed
 internal experiments show competitive object localization on ResNet-50 and
 four held-out CNN families after selector development on ResNet and ConvNeXt,
 although class-conditioned CAMs remain stronger on some architectures and
-additional faithfulness validation is required. The third stage applies
-the representation insight to knowledge distillation. The verified \jmethod{}
-objective transfers an early relational state, balanced PC1--32 transition
+additional faithfulness validation is required. The third stage studies
+knowledge distillation (KD), in which a compact student learns from a stronger
+teacher. It introduces \jmethod{}, the project name for a selective hierarchical
+geometry-distillation objective. Rather than copying every teacher feature,
+\jmethod{} transfers an early relational state, balanced PC1--32 transition
 coordinates, and late affinity flow. On ImageNet-100, \jmethod{} attains
 $94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically tied
 with ReviewKD-120 under the current evidence.
 
-The remaining programme will consolidate the CNN evidence, complete the
-\methodname{} paper, strengthen the causal and statistical analysis of
-\jmethod{}, and investigate whether comparable transitions occur in
-token-based vision models. Transformer directions are intentionally kept
-flexible until a focused literature review and reproducible pilot study identify
-the most informative architectures and explanatory objects.
+\textbf{The immediate next stage is to complete and submit two papers: one on
+\methodname{} and one on \jmethod{}.} Transformer investigation will follow
+these publication efforts and remains intentionally flexible until a focused
+literature review and reproducible pilot study identify the most informative
+architectures and explanatory objects.
 \end{abstract}
 
 \clearpage
