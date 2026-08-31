@@ -3,12 +3,16 @@
 This confirmation report proposes a representation-centric account of
 explainability in deep vision models. The central hypothesis is that trained
 models develop a transition regime in which generic visual features become
-class-relevant spatial geometry. Dataset-wide principal component analysis
-red--green--blue (PCA-RGB) visualization provides the initial
-observation, but the project explicitly recognizes that visualization alone is
-not proof. Quantitative transition measures, trained--random controls, held-out
-wrong-prediction analysis, and cross-dataset validation are required to answer
-RQ1.
+class-relevant spatial geometry. Dataset-wide principal component analysis red--green--blue
+(PCA-RGB) visualization provides the initial observation, while train-fitted
+bases, a calibration-only selector, trained--random and label-permutation
+controls, held-out wrong-prediction analysis, distance-sensitivity tests, and
+cross-dataset validation provide the quantitative evidence. The focused
+Pre-LN/Post-LN audit shows that the selected transition reorganizes already
+decodable class information into a higher-rank, prototype-aligned geometry.
+This answers RQ1 within the tested ConvNeXt settings; cross-architecture and
+trained-seed replication will determine how broadly the transition location
+generalizes.
 
 \methodname{} provides the first methodological use of the observation. Its
 distance from adaptive dataset-global robust modes is simple, class-agnostic,
