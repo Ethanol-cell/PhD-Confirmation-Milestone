@@ -1,0 +1,23 @@
+\begin{table}[p]
+\centering
+\begin{threeparttable}
+\caption{Cross-dataset transition summary.}
+\label{tab:pca-cross-dataset-transition}
+\fontsize{8}{9.8}\selectfont
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\linewidth}{@{}l l S[table-format=1.3] S[table-format=1.3] S[table-format=-1.3] S[table-format=1.3] l@{}}
+\toprule
+Dataset & Selected transition & {Normalized depth} & {Prototype accuracy} & {True margin} & {\makecell{B/W\\separation}} & Selection partition\\
+\midrule
+CIFAR-10 & L36 & 0.923 & 0.969 & 0.709 & 2.795 & Calibration\\
+\thinrowrule
+CIFAR-100 & L36 & 0.923 & 0.864 & 0.141 & 3.426 & Calibration\\
+\thinrowrule
+ImageNet-1K & L36 & 0.923 & 0.594 & -0.027 & 2.178 & Calibration\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
+\item Evaluation data were not used for transition selection. Normalized depth does not imply layer equivalence across architectures.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
