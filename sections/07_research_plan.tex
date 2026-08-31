@@ -15,11 +15,13 @@ quantitatively supported and from work that remains open.
 \toprule
 Claim & Present evidence & Status and next requirement\\
 \midrule
-CNNs contain a representation-transition regime
-& Dataset-wide PCA-RGB depth patterns; random control; semantic-maturity
-trajectory
-& Plausible and partly quantified; requires frozen, basis-invariant transition
-selector across seeds and datasets.\\
+The tested CNNs contain a late representation-transition regime
+& Train-fitted PCA-RGB; calibration-only selector; trained--random and
+label-permutation controls; Pre-LN/Post-LN mechanism audit; CIFAR-10,
+CIFAR-100, and ImageNet-1K confirmation
+& Quantitatively supported for the tested ConvNeXt settings; additional
+architectures and trained seeds are required before claiming a universal
+transition location.\\
 \midrule
 Late robust feature geometry localizes objects
 & ResNet paired tests; frozen adaptive-$K$ validation on four held-out CNN
@@ -50,10 +52,11 @@ and when those properties produce a useful intervention.
 
 \textbf{The immediate priority is to complete the \methodname{} paper and the
 \jmethod{} paper.} This requires closing the current evidence rather than
-continuing unbounded formula search. The PCA-RGB study needs a frozen display
-protocol and transition selector, a complete analysis of wrong-prediction
-alignment, and experiments that separate class count from other dataset
-differences. The \methodname{} paper needs a prospective cross-dataset study
+continuing unbounded formula search. The PCA-RGB study now has a frozen display protocol, a
+calibration-only transition selector, trained--random and permutation controls,
+wrong-prediction analysis, mechanism controls, and cross-dataset evidence.
+Remaining work is limited to cross-architecture and trained-seed replication
+needed to define the scope of the transition claim. The \methodname{} paper needs a prospective cross-dataset study
 with the mode-count selector frozen before segmentation evaluation. It also
 needs expanded faithfulness and sanity tests, together with a fixed semantic
 atlas that includes failures. The J1 paper needs replication of the strongest
