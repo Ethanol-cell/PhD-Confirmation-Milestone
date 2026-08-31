@@ -1,0 +1,41 @@
+\begin{table}[p]
+\centering
+\begin{threeparttable}
+\caption{Transition-selector component audit.}
+\label{tab:pca-selector-main}
+\fontsize{8}{9.8}\selectfont
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabularx}{\linewidth}{@{}l Y l S[table-format=1.3] Y@{}}
+\toprule
+Dataset & Selector & Selected tap & {Score} & Weights\\
+\midrule
+CIFAR-10 & Full & L36 & 5.026 & 1/3, 1/3, 1/3\\
+\thinrowrule
+CIFAR-10 & Without CKA & L36 & 5.034 & 1/2, 1/2, 0\\
+\thinrowrule
+CIFAR-10 & Without prototype & L36 & 4.635 & 0, 1/2, 1/2\\
+\thinrowrule
+CIFAR-10 & Without separation & L36 & 5.411 & 1/2, 0, 1/2\\
+\thinrowrule
+CIFAR-10 & Semantic only & L36 & 5.125 & 1/2 positive prototype, 1/2 log separation, 0\\
+\thinrowrule
+CIFAR-10 & Trained-specific & L36 & 4.190 & Trained score minus random-seed mean\\
+\midrule
+CIFAR-100 & Full & L36 & 5.164 & 1/3, 1/3, 1/3\\
+\thinrowrule
+CIFAR-100 & Without CKA & L36 & 5.583 & 1/2, 1/2, 0\\
+\thinrowrule
+CIFAR-100 & Without prototype & L36 & 4.875 & 0, 1/2, 1/2\\
+\thinrowrule
+CIFAR-100 & Without separation & L36 & 5.035 & 1/2, 0, 1/2\\
+\thinrowrule
+CIFAR-100 & Semantic only & L36 & 5.721 & 1/2 positive prototype, 1/2 log separation, 0\\
+\thinrowrule
+CIFAR-100 & Trained-specific & L36 & 4.376 & Trained score minus random-seed mean\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
+\item Every variant uses calibration-only selection; evaluation data are not used for fitting or ranking.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
