@@ -12,29 +12,147 @@ and tables.
 
 \subsection{Frozen protocol and PCA-RGB construction}
 
-For layer $\ell$, image $x_i$, and spatial position $p$, let
+For layer $\ell$, model condition $c$, image $x_i$, and spatial position
+$p$, let
 \begin{equation}
-    \bm f^{(\ell)}_{i,p}\in\mathbb{R}^{D_\ell}
+    \bm f^{(\ell,c)}_{i,p}\in\mathbb{R}^{D_\ell}
 \end{equation}
-be the channel vector. A dataset-wide population
-$\mathcal{F}_\ell=\{\bm f^{(\ell)}_{i,p}\}$ is sampled from the training
-split. Its mean $\bm\mu_\ell$ and orthonormal PCA basis
-$\bm V_\ell=[\bm v_{\ell,1},\bm v_{\ell,2},\ldots]$ are estimated using
-streaming statistics so that the complete feature population need not be held
-in memory \cite{pearson1901pca,hotelling1933pca}.
+be the channel vector at that position. The condition index distinguishes the
+trained network from each architecture-matched random initialization. It is
+included here because trained and random networks use separately fitted PCA
+bases.
 
-The signed PCA coordinates and their three-channel display are
+Let $\mathcal T_{\ell,c}$ contain the spatial vectors sampled across the
+fit-training images, and let $N_{\ell,c}=|\mathcal T_{\ell,c}|$. The training
+mean and covariance are
+\begin{align}
+    \bm\mu_{\ell,c}
+    &=
+    \frac{1}{N_{\ell,c}}
+    \sum_{(j,q)\in\mathcal T_{\ell,c}}
+    \bm f^{(\ell,c)}_{j,q},
+    \label{eq:pca-training-mean}\\
+    \bm\Sigma_{\ell,c}
+    &=
+    \frac{1}{N_{\ell,c}-1}
+    \sum_{(j,q)\in\mathcal T_{\ell,c}}
+    \bigl(\bm f^{(\ell,c)}_{j,q}-\bm\mu_{\ell,c}\bigr)
+    \bigl(\bm f^{(\ell,c)}_{j,q}-\bm\mu_{\ell,c}\bigr)^\top .
+    \label{eq:pca-training-covariance}
+\end{align}
+These quantities are accumulated with streaming statistics, so the complete
+feature population does not have to be stored in memory. Principal component
+analysis then solves
 \begin{equation}
-    \bm z^{(\ell)}_{i,p}
-    = (\bm f^{(\ell)}_{i,p}-\bm\mu_\ell)
-      \bm V_{\ell,1:3},
+    \bm\Sigma_{\ell,c}\bm v_{\ell,c,k}
+    =
+    \lambda_{\ell,c,k}\bm v_{\ell,c,k},
     \qquad
-    \bm C^{(\ell)}_{i,p}=\phi_\ell(\bm z^{(\ell)}_{i,p}),
+    \lambda_{\ell,c,1}\geq\lambda_{\ell,c,2}\geq\cdots ,
+    \label{eq:pca-eigendecomposition}
+\end{equation}
+where the orthonormal eigenvectors give the directions of decreasing training
+variance \cite{pearson1901pca,hotelling1933pca}.
+
+An eigenvector and its negative describe the same PCA axis, but they would
+reverse the corresponding display colour. To make reruns deterministic, the
+largest-magnitude loading is required to be positive. Specifically,
+\begin{equation}
+    a_{\ell,c,k}
+    =
+    \underset{d}{\arg\max}\,
+    \left|[\bm v_{\ell,c,k}]_d\right|,
+    \qquad
+    \widetilde{\bm v}_{\ell,c,k}
+    =
+    \begin{cases}
+        \bm v_{\ell,c,k},
+        & [\bm v_{\ell,c,k}]_{a_{\ell,c,k}}\geq 0,\\
+        -\bm v_{\ell,c,k},
+        & [\bm v_{\ell,c,k}]_{a_{\ell,c,k}}<0.
+    \end{cases}
+    \label{eq:pca-sign-fixing}
+\end{equation}
+
+For a new image, each spatial feature vector is centred with the frozen
+training mean and projected onto the first three signed components:
+\begin{equation}
+    z^{(\ell,c)}_{i,p,k}
+    =
+    \widetilde{\bm v}_{\ell,c,k}^{\top}
+    \bigl(\bm f^{(\ell,c)}_{i,p}-\bm\mu_{\ell,c}\bigr),
+    \qquad k\in\{1,2,3\}.
+    \label{eq:pca-coordinate}
+\end{equation}
+The three coordinates can have very different numerical ranges. A fixed,
+symmetric display scale is therefore estimated for each component from the
+absolute fit-training scores:
+\begin{equation}
+    s_{\ell,c,k}
+    =
+    Q_{0.995}
+    \left(
+        \left\{
+        \left|z^{(\ell,c)}_{j,q,k}\right|
+        :(j,q)\in\mathcal T_{\ell,c}
+        \right\}
+    \right),
+    \label{eq:pca-display-scale}
+\end{equation}
+where $Q_{0.995}$ denotes the $99.5$th percentile. The displayed channel value
+at position $p$ is
+\begin{equation}
+    C^{(\ell,c)}_{i,p,k}
+    =
+    \operatorname{clip}
+    \left(
+        \frac{1}{2}
+        +
+        \frac{z^{(\ell,c)}_{i,p,k}}
+             {2\max(s_{\ell,c,k},\varepsilon)},
+        0,1
+    \right),
+    \qquad
+    \varepsilon=10^{-12}.
+    \label{eq:pca-rgb-channel}
+\end{equation}
+The final colour at that position is
+\begin{equation}
+    \bm C^{(\ell,c)}_{i,p}
+    =
+    \left(
+        C^{(\ell,c)}_{i,p,1},
+        C^{(\ell,c)}_{i,p,2},
+        C^{(\ell,c)}_{i,p,3}
+    \right)
+    =
+    (R_{i,p},G_{i,p},B_{i,p}).
     \label{eq:pca-rgb}
 \end{equation}
-where $\phi_\ell$ is a frozen, robust layer-specific display transform. The
-basis, component signs, and display limits are fitted on training data and
-reused for every calibration and evaluation image.
+A zero PCA score maps to the neutral value $0.5$. Scores of
+$-s_{\ell,c,k}$ and $+s_{\ell,c,k}$ map to $0$ and $1$, respectively, and more
+extreme values are clipped. Thus, the first component controls red, the second
+controls green, and the third controls blue.
+
+For one image, the RGB vectors from all $H_\ell W_\ell$ spatial positions are
+returned to their feature-grid locations and resized only for display:
+\begin{equation}
+    \bm M_i^{(\ell,c)}
+    =
+    \operatorname{Resize}
+    \left(
+        \operatorname{reshape}_{H_\ell\times W_\ell}
+        \left(
+            \left[\bm C^{(\ell,c)}_{i,p}\right]_
+            {p=1}^{H_\ell W_\ell}
+        \right)
+    \right).
+    \label{eq:pca-rgb-image}
+\end{equation}
+The resize is bilinear and does not change the PCA coordinates or any reported
+metric. **No per-image minimum--maximum normalization is applied.** The mean,
+basis, component signs, and display scales are fitted once from fit-training
+vectors and then reused for every calibration and evaluation image.
 
 \textbf{PCA alignment is dataset-wide within a layer, but it is not shared
 across layers.} Every image at layer $\ell$ uses the same basis, so same-layer
