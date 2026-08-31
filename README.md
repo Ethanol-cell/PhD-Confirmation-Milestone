@@ -44,8 +44,9 @@ latexmk -pdf -outdir=build main.tex
   perturbation, concept/prototype explanation, CAM, representation analysis,
   neural collapse, knowledge distillation, and transformer explanation
 - `sections/03_method.tex`: overall research design and evaluation framework
-- `sections/04_experiments.tex`: PCA-RGB construction, observations, controls,
-  and planned CIFAR-10/CIFAR-100/ImageNet-1K evidence
+- `sections/04_experiments.tex`: completed PCA-RGB protocol, trained--random and
+  permutation controls, transition mechanism, error alignment, and
+  CIFAR-10/CIFAR-100/ImageNet-1K evidence
 - `sections/05_results.tex`: Adaptive K-DGRP method and completed evidence
 - `sections/06_conclusion.tex`: verified J1 objective and ImageNet-100 benchmark
 - `sections/07_research_plan.tex`: claim--evidence map and staged two-year plan
@@ -58,12 +59,14 @@ latexmk -pdf -outdir=build main.tex
 
 ## Evidence status
 
-The benchmark values supplied for J1, ReviewKD-120, H9, and the external
-feature-distillation baselines are included exactly as provided. The report
-describes single-seed comparisons as preliminary and treats J1 and
-ReviewKD-120 as a practical tie under the current evidence. PCA-RGB semantic
-examples, the Adaptive K-DGRP confirmatory rerun, and J1 representation analyses
-remain labelled placeholders pending final artifacts.
+The PCA-RGB Progress I chapter now contains the frozen figures and
+main tables from the completed validation package. It reports train-fitted PCA,
+calibration-only transition selection, held-out evaluation, random-network and
+label-permutation controls, Pre-LN/Post-LN mechanism analysis, wrong-prediction
+alignment, and cross-dataset evidence. The benchmark values supplied for J1,
+ReviewKD-120, H9, and the external feature-distillation baselines remain included
+exactly as provided. Adaptive K-DGRP confirmatory reruns and J1 representation
+analyses remain labelled placeholders pending their final artifacts.
 
 The current draft cites 127 distinct works. Every bibliography entry is used in
 the manuscript, including methodological sources for the principal-component,
