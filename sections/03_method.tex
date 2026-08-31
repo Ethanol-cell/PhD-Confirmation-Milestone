@@ -21,15 +21,16 @@ decision.
 
 \subsection{Datasets, models, and controls}
 
-The representation study currently spans the Canadian Institute for Advanced
-Research datasets CIFAR-10 and CIFAR-100, and ImageNet-100
+The completed representation study spans the Canadian Institute for Advanced
+Research datasets CIFAR-10 and CIFAR-100, together with ImageNet-1K
 \cite{krizhevsky2009cifar,deng2009imagenet}. CIFAR-10 provides a
 low-class-count setting in which class-level organization is visually
-inspectable. CIFAR-100 and ImageNet-100 test whether observations survive
-greater class diversity and intra-class variation; the next confirmatory
-PCA-RGB campaign extends the large-scale analysis to ImageNet-1K. The CNN
-experiments use ResNet \cite{he2016resnet}, ConvNeXt \cite{liu2022convnext},
-VGG, RegNet, MobileNet, and EfficientNet families where appropriate.
+inspectable. CIFAR-100 tests a fine/coarse hierarchy with one hundred classes.
+ImageNet-1K tests whether the transition remains measurable under substantially
+greater class and intra-class diversity. The primary PCA-RGB experiments use
+ConvNeXt \cite{liu2022convnext}. The downstream explanation and distillation
+studies additionally use ResNet \cite{he2016resnet}, VGG, RegNet, MobileNet,
+and EfficientNet families where appropriate.
 
 Controls include randomly initialized networks with the same architecture,
 repeated trained seeds, correct and incorrect predictions, and matched semantic
@@ -40,7 +41,7 @@ show that a particular intermediate layer is causally necessary.
 \subsection{Operationalizing a representation transition}
 
 A transition layer should not be selected only because its visualization looks
-interesting. The planned operational definition combines:
+interesting. The completed operational definition combines:
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{semantic maturity:} linear-probe accuracy, logit-decoding
@@ -54,9 +55,12 @@ interesting. The planned operational definition combines:
     choices of PCA dimension and layer sampling.
 \end{itemize}
 
-A candidate transition regime is where semantic maturity rises while
-object-relevant spatial variation remains available. This definition does not
-assume that the last convolution or final activation is universally optimal.
+A candidate transition regime is where semantic maturity and class
+separation rise together with a large adjacent representation change. The
+selector is fitted on calibration data and frozen before evaluation. Focused
+Pre-LN/Post-LN controls then distinguish newly decodable information from
+geometric reorganization. This definition does not assume that the last
+convolution or final activation is universally optimal.
 
 \subsection{Explanation evaluation}
 
