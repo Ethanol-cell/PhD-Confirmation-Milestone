@@ -82,7 +82,7 @@ distance, and selector composition.
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=\linewidth]{pca_rgb/PCA-FIG-03_cifar10_class_consistency_random_control.pdf}
+    \pcaresultfigure[width=\linewidth]{pca_rgb/PCA-FIG-03_cifar10_class_consistency_random_control.png}
     \caption{CIFAR-10 class consistency and the architecture-matched random
     control. All examples within a column share its trained or random
     layer-specific PCA basis. Colours should be compared within a layer and
@@ -111,7 +111,7 @@ show the corresponding late transition.
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=0.96\linewidth]{pca_rgb/PCA-FIG-04_cifar10_transition_metrics.pdf}
+    \pcaresultfigure[width=0.96\linewidth]{pca_rgb/PCA-FIG-04_cifar10_transition_metrics.png}
     \caption{CIFAR-10 transition metrics across normalized depth. The selected
     L36 transition is marked by the vertical dashed line. The grey reference is
     the architecture-matched random mean with one standard deviation.}
@@ -138,7 +138,7 @@ necessary in other architectures.
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=\linewidth]{pca_rgb/PCA-FIG-09_transition_mechanism_controls.pdf}
+    \pcaresultfigure[width=\linewidth]{pca_rgb/PCA-FIG-09_transition_mechanism_controls.png}
     \caption{Focused transition controls for CIFAR-10 and CIFAR-100. The
     comparison localizes the major geometric change to Pre-LN versus Post-LN
     while showing that linear-probe accuracy was already high before the
@@ -192,7 +192,7 @@ principal components.
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=0.94\linewidth]{pca_rgb/PCA-FIG-06_cifar100_hierarchical_class_organization.pdf}
+    \pcaresultfigure[width=0.94\linewidth]{pca_rgb/PCA-FIG-06_cifar100_hierarchical_class_organization.png}
     \caption{CIFAR-100 fine- and coarse-label organization. The transition is
     visible in prototype agreement, true-class margin, separation, effective
     rank, and the trained--random comparison.}
@@ -211,7 +211,7 @@ the fine classification objective.}
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=0.86\linewidth]{pca_rgb/PCA-FIG-07_cifar100_same_class_examples_prototypes.pdf}
+    \pcaresultfigure[width=0.86\linewidth]{pca_rgb/PCA-FIG-07_cifar100_same_class_examples_prototypes.png}
     \caption{CIFAR-100 same-class examples and fit-training prototypes at L39.
     Each row uses the shared trained L39 PCA basis and display scale. Similarity
     is illustrative; quantitative prototype tests provide the supporting
@@ -243,7 +243,7 @@ true-class prototype.
 
 \begin{figure}[p]
     \centering
-    \includegraphics[height=0.88\textheight]{pca_rgb/PCA-FIG-08_cifar100_incorrect_prediction_alignment.pdf}
+    \pcaresultfigure[height=0.88\textheight]{pca_rgb/PCA-FIG-08_cifar100_incorrect_prediction_alignment.png}
     \caption{Frozen CIFAR-100 incorrect-prediction cases at L39. Positive
     $\Delta d$ indicates greater proximity to the predicted-class prototype.
     Both supporting cases and counterexamples are retained. Alignment is
@@ -284,7 +284,7 @@ meaningless.
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=\linewidth]{pca_rgb/PCA-FIG-11_cross_dataset_summary.pdf}
+    \pcaresultfigure[width=\linewidth]{pca_rgb/PCA-FIG-11_cross_dataset_summary.png}
     \caption{Cross-dataset transition summary for CIFAR-10, CIFAR-100, and
     ImageNet-1K. Normalized depth supports within-architecture visualization;
     it does not imply that layers are equivalent across datasets or models.}
