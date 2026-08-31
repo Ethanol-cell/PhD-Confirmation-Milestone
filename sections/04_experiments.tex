@@ -225,6 +225,13 @@ $0.213$ on CIFAR-10 and approximately $0.039$ on CIFAR-100. This is important:
 convolution, residual connections, input statistics, and spatial pooling can
 produce label-correlated structure even without supervised learning.
 
+Here, \textbf{prototype accuracy is the proportion of held-out images whose
+pooled representation is assigned to the correct class by the nearest
+fit-training class prototype}. It tests whether samples are organized around
+simple class centres rather than whether a new classifier can learn to decode
+them. The prototypes and the accuracy calculation are defined formally in
+\cref{subsec:pca-transition-selection}.
+
 The backbone weights in each random control remain fixed. Class prototypes are
 estimated from its fit-training descriptors and then evaluated on held-out
 images. When a linear probe is reported later, the protocol trains only that
@@ -243,12 +250,16 @@ show the corresponding late transition.
 
 \Needspace{10\baselineskip}
 \subsection{Selecting the transition without evaluation leakage}
+\label{subsec:pca-transition-selection}
 
 The visible PCA-RGB progression suggests where to look, but the transition is
 selected with numerical measures that do not depend on colour interpretation.
 Let the spatially pooled descriptor for image $i$ at layer $\ell$ be
-$\bm r_i^{(\ell)}$. After unit normalization, a fit-training prototype for
-class $k$ is
+$\bm r_i^{(\ell)}$. Let
+$\mathcal T_k=\{i\in\mathcal T:y_i=k\}$ denote the indices of fit-training
+images whose label is class $k$. Thus, $|\mathcal T_k|$ is the number of
+fit-training images in that class. After unit normalization, the class-$k$
+prototype is
 \begin{equation}
     \bm c_k^{(\ell)}
     =
@@ -464,6 +475,25 @@ principal components.
 \Needspace{10\baselineskip}
 \subsection{CIFAR-100 hierarchy and class prototypes}
 
+The fourth panel of \cref{fig:pca-cifar100-hierarchy} reports the
+\textbf{explained variance ratio (EVR)}, which measures how much of the total
+feature variance is carried by a principal component. If
+$\lambda_{\ell,1}\geq\cdots\geq\lambda_{\ell,D_\ell}$ are the covariance
+eigenvalues at layer $\ell$, the first-component EVR is
+\begin{equation}
+    \operatorname{EVR}_{1}^{(\ell)}
+    =
+    \frac{\lambda_{\ell,1}}
+         {\sum_{j=1}^{D_\ell}\lambda_{\ell,j}}.
+    \label{eq:pca-evr-one}
+\end{equation}
+The figure plots $\operatorname{EVR}_{1}^{(\ell)}\times D_\ell$ so that $1$
+has an intuitive reference meaning: every dimension would carry an equal
+share of variance. A value above $1$ shows how many times more variance the
+first principal component carries than that equal-share baseline. A large
+value therefore indicates a strongly dominant direction, whereas effective
+rank summarizes how broadly variance is distributed over the full spectrum.
+
 \begin{figure}[!htbp]
     \centering
     \pcaresultfigure[width=\linewidth]{pca_rgb/PCA-FIG-06_cifar100_hierarchical_class_organization_compact.pdf}
@@ -546,6 +576,23 @@ pixels caused the classifier's output.
 
 \Needspace{9\baselineskip}
 \subsection{Label-permutation null}
+
+In this analysis, a \textbf{null} is the reference result expected when class
+labels have no systematic relationship with the learned representations. The
+feature vectors and held-out evaluation labels are kept fixed. The
+fit-training labels are randomly permuted 100 times, preserving the number of
+examples assigned to each class. Class prototypes are recomputed after every
+permutation and evaluated against the unchanged true evaluation labels. This
+breaks the training-label--feature association while retaining the model,
+features, sample sizes, and class balance.
+
+The term \textbf{late permutation null} means that this same control is applied
+at a late tap such as L36 or L39; it is not a separate network or an additional
+training run. The \textbf{null mean} is the average accuracy across the 100
+permutations. The \textbf{null 95\% interval} is the empirical range from the
+2.5th to the 97.5th percentile of those accuracies. An observed accuracy above
+the interval's upper limit is therefore much larger than expected from random
+label assignment under this control.
 
 \input{tables/pca_rgb/PCA-TAB-09_label_permutation_null.tex}
 
