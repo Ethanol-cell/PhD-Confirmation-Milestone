@@ -54,6 +54,14 @@
     \fcolorbox{placeholderorange}{placeholderfill}{%
         \parbox{0.90\linewidth}{\textbf{#1}\par #2}}%
     \end{center}}
+\newcommand{\pcaresultfigure}[2][]{%
+    \IfFileExists{figures/#2}{%
+        \includegraphics[#1]{#2}%
+    }{%
+        \evidenceplaceholder{PCA-RGB figure asset pending}{%
+        Expected repository file: \texttt{figures/#2}.}%
+    }%
+}
 \newcommand{\methodname}{Adaptive K-DGRP}
 \newcommand{\jmethod}{J1}
 \tikzset{
