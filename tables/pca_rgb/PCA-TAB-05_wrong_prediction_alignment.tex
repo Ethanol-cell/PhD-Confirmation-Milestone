@@ -1,0 +1,35 @@
+\begin{landscape}
+\begin{table}[p]
+\centering
+\begin{threeparttable}
+\caption{Wrong-prediction alignment by dataset, tap, and error type.}
+\label{tab:pca-wrong-alignment-main}
+\fontsize{8}{9.8}\selectfont
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabularx}{\linewidth}{@{}l l Y S[table-format=4.0] S[table-format=1.3] c S[table-format=-1.3] S[table-format=-1.3]@{}}
+\toprule
+Dataset & Tap & Error group & {n} & {\makecell{Fraction\\$\Delta d>0$}} & {95\% CI} & {\makecell{Median\\$\Delta d$}} & {\makecell{Mean\\$\Delta d$}}\\
+\midrule
+CIFAR-10 & L35 & All incorrect predictions & 225 & 0.507 & [0.453, 0.560] & 0.005 & -0.130\\
+\thinrowrule
+CIFAR-10 & L36 & All incorrect predictions & 225 & 0.778 & [0.729, 0.827] & 0.170 & 0.185\\
+\thinrowrule
+CIFAR-10 & L39 & All incorrect predictions & 225 & 0.933 & [0.902, 0.964] & 0.333 & 0.379\\
+\midrule
+CIFAR-100 & L35 & All incorrect predictions & 943 & 0.555 & [0.526, 0.583] & 0.004 & 0.017\\
+\thinrowrule
+CIFAR-100 & L36 & All incorrect predictions & 943 & 0.662 & [0.635, 0.690] & 0.033 & 0.057\\
+\thinrowrule
+CIFAR-100 & L39 & All incorrect predictions & 943 & 0.749 & [0.723, 0.773] & 0.070 & 0.124\\
+\midrule
+CIFAR-100 & L39 & Coarse wrong & 392 & 0.809 & [0.776, 0.842] & 0.163 & 0.205\\
+\thinrowrule
+CIFAR-100 & L39 & Fine wrong, coarse correct & 551 & 0.706 & [0.672, 0.739] & 0.036 & 0.066\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
+\item $\Delta d=d(\mathrm{true})-d(\mathrm{pred})$; positive values indicate greater proximity to the predicted-class prototype. Confidence intervals use the frozen class-stratified bootstrap.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
