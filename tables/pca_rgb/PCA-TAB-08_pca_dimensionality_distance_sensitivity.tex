@@ -1,43 +1,59 @@
-\begin{landscape}
-\begin{table}[p]
+\begin{table}[!htbp]
 \centering
 \begin{threeparttable}
 \caption{PCA dimensionality and distance sensitivity at the focused transition.}
 \label{tab:pca-dimensionality-main}
-\fontsize{8}{9.6}\selectfont
-\setlength{\tabcolsep}{2.1pt}
-\begin{tabularx}{\linewidth}{@{}l l l c c c c c c c@{}}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.04}
+\textbf{Prototype accuracy under three distance rules}\par\vspace{2pt}
+\begin{tabularx}{\linewidth}{@{}l l l c c c@{}}
 \toprule
-Dataset & Role & Representation & {k} & {\makecell{Cosine prototype\\accuracy}} & {\makecell{Cosine true\\margin}} & {\makecell{Euclidean prototype\\accuracy}} & {\makecell{RMS-Euclidean\\prototype accuracy}} & {B/W} & {\makecell{Effective\\rank}}\\
+Dataset & Role & Representation & Cosine & Euclidean & RMS-Euclidean\\
 \midrule
-CIFAR-10 & Pre-LN & Raw & \textemdash{} & 0.855 & 0.0004 & 0.325 & 0.938 & 0.595 & 1.65\\
+CIFAR-10 & Pre-LN & Raw & 0.855 & 0.325 & 0.938\\
 \thinrowrule
-CIFAR-10 & Pre-LN & PCA-128 & 128 & 0.375 & -0.301 & 0.325 & 0.968 & 0.933 & 1.65\\
+CIFAR-10 & Pre-LN & PCA-128 & 0.375 & 0.325 & 0.968\\
+\thinrowrule
+CIFAR-10 & Post-LN & Raw & 0.971 & 0.970 & 0.970\\
+\thinrowrule
+CIFAR-10 & Post-LN & PCA-128 & 0.970 & 0.970 & 0.977\\
 \midrule
-CIFAR-10 & Post-LN & Raw & \textemdash{} & 0.971 & 0.343 & 0.970 & 0.970 & 1.021 & 50.79\\
+CIFAR-100 & Pre-LN & Raw & 0.508 & 0.191 & 0.853\\
 \thinrowrule
-CIFAR-10 & Post-LN & PCA-128 & 128 & 0.970 & 0.595 & 0.970 & 0.977 & 1.477 & 50.79\\
-\midrule
-CIFAR-10 & Post-conv & Raw & \textemdash{} & 0.972 & 0.263 & 0.970 & 0.972 & 1.196 & 35.42\\
+CIFAR-100 & Pre-LN & PCA-128 & 0.332 & 0.189 & 0.860\\
 \thinrowrule
-CIFAR-10 & Post-conv & PCA-128 & 128 & 0.969 & 0.632 & 0.970 & 0.977 & 1.802 & 35.42\\
-\midrule
-CIFAR-100 & Pre-LN & Raw & \textemdash{} & 0.508 & -0.0005 & 0.191 & 0.853 & 0.665 & 1.47\\
+CIFAR-100 & Post-LN & Raw & 0.909 & 0.907 & 0.906\\
 \thinrowrule
-CIFAR-100 & Pre-LN & PCA-128 & 128 & 0.332 & -0.308 & 0.189 & 0.860 & 1.148 & 1.47\\
-\midrule
-CIFAR-100 & Post-LN & Raw & \textemdash{} & 0.909 & 0.169 & 0.907 & 0.906 & 1.300 & 88.53\\
-\thinrowrule
-CIFAR-100 & Post-LN & PCA-128 & 128 & 0.903 & 0.292 & 0.901 & 0.902 & 2.121 & 88.53\\
-\midrule
-CIFAR-100 & Post-conv & Raw & \textemdash{} & 0.906 & 0.142 & 0.901 & 0.900 & 1.515 & 71.95\\
-\thinrowrule
-CIFAR-100 & Post-conv & PCA-128 & 128 & 0.904 & 0.268 & 0.899 & 0.903 & 2.433 & 71.95\\
+CIFAR-100 & Post-LN & PCA-128 & 0.903 & 0.901 & 0.902\\
 \bottomrule
 \end{tabularx}
-\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
-\item RMS-Euclidean uses root-mean-square channel scaling. An em dash denotes the raw representation.
+
+\vspace{5pt}
+\textbf{Cosine geometry and dimensionality}\par\vspace{2pt}
+\begin{tabularx}{\linewidth}{@{}l l l c c c@{}}
+\toprule
+Dataset & Role & Representation & True-class margin & B/W separation & Effective rank\\
+\midrule
+CIFAR-10 & Pre-LN & Raw & 0.0004 & 0.595 & 1.65\\
+\thinrowrule
+CIFAR-10 & Pre-LN & PCA-128 & -0.301 & 0.933 & 1.65\\
+\thinrowrule
+CIFAR-10 & Post-LN & Raw & 0.343 & 1.021 & 50.79\\
+\thinrowrule
+CIFAR-10 & Post-LN & PCA-128 & 0.595 & 1.477 & 50.79\\
+\midrule
+CIFAR-100 & Pre-LN & Raw & -0.0005 & 0.665 & 1.47\\
+\thinrowrule
+CIFAR-100 & Pre-LN & PCA-128 & -0.308 & 1.148 & 1.47\\
+\thinrowrule
+CIFAR-100 & Post-LN & Raw & 0.169 & 1.300 & 88.53\\
+\thinrowrule
+CIFAR-100 & Post-LN & PCA-128 & 0.292 & 2.121 & 88.53\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\footnotesize
+\item PCA-128 retains the first 128 train-fitted components. RMS-Euclidean standardizes each coordinate by its fit-training root-mean-square scale before computing Euclidean distance. Post-convolution values remain in the experiment archive.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
-\end{landscape}

@@ -13,6 +13,7 @@
 \usepackage{subcaption}
 \usepackage{float}
 \usepackage[section]{placeins}
+\usepackage{needspace}
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{colortbl}
@@ -34,6 +35,13 @@
 \setlength{\emergencystretch}{2em}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.65em plus 0.15em minus 0.10em}
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{1}
+\setcounter{totalnumber}{3}
+\renewcommand{\topfraction}{0.90}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.78}
 
 \definecolor{placeholderorange}{HTML}{A85A00}
 \definecolor{placeholderfill}{HTML}{FFF5E8}
@@ -154,5 +162,9 @@ object.
 
 \bibliographystyle{plain}
 \bibliography{references}
+
+\clearpage
+\appendix
+\input{sections/09_appendix_pca_rgb}
 
 \end{document}

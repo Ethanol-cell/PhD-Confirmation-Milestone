@@ -1,0 +1,59 @@
+\begin{landscape}
+\section{Full PCA-RGB Evidence Atlases}
+\label{sec:pca-rgb-appendix}
+
+The main report uses compact figures so that each visual result remains beside
+its explanation. This appendix preserves the wider evidence sets at readable
+scale. It does not add new samples or change the quantitative results. No
+subplot letters are used; class names, model conditions, layer identifiers, and
+metric labels provide the required references directly.
+
+\begin{figure}[!htbp]
+    \centering
+    \pcaresultfigure[width=\linewidth,height=0.62\textheight,keepaspectratio]{pca_rgb/PCA-FIG-A01_cifar10_trained_random_all_layers_page_01.pdf}
+    \caption{Complete CIFAR-10 trained-versus-random PCA-RGB depth atlas,
+    first page. Every example is shown as a trained-model row followed by its
+    architecture-matched random-control row. Each layer and condition uses its
+    own dataset-wide, fit-training PCA basis and display scale.}
+    \label{fig:pca-cifar10-depth-appendix-1}
+\end{figure}
+\end{landscape}
+
+\clearpage
+\begin{landscape}
+\begin{figure}[p]
+    \centering
+    \pcaresultfigure[width=\linewidth,height=0.78\textheight,keepaspectratio]{pca_rgb/PCA-FIG-A01_cifar10_trained_random_all_layers_page_02.pdf}
+    \caption{Complete CIFAR-10 trained-versus-random PCA-RGB depth atlas,
+    second page. The layout and normalization follow
+    \cref{fig:pca-cifar10-depth-appendix-1}.}
+    \label{fig:pca-cifar10-depth-appendix-2}
+\end{figure}
+\end{landscape}
+
+\clearpage
+\begin{landscape}
+\begin{figure}[p]
+    \centering
+    \pcaresultfigure[width=\linewidth,height=0.78\textheight,keepaspectratio]{pca_rgb/PCA-FIG-A02_cifar100_same_class_prototypes_full.pdf}
+    \caption{Expanded CIFAR-100 same-class examples and fit-training
+    prototypes at L39. Every image uses the shared trained L39 PCA basis and
+    display scale. Visual similarity is supporting evidence and is interpreted
+    together with prototype accuracy, margin, and separation.}
+    \label{fig:pca-cifar100-prototypes-appendix}
+\end{figure}
+\end{landscape}
+
+\clearpage
+\begin{landscape}
+\begin{figure}[p]
+    \centering
+    \pcaresultfigure[width=\linewidth,height=0.78\textheight,keepaspectratio]{pca_rgb/PCA-FIG-A03_cifar100_incorrect_predictions_full.pdf}
+    \caption{Expanded CIFAR-100 incorrect-prediction evidence at L39.
+    Positive and negative prototype-alignment cases are both retained. The
+    examples illustrate an association with learned semantic geometry; they do
+    not establish causal pixel attribution.}
+    \label{fig:pca-cifar100-errors-appendix}
+\end{figure}
+\end{landscape}
+\clearpage
