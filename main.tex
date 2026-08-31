@@ -15,6 +15,10 @@
 \usepackage[section]{placeins}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{makecell}
+\usepackage{threeparttable}
+\usepackage{pdflscape}
 \usepackage{microtype}
 \usepackage[hidelinks]{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
@@ -38,12 +42,25 @@
 \definecolor{stageorange}{HTML}{FBE6CE}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\definecolor{transitionrow}{RGB}{242,247,250}
+\newcommand{\thinrowrule}{%
+  \arrayrulecolor{black!18}\specialrule{0.22pt}{0pt}{0pt}%
+  \arrayrulecolor{black}%
+}
 \newcommand{\evidenceplaceholder}[2]{%
     \begin{center}
     \setlength{\fboxsep}{8pt}%
     \fcolorbox{placeholderorange}{placeholderfill}{%
         \parbox{0.90\linewidth}{\textbf{#1}\par #2}}%
     \end{center}}
+\newcommand{\pcaresultfigure}[2][]{%
+    \IfFileExists{figures/#2}{%
+        \includegraphics[#1]{#2}%
+    }{%
+        \evidenceplaceholder{PCA-RGB figure asset pending}{%
+        Expected repository file: \texttt{figures/#2}.}%
+    }%
+}
 \newcommand{\methodname}{Adaptive K-DGRP}
 \newcommand{\jmethod}{J1}
 \tikzset{
@@ -71,44 +88,48 @@ Monash University Malaysia}
 \begin{abstract}
 Deep vision models can classify images accurately, but their accuracy does not
 reveal how internal spatial representations develop into class-discriminative
-decisions. Most class activation mapping (CAM) methods localize evidence for a
-chosen output without directly characterizing the representational changes that
-precede it. This PhD project investigates a complementary
-representation-centric hypothesis. Trained vision models may contain a
-transition regime in which generic visual features are reorganized into
-class-relevant spatial geometry that can support both explanation and knowledge
-transfer.
+decisions. Most visual explanation methods localize evidence for a chosen
+output without directly characterizing the representation changes that precede
+it. This PhD project investigates a complementary, representation-centred
+hypothesis: trained vision models contain transition regimes in which already
+decodable class information is reorganized into a geometry that can support
+both explanation and knowledge transfer.
 
 The first research stage uses dataset-wide, layer-specific principal component
 analysis (PCA). Its first three coordinates are rendered as red, green, and blue
-(PCA-RGB) maps. Preliminary observations distinguish early feature-preserving
-states, intermediate transition states, and late class-oriented states.
-Comparisons between trained and random networks, together with CIFAR-10
-misclassification examples, support further investigation. The weaker visual
-regularity on CIFAR-100 and ImageNet-100 motivates quantitative rather than
-purely visual transition criteria. The second stage
-develops Adaptive K Dataset-Global Robust Prototypes (K-DGRP), a class-agnostic,
-gradient-free explanation method that
-scores spatial features by distance from dataset-global robust modes. Completed
-internal experiments show competitive object localization on ResNet-50 and
-four held-out convolutional neural network (CNN) families. The selector was
-developed on ResNet and ConvNeXt before evaluation on the held-out families.
-Class-conditioned CAMs remain stronger on some architectures, and further
-faithfulness validation is still required. The third stage studies knowledge
-distillation (KD), in which a compact student learns from a stronger
-teacher. It introduces \jmethod{}, the project name for a selective hierarchical
-geometry-distillation objective. Rather than copying every teacher feature,
-\jmethod{} transfers an early relational state, balanced principal-component
-coordinates 1--32 (PC1--32) at selected transition and late layers, and late
-affinity flow. On ImageNet-100, \jmethod{} attains
+(PCA-RGB) maps. Train-fitted bases, calibration-only transition selection,
+held-out evaluation, architecture-matched random controls, label-permutation
+nulls, and distance-sensitivity tests establish a late transition in the tested
+ConvNeXt models. Across the focused Pre-LN to Post-LN operation, PCA-128
+cosine-prototype accuracy increases by $0.5948$ on CIFAR-10 and $0.5719$ on
+CIFAR-100, while linear-probe Top-1 changes by only $0.0032$ and $0.0046$.
+Effective rank rises from $1.65$ to $50.79$ and from $1.47$ to $88.53$.
+\textbf{The transition therefore reorganizes existing class information rather
+than marking its first appearance.} The same transition signature remains
+measurable on ImageNet-1K, although compact class-prototype structure is weaker.
+
+The second stage develops Adaptive K Dataset-Global Robust Prototypes
+(K-DGRP), a class-agnostic, gradient-free explanation method that scores spatial
+features by distance from dataset-global robust modes. Completed internal
+experiments show competitive object localization on ResNet-50 and four held-out
+convolutional neural network (CNN) families. Class-conditioned class activation
+mapping methods remain stronger on some architectures, and expanded
+faithfulness validation is still required.
+
+The third stage studies knowledge distillation (KD), in which a compact student
+learns from a stronger teacher. It introduces \jmethod{}, the project name for
+a selective hierarchical geometry-distillation objective. Rather than copying
+every teacher feature, \jmethod{} transfers an early relational state, balanced
+principal-component coordinates 1--32 at selected transition and late layers,
+and late affinity flow. On ImageNet-100, \jmethod{} attains
 $94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically tied
 with ReviewKD-120 under the current evidence.
 
-\textbf{The immediate next stage is to complete and submit two papers: one on
-\methodname{} and one on \jmethod{}.} Transformer investigation will follow
-these publication efforts. A focused literature review and reproducible pilot
-will first survey the broad design space. The project will then concentrate on
-the most informative architectures and explanatory objects.
+\textbf{The immediate next stage is to complete and submit the \methodname{}
+and \jmethod{} papers.} Transformer investigation will follow these publication
+efforts through a broad literature review, a reproducible pilot, and
+evidence-gated selection of the most informative architecture and explanatory
+object.
 \end{abstract}
 
 \clearpage

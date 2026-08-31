@@ -1,0 +1,27 @@
+\begin{landscape}
+\begin{table}[p]
+\centering
+\begin{threeparttable}
+\caption{CIFAR-100 fine/coarse hierarchy at report taps.}
+\label{tab:pca-cifar100-hierarchy-main}
+\fontsize{8}{9.8}\selectfont
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\linewidth}{@{}l c c c c c c c c@{}}
+\toprule
+Tap & {Depth} & {\makecell{Fine prototype\\accuracy}} & {\makecell{Coarse prototype\\accuracy}} & {\makecell{Fine\\margin}} & {\makecell{Coarse\\margin}} & {\makecell{Fine\\B/W}} & {\makecell{Coarse\\B/W}} & {\makecell{Coarse--fine\\accuracy gap}}\\
+\midrule
+L00 & 0.000 & 0.049 & 0.127 & -0.546 & -0.542 & 0.824 & 0.709 & 0.078\\
+\thinrowrule
+L35 & 0.897 & 0.253 & 0.279 & -0.361 & -0.447 & 1.119 & 0.852 & 0.027\\
+\thinrowrule
+\rowcolor{transitionrow} L36 & 0.923 & 0.864 & 0.869 & 0.141 & 0.237 & 3.426 & 1.584 & 0.005\\
+\thinrowrule
+L39 & 1.000 & 0.899 & 0.911 & 0.220 & 0.345 & 5.996 & 1.542 & 0.011\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
+\item B/W is between-class to within-class separation. L36 marks the calibration-selected transition.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}

@@ -1,0 +1,43 @@
+\begin{landscape}
+\begin{table}[p]
+\centering
+\begin{threeparttable}
+\caption{Focused transition controls at raw and PCA-128 representations.}
+\label{tab:pca-focused-transition-controls}
+\fontsize{8}{9.6}\selectfont
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabularx}{\linewidth}{@{}l l l c c c c c c c@{}}
+\toprule
+Dataset & Representation & Role & {\makecell{Prototype\\accuracy}} & {\makecell{True\\margin}} & {B/W} & {\makecell{Effective\\rank}} & {\makecell{Probe\\Top-1}} & {\makecell{Probe\\Top-5}} & {\makecell{Incoming\\1-CKA}}\\
+\midrule
+CIFAR-10 & Raw & Pre-LN & 0.855 & 0.0004 & 0.595 & 1.65 & 0.976 & 1.000 & 0.000\\
+\thinrowrule
+\rowcolor{transitionrow} CIFAR-10 & Raw & Post-LN & 0.971 & 0.343 & 1.021 & 50.79 & 0.979 & 1.000 & 0.861\\
+\thinrowrule
+CIFAR-10 & Raw & Post-conv & 0.972 & 0.263 & 1.196 & 35.42 & 0.976 & 1.000 & 0.024\\
+\midrule
+CIFAR-10 & PCA-128 & Pre-LN & 0.375 & -0.301 & 0.933 & 1.65 & 0.976 & 1.000 & 0.000\\
+\thinrowrule
+\rowcolor{transitionrow} CIFAR-10 & PCA-128 & Post-LN & 0.970 & 0.595 & 1.477 & 50.79 & 0.979 & 1.000 & 0.861\\
+\thinrowrule
+CIFAR-10 & PCA-128 & Post-conv & 0.969 & 0.632 & 1.802 & 35.42 & 0.976 & 1.000 & 0.024\\
+\midrule
+CIFAR-100 & Raw & Pre-LN & 0.508 & -0.0005 & 0.665 & 1.47 & 0.911 & 0.988 & 0.000\\
+\thinrowrule
+\rowcolor{transitionrow} CIFAR-100 & Raw & Post-LN & 0.909 & 0.169 & 1.300 & 88.53 & 0.915 & 0.992 & 0.844\\
+\thinrowrule
+CIFAR-100 & Raw & Post-conv & 0.906 & 0.142 & 1.515 & 71.95 & 0.909 & 0.986 & 0.063\\
+\midrule
+CIFAR-100 & PCA-128 & Pre-LN & 0.332 & -0.308 & 1.148 & 1.47 & 0.911 & 0.988 & 0.000\\
+\thinrowrule
+\rowcolor{transitionrow} CIFAR-100 & PCA-128 & Post-LN & 0.903 & 0.292 & 2.121 & 88.53 & 0.915 & 0.992 & 0.844\\
+\thinrowrule
+CIFAR-100 & PCA-128 & Post-conv & 0.904 & 0.268 & 2.433 & 71.95 & 0.909 & 0.986 & 0.063\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
+\item B/W is between/within separation. Post-LN rows are shaded. The report-facing table retains the focused roles; the experiment archive preserves all taps.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
