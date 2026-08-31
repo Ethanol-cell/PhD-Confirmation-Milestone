@@ -1,41 +1,42 @@
-\begin{table}[p]
+\begin{table}[!htbp]
 \centering
 \begin{threeparttable}
 \caption{Transition-selector component audit.}
 \label{tab:pca-selector-main}
-\fontsize{8}{9.8}\selectfont
-\setlength{\tabcolsep}{3.2pt}
+\footnotesize
+\setlength{\tabcolsep}{3.4pt}
+\renewcommand{\arraystretch}{1.05}
 \begin{tabularx}{\linewidth}{@{}l Y l c Y@{}}
 \toprule
-Dataset & Selector & Selected tap & {Score} & Weights\\
+Dataset & Selector variant & Selected tap & Score & Components and weights\\
 \midrule
-CIFAR-10 & Full & L36 & 5.026 & 1/3, 1/3, 1/3\\
+CIFAR-10 & Full & L36 & 5.026 & $\tfrac13 z(\Delta A)+\tfrac13 z(\Delta G)+\tfrac13 z(C)$\\
 \thinrowrule
-CIFAR-10 & Without CKA & L36 & 5.034 & 1/2, 1/2, 0\\
+CIFAR-10 & Without CKA & L36 & 5.034 & $\tfrac12 z(\Delta A)+\tfrac12 z(\Delta G)$\\
 \thinrowrule
-CIFAR-10 & Without prototype & L36 & 4.635 & 0, 1/2, 1/2\\
+CIFAR-10 & Without prototype & L36 & 4.635 & $\tfrac12 z(\Delta G)+\tfrac12 z(C)$\\
 \thinrowrule
-CIFAR-10 & Without separation & L36 & 5.411 & 1/2, 0, 1/2\\
+CIFAR-10 & Without separation & L36 & 5.411 & $\tfrac12 z(\Delta A)+\tfrac12 z(C)$\\
 \thinrowrule
-CIFAR-10 & Semantic only & L36 & 5.125 & 1/2 positive prototype, 1/2 log separation, 0\\
+CIFAR-10 & Semantic only & L36 & 5.125 & $\tfrac12 z(\max(\Delta A,0))+\tfrac12 z(\Delta G)$\\
 \thinrowrule
-CIFAR-10 & Trained-specific & L36 & 4.190 & Trained score minus random-seed mean\\
+CIFAR-10 & Trained-specific & L36 & 4.190 & Full trained score $-$ random-seed mean\\
 \midrule
-CIFAR-100 & Full & L36 & 5.164 & 1/3, 1/3, 1/3\\
+CIFAR-100 & Full & L36 & 5.164 & $\tfrac13 z(\Delta A)+\tfrac13 z(\Delta G)+\tfrac13 z(C)$\\
 \thinrowrule
-CIFAR-100 & Without CKA & L36 & 5.583 & 1/2, 1/2, 0\\
+CIFAR-100 & Without CKA & L36 & 5.583 & $\tfrac12 z(\Delta A)+\tfrac12 z(\Delta G)$\\
 \thinrowrule
-CIFAR-100 & Without prototype & L36 & 4.875 & 0, 1/2, 1/2\\
+CIFAR-100 & Without prototype & L36 & 4.875 & $\tfrac12 z(\Delta G)+\tfrac12 z(C)$\\
 \thinrowrule
-CIFAR-100 & Without separation & L36 & 5.035 & 1/2, 0, 1/2\\
+CIFAR-100 & Without separation & L36 & 5.035 & $\tfrac12 z(\Delta A)+\tfrac12 z(C)$\\
 \thinrowrule
-CIFAR-100 & Semantic only & L36 & 5.721 & 1/2 positive prototype, 1/2 log separation, 0\\
+CIFAR-100 & Semantic only & L36 & 5.721 & $\tfrac12 z(\max(\Delta A,0))+\tfrac12 z(\Delta G)$\\
 \thinrowrule
-CIFAR-100 & Trained-specific & L36 & 4.376 & Trained score minus random-seed mean\\
+CIFAR-100 & Trained-specific & L36 & 4.376 & Full trained score $-$ random-seed mean\\
 \bottomrule
 \end{tabularx}
-\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
-\item Every variant uses calibration-only selection; evaluation data are not used for fitting or ranking.
+\begin{tablenotes}[flushleft]\footnotesize
+\item $\Delta A$ is the adjacent increase in prototype accuracy, $\Delta G$ is the adjacent increase in log B/W separation, $C=1-\mathrm{CKA}$, and $z(\cdot)$ standardizes a component across eligible calibration taps. Scores are dimensionless ranking values, not accuracies or percentages. Evaluation data are never used to fit or rank a selector.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

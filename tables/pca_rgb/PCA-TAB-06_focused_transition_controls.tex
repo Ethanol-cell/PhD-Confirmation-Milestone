@@ -1,43 +1,39 @@
-\begin{landscape}
-\begin{table}[p]
+\begin{table}[!htbp]
 \centering
 \begin{threeparttable}
-\caption{Focused transition controls at raw and PCA-128 representations.}
+\caption{Focused Pre-LN to Post-LN transition controls.}
 \label{tab:pca-focused-transition-controls}
-\fontsize{8}{9.6}\selectfont
-\setlength{\tabcolsep}{2.2pt}
-\begin{tabularx}{\linewidth}{@{}l l l c c c c c c c@{}}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.06}
+\textbf{Geometric change: Pre-LN $\rightarrow$ Post-LN}\par\vspace{2pt}
+\begin{tabularx}{\linewidth}{@{}l l c c c c@{}}
 \toprule
-Dataset & Representation & Role & {\makecell{Prototype\\accuracy}} & {\makecell{True\\margin}} & {B/W} & {\makecell{Effective\\rank}} & {\makecell{Probe\\Top-1}} & {\makecell{Probe\\Top-5}} & {\makecell{Incoming\\1-CKA}}\\
+Dataset & Representation & Prototype accuracy & True-class margin & B/W separation & Effective rank\\
 \midrule
-CIFAR-10 & Raw & Pre-LN & 0.855 & 0.0004 & 0.595 & 1.65 & 0.976 & 1.000 & 0.000\\
+CIFAR-10 & Raw & 0.855 $\rightarrow$ 0.971 & 0.0004 $\rightarrow$ 0.343 & 0.595 $\rightarrow$ 1.021 & 1.65 $\rightarrow$ 50.79\\
 \thinrowrule
-\rowcolor{transitionrow} CIFAR-10 & Raw & Post-LN & 0.971 & 0.343 & 1.021 & 50.79 & 0.979 & 1.000 & 0.861\\
+CIFAR-10 & PCA-128 & 0.375 $\rightarrow$ 0.970 & -0.301 $\rightarrow$ 0.595 & 0.933 $\rightarrow$ 1.477 & 1.65 $\rightarrow$ 50.79\\
 \thinrowrule
-CIFAR-10 & Raw & Post-conv & 0.972 & 0.263 & 1.196 & 35.42 & 0.976 & 1.000 & 0.024\\
-\midrule
-CIFAR-10 & PCA-128 & Pre-LN & 0.375 & -0.301 & 0.933 & 1.65 & 0.976 & 1.000 & 0.000\\
+CIFAR-100 & Raw & 0.508 $\rightarrow$ 0.909 & -0.0005 $\rightarrow$ 0.169 & 0.665 $\rightarrow$ 1.300 & 1.47 $\rightarrow$ 88.53\\
 \thinrowrule
-\rowcolor{transitionrow} CIFAR-10 & PCA-128 & Post-LN & 0.970 & 0.595 & 1.477 & 50.79 & 0.979 & 1.000 & 0.861\\
-\thinrowrule
-CIFAR-10 & PCA-128 & Post-conv & 0.969 & 0.632 & 1.802 & 35.42 & 0.976 & 1.000 & 0.024\\
-\midrule
-CIFAR-100 & Raw & Pre-LN & 0.508 & -0.0005 & 0.665 & 1.47 & 0.911 & 0.988 & 0.000\\
-\thinrowrule
-\rowcolor{transitionrow} CIFAR-100 & Raw & Post-LN & 0.909 & 0.169 & 1.300 & 88.53 & 0.915 & 0.992 & 0.844\\
-\thinrowrule
-CIFAR-100 & Raw & Post-conv & 0.906 & 0.142 & 1.515 & 71.95 & 0.909 & 0.986 & 0.063\\
-\midrule
-CIFAR-100 & PCA-128 & Pre-LN & 0.332 & -0.308 & 1.148 & 1.47 & 0.911 & 0.988 & 0.000\\
-\thinrowrule
-\rowcolor{transitionrow} CIFAR-100 & PCA-128 & Post-LN & 0.903 & 0.292 & 2.121 & 88.53 & 0.915 & 0.992 & 0.844\\
-\thinrowrule
-CIFAR-100 & PCA-128 & Post-conv & 0.904 & 0.268 & 2.433 & 71.95 & 0.909 & 0.986 & 0.063\\
+CIFAR-100 & PCA-128 & 0.332 $\rightarrow$ 0.903 & -0.308 $\rightarrow$ 0.292 & 1.148 $\rightarrow$ 2.121 & 1.47 $\rightarrow$ 88.53\\
 \bottomrule
 \end{tabularx}
-\begin{tablenotes}[flushleft]\fontsize{8}{9.6}\selectfont
-\item B/W is between/within separation. Post-LN rows are shaded. The report-facing table retains the focused roles; the experiment archive preserves all taps.
+
+\vspace{5pt}
+\textbf{Decodability and adjacent representation change}\par\vspace{2pt}
+\begin{tabularx}{\linewidth}{@{}l c c c c@{}}
+\toprule
+Dataset & \makecell{Probe Top-1\\Pre $\rightarrow$ Post} & $\Delta$ Top-1 & \makecell{Incoming $1-\mathrm{CKA}$\\at Post-LN} & \makecell{Post-LN $\rightarrow$ Post-conv\\$1-\mathrm{CKA}$}\\
+\midrule
+CIFAR-10 & 0.976 $\rightarrow$ 0.979 & 0.0032 & 0.861 & 0.024\\
+\thinrowrule
+CIFAR-100 & 0.911 $\rightarrow$ 0.915 & 0.0046 & 0.844 & 0.063\\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\footnotesize
+\item The linear probe is the only trained component: it is fitted on the first globally averaged (pooled) representation from the frozen backbone. Its regularization is selected on calibration data. Full raw/PCA-128 and Post-conv values remain in the experiment archive.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
-\end{landscape}
