@@ -173,6 +173,26 @@ ImageNet-1K uses a pretrained ConvNeXt checkpoint for visualization and
 representation measurement; no ImageNet-1K model was trained as part of this
 study.
 
+\textbf{The trained checkpoints have strong classification accuracy, which is
+reported separately from the prototype accuracy studied below.} CIFAR-10 uses
+the ConvNeXt-Small checkpoint
+\path{clr4takeoff/convnext-small-cifar10} \cite{clr4takeoff2026convnextcifar10}.
+Under the frozen preprocessing protocol, it correctly classifies 9,775 of the
+10,000 official test images, giving \textbf{97.75\% Top-1 accuracy}. CIFAR-100
+uses the ConvNeXt-Base checkpoint
+\path{anonauthors/cifar100-ConvNeXt-base}
+\cite{anonauthors2026convnextcifar100}. It correctly classifies 9,057 of the
+10,000 official test images, giving \textbf{90.57\% Top-1 accuracy}. These two
+figures were measured locally using the exact frozen checkpoints and
+preprocessing used in Progress I. ImageNet-1K uses the pretrained
+\path{timm/convnext_small.fb_in1k} checkpoint
+\cite{wightman2026convnextsmallfbin1k}. Its official model comparison reports
+83.142\% Top-1 and 96.434\% Top-5 accuracy at 224-pixel resolution. These
+ImageNet-1K values are reference results rather than measurements from this
+study: the checkpoint was used without additional training on a frozen
+5,000-image cohort for visualization and representation analysis, and its
+full-validation classification accuracy was not independently re-evaluated.
+
 \Needspace{9\baselineskip}
 \subsection{Visual progression across depth}
 
