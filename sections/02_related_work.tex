@@ -1,8 +1,15 @@
 \section{Critical Literature Review}\label{sec:related-work}
 
-\subsection{Scope and terminology}
+This review develops one connected argument. It first defines what an
+explanation can claim, then compares the principal ways of explaining vision
+models and the evidence needed to evaluate them. This comparison exposes a
+shared limitation: most post-hoc methods begin with a representation that has
+already formed, but say little about how it became semantic across depth.
+Representation analysis provides the bridge to that question. The same bridge
+then connects the PCA-RGB observations to Adaptive K-DGRP and to selective
+geometric knowledge transfer through J1.
 
-\subsubsection{Intrinsic interpretability and post-hoc explanation}
+\subsection{From model transparency to post-hoc evidence}
 
 Explainability in machine learning is not one problem with one universally
 correct output. The literature uses terms such as interpretability,
@@ -33,16 +40,12 @@ that the underlying CNN has become intrinsically transparent. In a high-stakes
 application, these methods should support diagnosis and scientific
 understanding, not replace an interpretable model when one is feasible.
 
-\subsubsection{Terminology and evaluation levels}
-
 Evaluation frameworks also distinguish application-grounded studies with real users,
 human-grounded proxy tasks, and functionally grounded tests that do not require
 human participants \cite{doshivelez2017rigorous}. Broad surveys organize the
 field by whether an explanation is local or global, model-specific or
 model-agnostic, and intrinsic or post-hoc
 \cite{guidotti2018survey,arrieta2020xai,samek2021explaining}.
-
-\subsubsection{Explanatory objects in this thesis}
 
 These distinctions matter for this project. A saliency map can estimate input
 importance for one score; a concept method can test sensitivity to a
@@ -62,8 +65,6 @@ it tests whether selected internal geometry is useful for knowledge transfer.
 \textbf{The question being asked determines the choice of method. The report
 does not treat all visual maps as interchangeable explanations.}
 
-\subsubsection{Claim boundaries}
-
 \textbf{This distinction helps prevent a common category error: a visually
 plausible map is not automatically faithful to a classifier, and a faithful
 sensitivity map is not automatically understandable or useful to a person.}
@@ -75,9 +76,17 @@ recurrent dataset-global modes. For a predicted-class CAM, it is which spatial
 locations support a particular logit. The answers can overlap without being
 equivalent.
 
-\subsection{Gradient and relevance-propagation attribution}
+\subsection{How vision models are explained}
 
-\subsubsection{Gradient-based attribution}
+The main explanation families obtain different kinds of evidence. Gradient
+and relevance methods trace a score backward. Perturbation methods intervene
+on the input and observe the response. Surrogate methods approximate the model
+locally. Concept, example, and prototype methods use more structured
+explanatory units. Class activation mapping connects class scores to spatial
+feature maps. Organizing the literature by these evidential roles makes the
+relationships clearer than treating every named method as a separate topic.
+
+\subsubsection{Output sensitivity and relevance propagation}
 
 One early family explains a network output through its local derivative with
 respect to the input. Vanilla saliency uses the gradient of a class score with
@@ -93,8 +102,6 @@ reference activation and propagates contribution differences
 rules can be understood as closely related gradient-times-signal estimators
 under different local approximations and reference choices
 \cite{ancona2018gradient}.
-
-\subsubsection{Relevance propagation}
 
 Layer-wise relevance propagation (LRP) redistributes a prediction backward
 through the network under conservation-style rules
@@ -112,8 +119,6 @@ or architecture-insensitive visual structure, and modified backpropagation may
 detach the visualization from the actual forward computation
 \cite{adebayo2018sanity,sixt2020explanationslie}.
 
-\subsubsection{Implication for this project}
-
 \textbf{Sharpness is not the same as faithfulness.} A high-resolution map may
 principally reconstruct edges or image structure, whereas a lower-resolution
 map may more directly track the selected score. For this reason, the present
@@ -121,9 +126,7 @@ project does not choose an explanation method by appearance alone and includes
 randomization, perturbation, and class-sensitivity tests in its publication
 protocol.
 
-\subsection{Perturbation, surrogate, and example-based explanations}
-
-\subsubsection{Perturbation-based explanations}
+\subsubsection{Behavioural perturbation and local approximation}
 
 Perturbation methods estimate importance through controlled changes to the
 input or internal representation. Occlusion analysis masks image regions and
@@ -142,8 +145,6 @@ inputs, so the result partly reflects the perturbation operator.
 \textbf{Perturbation gives direct behavioural evidence, but the conclusion is
 only as credible as the masking, replacement, or inpainting intervention.}
 
-\subsubsection{Local surrogate explanations}
-
 Model-agnostic surrogates approximate a complex predictor near an example.
 Local Interpretable Model-agnostic Explanations (LIME) fits a sparse local
 linear model to perturbed samples \cite{ribeiro2016lime}. SHapley Additive
@@ -158,7 +159,7 @@ sample, not a complete account of how a deep representation formed.
 \textbf{LIME and SHAP explain a local approximation or attribution game; they
 do not reveal the full sequence by which spatial features become semantic.}
 
-\subsubsection{Example-based explanations}
+\subsubsection{Examples, concepts, and prototypes}
 
 Example-based explanations identify influential or representative training
 cases rather than pixels. Influence functions approximate how upweighting a
@@ -175,10 +176,6 @@ approximation assumptions.
 whereas this thesis mainly asks \emph{which spatial representation and
 transition matter?}}
 
-\subsection{Concept, prototype, and representation-based explanation}
-
-\subsubsection{Concept-based explanations}
-
 Concept-based methods move from individual pixels toward semantic units.
 Network Dissection measures alignment between individual units and a labelled
 concept vocabulary \cite{bau2017networkdissection}. Testing with Concept
@@ -194,8 +191,6 @@ explanations in more human-recognizable terms, but discovered concepts depend
 on annotations, exemplars, segmentation, layer choice, and the completeness of
 the concept vocabulary.
 
-\subsubsection{Prototype and label-free representation explanations}
-
 Prototype networks make similarity to learned cases part of the prediction.
 For example, ProtoPNet compares image patches with learned class prototypes
 and presents a ``this looks like that'' justification
@@ -208,8 +203,6 @@ or retrieving inputs that strongly activate units
 in recurrent spatial feature geometry. They also warn that a geometric mode is
 not automatically a named semantic concept.
 
-\subsubsection{Positioning of K-DGRP}
-
 Adaptive K-DGRP lies between prototype analysis and spatial explanation. Its
 robust centres summarize common modes of unpooled feature vectors across a
 label-free calibration set; the explanation highlights locations that are far
@@ -218,9 +211,7 @@ prototypes, or counterfactual examples. \textbf{The method explains spatial
 distinctiveness relative to a learned representation distribution, not the
 full causal mechanism of a class decision.}
 
-\subsection{Class activation mapping}
-
-\subsubsection{CAM variants}
+\subsubsection{Class activation and spatial localization}
 
 Class activation mapping is especially influential in computer vision because
 it connects semantic convolutional features with spatial localization. The
@@ -240,8 +231,6 @@ resolution \cite{jiang2021layercam}. EigenCAM instead projects activations
 onto a dominant principal direction and is class-agnostic
 \cite{muhammad2020eigencam}.
 
-\subsubsection{Limitations of CAM-based localization}
-
 CAM variants are useful because they are simple, spatially interpretable, and
 often align with objects. Nevertheless, their explanation depends on a chosen
 layer, target score, resolution, and weighting rule. The final convolutional
@@ -252,8 +241,6 @@ appropriate. Score-based variants reduce gradient pathologies but introduce
 many forward evaluations and masking assumptions. Class-agnostic EigenCAM may
 expose dominant variance rather than decision-relevant evidence.
 
-\subsubsection{Why this project begins with representation transition}
-
 This motivates a different starting point. Instead of assuming that the final
 convolution is the explanatory layer, the project first studies how spatial
 representation changes across depth. K-DGRP then asks whether the distribution
@@ -262,9 +249,14 @@ target class or gradient. This comparison with CAMs is informative but
 asymmetric. \textbf{Localization and classifier faithfulness are different
 evaluation axes.}
 
-\subsection{Limitations, faithfulness, and evaluation}
+\subsection{What makes a visual explanation credible}
 
-\subsubsection{Sanity and perturbation tests}
+The limitations above share a common lesson: appearance alone cannot establish
+explanation quality. Evaluation must match the claim made by the method and
+should combine several forms of evidence rather than reward one favourable
+metric.
+
+\subsubsection{Faithfulness, robustness, and metric disagreement}
 
 Several studies demonstrate that explanation quality cannot be inferred from
 appearance. Model-parameter and data randomization tests reveal that some
@@ -277,8 +269,6 @@ output change under a perturbation distribution, while sensitivity measures
 local explanation instability \cite{yeh2019infidelity}. Pixel-flipping and
 region-perturbation protocols similarly test whether removing highly ranked
 evidence changes the decision \cite{samek2017evaluating}.
-
-\subsubsection{Robustness and disagreement between metrics}
 
 Robustness is another concern. Small adversarial changes can alter an
 interpretation without materially changing the prediction
@@ -293,7 +283,7 @@ necessary under one corruption process, insertion asks whether it is
 sufficient under another, localization compares with human object masks, and
 pointing-game accuracy rewards only a peak location.
 
-\subsubsection{Evaluation chosen for this project}
+\subsubsection{Evaluation strategy for this project}
 
 \textbf{No explanation family is uniformly faithful under every definition.}
 The correct response is not to select one favorable metric, but to state the
@@ -307,9 +297,15 @@ architectures; and qualitative cases selected without looking at final metric
 outcomes. Human-grounded evaluation may later test usefulness, but it should
 not replace functional evidence.
 
-\subsection{Representation evolution and neural collapse}
+\subsection{From explanation maps to representation formation}
 
-\subsubsection{Comparing representations across depth}
+Most post-hoc methods begin with a trained representation and a selected
+output. They therefore leave a deeper question unanswered: when does a vision
+network move from encoding local visual structure to organizing features around
+class-relevant information? Answering it requires methods that compare internal
+representations across depth.
+
+\subsubsection{Measuring change across depth}
 
 Related methods compare internal representations rather than attribute an
 output. Linear probes measure how
@@ -326,7 +322,7 @@ trained networks learn convergent features and emphasizes statistical testing
 when interpreting similarity scores
 \cite{li2015convergent,ding2021grounding}.
 
-\subsubsection{PCA-RGB as a spatial diagnostic}
+\subsubsection{PCA-RGB and the representation transition}
 
 PCA-RGB is simpler and more spatially direct. Principal component analysis
 finds orthogonal directions of maximal variance. The method originates in
@@ -346,7 +342,7 @@ imbalance rather than semantics.
 layout and makes dataset-aligned feature directions visible; quantitative,
 basis-invariant measures are still required to support transition claims.}
 
-\subsubsection{Neural collapse as a late-geometry reference}
+\subsubsection{Late class geometry and the motivation for K-DGRP}
 
 Neural collapse provides a useful late-training reference. In the terminal
 phase of balanced classification, within-class features can contract, class
@@ -360,8 +356,6 @@ idealized balanced geometry is not universal \cite{fang2021layerpeeled}. A
 recent review synthesizes definitions, theoretical models, and open questions
 \cite{kothapalli2023neuralcollapse}.
 
-\subsubsection{Implication for K-DGRP}
-
 \textbf{Neural collapse is a model of late class geometry, not an explanation
 of every spatial prototype.} The K-DGRP centres summarize common unpooled
 spatial modes and are few in number; they are not expected to reproduce a
@@ -371,12 +365,16 @@ the broader spatial/common-mode geometry used by K-DGRP. This is particularly
 valuable on CIFAR-100 and ImageNet-100, where the first three principal
 coordinates do not show an obvious class-consistent colour code.
 
-\subsection{Knowledge distillation: response-based transfer}
+\subsection{From representation observation to knowledge transfer}
 
-\subsubsection{Classical output distillation}
+The representation transition raises a second question. If selected internal
+geometry helps explain a trained model, can it also guide a smaller model while
+that model is learning? Knowledge distillation (KD) provides the framework for
+testing this training utility.
 
-Knowledge distillation (KD) transfers information from a teacher or ensemble
-to a student. Early model-compression work trained a compact model on targets
+\subsubsection{From response transfer to intermediate knowledge}
+
+Early model-compression work trained a compact model on targets
 generated by a larger ensemble \cite{bucila2006compression}, and later work
 showed that shallow networks can learn the function of deeper models
 \cite{ba2014deep}. The widely used formulation of Hinton et al. combines
@@ -390,8 +388,6 @@ one-hot labels.
 class-level teacher information without requiring the teacher and student to
 share internal dimensions.}
 
-\subsubsection{Response-transfer variants}
-
 Response transfer has developed in several directions. Born-Again Networks
 show that a student with the same architecture can improve through sequential
 distillation \cite{furlanello2018ban}. Deep Mutual Learning removes the fixed
@@ -404,8 +400,6 @@ distillation signal \cite{xu2020sskd}. Decoupled KD separates target-class and
 non-target-class contributions, showing that the conventional
 Kullback--Leibler (KL) term combines
 distinct forms of transfer \cite{zhao2022dkd}.
-
-\subsubsection{Limits of output-only transfer}
 
 Output KD is attractive because teacher and student need only share a label
 space, but it leaves internal spatial organization unspecified. Its
@@ -422,9 +416,7 @@ actually matches the teacher function away from the training samples
 describe KD as a family spanning response, feature, relation, and online
 transfer rather than one fixed loss \cite{gou2021kdsurvey,wang2021kdreview}.
 
-\subsection{Feature, relation, and hierarchical distillation}
-
-\subsubsection{Feature distillation}
+\subsubsection{Feature, relational, and hierarchical transfer}
 
 Feature distillation supplies intermediate supervision. FitNets use a learned
 regressor to match a teacher hint layer and help optimize a thin student
@@ -437,8 +429,6 @@ features into factors and trains a student translator to reproduce them
 \cite{kim2018factortransfer}. These methods establish that useful knowledge
 exists beyond logits, but they also introduce decisions about feature adapters,
 layer correspondence, normalization, and loss scale.
-
-\subsubsection{Relational distillation}
 
 Relational methods reduce dependence on channel identity. Relational KD
 matches pairwise distances and angles among examples
@@ -458,8 +448,6 @@ boundary the student occupies rather than forcing exact regression
 spatial organization without requiring teacher and student channels to be
 identical.}
 
-\subsubsection{Hierarchical and selective feature transfer}
-
 More recent feature methods address selectivity and cross-layer mismatch.
 Overhaul of Feature Distillation (OFD)
 uses margin-based partial feature transfer and teacher-derived transforms
@@ -476,8 +464,6 @@ transfers class-attention maps and emphasizes
 class-relevant spatial structure \cite{guo2023catkd}. InDistill explicitly
 targets information-flow preservation across intermediate stages
 \cite{sarridis2025indistill}.
-
-\subsubsection{Lessons for this thesis}
 
 The literature supports two conclusions relevant to this thesis. First,
 \textbf{feature geometry, spatial attention, pairwise relations, and inter-layer
@@ -499,23 +485,13 @@ This makes relation losses useful when teacher and student widths differ, but
 it also means that they may preserve relative organization without fixing the
 absolute semantic orientation of the feature space.
 
-That trade-off motivates the J1 combination. The early relational
-anchor preserves coarse spatial organization while permitting different
-channels; balanced principal-component coordinate targets later provide a
-more explicit teacher reference where the representation is becoming
-class-relevant; and late relational-flow terms preserve how mature affinities
-change between stages. \textbf{The intended design is complementary rather
-than redundant: relation losses protect geometry under architectural mismatch,
-while selected coordinate losses specify teacher directions only where the
-development evidence supports doing so.}
+These findings narrow the problem but do not solve it. They establish that
+several forms of intermediate knowledge can be useful, while leaving open how
+they should be selected and combined. \textbf{The resulting design principle
+is selective transfer: preserve a useful geometric property at an
+evidence-supported state rather than copying every available teacher feature.}
 
-\textbf{The design principle is selective transfer: preserve a
-useful geometric property at evidence-supported states, rather than copying
-every available teacher feature.}
-
-\subsection{KD limitations and positioning of J1}
-
-\subsubsection{Which teacher geometry to enforce and which student pathways to leave unconstrained}
+\subsubsection{Selective geometric transfer and J1}
 
 The central unresolved design question is \textbf{which teacher-derived
 property should be enforced at each stage, and which student transformations
@@ -541,8 +517,6 @@ The design is related to feature, attention, relational, cross-layer, and
 boundary-based KD, but its specific contribution is the selection and
 calibration of complementary geometric constraints.
 
-\subsubsection{Empirical choice of transition layers}
-
 The choice of transition layers is empirical. Early, transition, and late
 placement were tested during development. Early relational supervision was
 useful, but dense coordinate or flow supervision too early constrained
@@ -559,8 +533,6 @@ transition blocks.
 that early features are not yet semantically mature, while late-only guidance
 has already discarded useful intermediate spatial organization.}
 
-\subsubsection{Reliability, balance, and validation}
-
 J1 also addresses loss interaction. Its teacher-correct gate avoids imitating
 unreliable teacher targets. Global Teacher-Coordinate Supervision (TCS)
 \cite{chan2026j1} uses frozen teacher-defined coordinate partitions as a
@@ -574,17 +546,15 @@ hyperplanes transfer partitions rather than exact features. Gradient-ratio
 calibration is related to work on adaptive multi-task weighting and gradient
 conflict management \cite{chen2018gradnorm,kendall2018multitask,
 sener2018multiobjective,yu2020pcgrad}. In J1, it freezes an interpretable level
-of training pressure before benchmark comparison. The current ImageNet-100 result
-shows that the complete J1 package is a practical peer of ReviewKD, but matched
-component, layer, cost, and generality experiments are still required.
+of training pressure before benchmark comparison. The results chapter
+evaluates whether the complete package improves transfer under matched
+experimental conditions.
 
 \textbf{These choices separate three risks: teacher error is handled by the
 correctness gate, coordinate imbalance by RMS scaling, and accidental loss
 dominance by gradient-ratio calibration.}
 
-\subsection{Vision transformers and future scope}
-
-\subsubsection{Transformer representations}
+\subsection{Beyond CNNs and the resulting research gaps}
 
 Vision Transformers (ViTs) replace convolutional feature hierarchies with
 patch-token processing and global self-attention
@@ -596,8 +566,6 @@ representation and inductive-bias behavior between CNNs and ViTs
 \cite{raghu2021vitcnn}, and self-supervised ViTs can develop salient
 object-oriented attention structure without segmentation labels
 \cite{caron2021dino}.
-
-\subsubsection{Why attention alone is insufficient}
 
 Attention weights are tempting explanations, but high attention is not in
 general equivalent to feature importance or causal influence. Studies in
@@ -617,8 +585,6 @@ mehri2025libragrad,bousselham2025legrad}.
 test whether the selected token-space object is semantically meaningful and
 behaviourally useful.}
 
-\subsubsection{Planned literature and pilot stage}
-
 The next phase will begin with a focused literature review and a
 small reproducible baseline set, not a fixed method claim. Candidate objects
 include residual-stream states, patch tokens, value features, attention
@@ -628,8 +594,6 @@ gate, and utility gate identify a stable transition object.} A negative result
 for direct PCA-RGB or
 K-DGRP transfer would still clarify which properties depend on convolutional
 locality and which generalize across vision architectures.
-
-\subsection{Synthesis of research gaps}
 
 The literature leaves four gaps that define this PhD programme.
 
@@ -649,8 +613,8 @@ The literature leaves four gaps that define this PhD programme.
     grids to token-mixing architectures.
 \end{enumerate}
 
-The proposed flow follows these gaps: observe and quantify representation
-transition; test its explanatory value through Adaptive K-DGRP; test its
-training utility through J1; then examine its scope in transformer models. The
-two immediate publication tasks are the K-DGRP and J1 papers, each with
-placeholders in this report for the remaining confirmatory evidence.
+These gaps define the flow of the thesis. The first study observes and
+quantifies the representation transition with PCA-RGB. The second tests its
+explanatory value through Adaptive K-DGRP. The third tests its training utility
+through J1. The later transformer stage examines the scope of the observation
+without committing in advance to one representation or explanation method.
