@@ -25,14 +25,21 @@ transition location.\\
 \thinrowrule
 Adaptive robust prototype-relative geometry localizes object-relevant spatial
 structure
-& Adaptive-$K$ multi-architecture localization; held-out and prospective
-ImageNet-S cohorts; exact distance decomposition; prospective RANDOM64
-geometry-preservation control; localization, AUPRC, and faithfulness
-non-inferiority across six CNN architectures
-& Supported for class-agnostic object-relevant localization in the tested CNN
-families. Mechanistic evidence supports a redundant prototype-relative
-Euclidean geometry, and RAW Adaptive K-DGRP remains canonical. External-domain
-and target-class attribution claims remain separate.\\
+& Original 600-image regression and separate 580-image primary confirmatory
+localization; verified prototype and CDF assets; exact distance decomposition;
+prospective 1,000-image RANDOM64 geometry-preservation control
+& Supported for class-agnostic object-relevant localization in the stated CNN
+cohorts. RANDOM64 supports distance preservation as mechanism evidence, but its
+median end-to-end speedup is only $0.999\times$; RAW Adaptive K-DGRP remains
+canonical.\\
+\thinrowrule
+Full Progress II faithfulness and sanity closure
+& Four of six ImageNet-100 mask-free model outputs are present; the 890-image
+prospective curves require historical-identity verification; ROAD and
+parameter/label randomization are incomplete
+& Open. Probability-based AUC, historical content identity, final prospective
+statistics, ROAD, randomization, and the semantic/error atlas must pass their
+frozen gates before Progress II is called final.\\
 \thinrowrule
 The J1 geometry package benefits student learning
 & J1 exceeds H9 across three seeds; implementation-forensics audit; external
@@ -62,13 +69,17 @@ wrong-prediction analysis, mechanism controls, and cross-dataset evidence.
 Remaining work is limited to the replication needed to define the scope of the
 transition claim.
 
-\textbf{K-DGRP's CNN mechanism is sufficiently characterized for this milestone
-report.} The remaining K-DGRP work should concentrate on publication packaging,
-external-domain generalization, any sanity or class-sensitivity controls that
-remain open, and a fixed qualitative error atlas. It should not continue an
-unbounded search over PCA, radius, common-gain, or residual scoring formulas.
-The J1 paper still requires replication of the strongest external baselines,
-an uncertainty-aware J1--ReviewKD comparison, resource-cost reporting, and a
+\textbf{The current evidence is sufficient to retain RAW Adaptive K-DGRP and
+close the search over alternative scoring formulas, but Progress II is not yet
+final.} The remaining K-DGRP work is specifically bounded: verify historical
+content identity for saved curves; replace logit-integrated AUC with frozen
+target-class probability AUC; complete ROAD; finish parameter and label
+randomization; produce the final prospective statistics; and freeze a
+qualitative semantic/error atlas. External-domain generalization can then
+define the scope of the method. This work should not reopen an unbounded search
+over PCA, radius-normalized, common-gain, or residual scoring formulas. The J1
+paper still requires replication of the strongest external baselines, an
+uncertainty-aware J1--ReviewKD comparison, resource-cost reporting, and a
 generality test beyond one teacher--student setting.
 
 \subsection{Transformer investigation across a broad design space}

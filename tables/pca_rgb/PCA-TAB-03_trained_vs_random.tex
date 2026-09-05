@@ -1,14 +1,17 @@
 \begin{table}[!htbp]
 \centering
 \begin{threeparttable}
-\caption{Trained versus architecture-matched random prototype accuracy at report taps.}
+\caption{Prototype accuracy of supervised trained checkpoints and
+architecture-matched untrained random-backbone controls at report taps.}
 \label{tab:pca-trained-random-main}
 \small
 \setlength{\tabcolsep}{4.5pt}
 \renewcommand{\arraystretch}{1.08}
 \begin{tabularx}{\linewidth}{@{}l l c c c@{}}
 \toprule
-Dataset & Tap & Trained & Random mean $\pm$ SD & Trained $-$ random mean\\
+Dataset & Tap & \makecell{Trained\\checkpoint} &
+\makecell{Random controls\\mean $\pm$ SD} &
+\makecell{Trained $-$\\random mean}\\
 \midrule
 CIFAR-10 & L00 & 0.223 & 0.213 $\pm$ 0.001 & 0.010\\
 \thinrowrule
@@ -28,7 +31,13 @@ CIFAR-100 & L39 & 0.899 & 0.039 $\pm$ 0.000 & 0.860\\
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft]\footnotesize
-\item The random summary is the mean and sample standard deviation across three architecture-matched initializations. L36 is the transition selected on calibration data.
+\item ``Trained checkpoint'' is the frozen supervised-classification model.
+``Random controls'' are three independent instances of the same architecture
+whose randomly initialized backbone weights were never trained. For every
+control, class prototypes are fitted from that frozen backbone's fit-training
+descriptors and evaluated on held-out images. The table reports their mean and
+sample standard deviation. Lxx denotes the sequential tap index in the frozen
+layer registry; L36 is the transition selected using calibration data.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

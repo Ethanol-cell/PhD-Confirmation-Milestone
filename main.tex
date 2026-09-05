@@ -95,52 +95,30 @@ Monash University Malaysia}
 
 \begin{abstract}
 Deep vision models can classify images accurately, but their accuracy does not
-reveal how internal spatial representations develop into class-discriminative
-decisions. Most visual explanation methods localize evidence for a chosen
-output without directly characterizing the representation changes that precede
-it. This PhD project investigates a complementary, representation-centred
-hypothesis: trained vision models contain transition regimes in which already
-decodable class information is reorganized into a geometry that can support
-both \textbf{explanation and knowledge transfer.}
+reveal how their internal representations become organized for a decision.
+This PhD investigates whether the geometry that develops inside vision models
+can support both \textbf{explanation and knowledge transfer.}
 
-The first research stage uses dataset-wide, layer-specific principal component
-analysis (PCA). Its first three coordinates are rendered as red, green, and blue
-(PCA-RGB) maps. Train-fitted bases, calibration-only transition selection,
-held-out evaluation, architecture-matched random controls, label-permutation
-nulls, and distance-sensitivity tests establish a late transition in the tested
-ConvNeXt models. Across the focused Pre-LN to Post-LN operation, PCA-128
-cosine-prototype accuracy increases by $0.5948$ on CIFAR-10 and $0.5719$ on
-CIFAR-100, while linear-probe Top-1 changes by only $0.0032$ and $0.0046$.
-Effective rank rises from $1.65$ to $50.79$ and from $1.47$ to $88.53$.
-\textbf{The transition therefore reorganizes existing class information rather
-than marking its first appearance.} The same transition signature remains
-measurable on ImageNet-1K, although compact class-prototype structure is weaker.
+The first stage uses principal component analysis with red--green--blue
+rendering (PCA-RGB) to follow spatial representations through a convolutional
+neural network (CNN). The experiments reveal a late transition pattern: class
+information is already readable before the transition, but is then reorganized
+into a more compact, class-oriented geometry. Comparisons with
+architecture-matched randomly initialized networks, label-permutation tests,
+and basis-invariant measurements support this pattern on CIFAR-10 and
+CIFAR-100, with a related but weaker signature on ImageNet-1K.
 
 The second stage develops Adaptive K Dataset-Global Robust Prototypes
-(K-DGRP), a class-agnostic, gradient-free explanation method. K-DGRP scores
-each spatial feature by its Euclidean distance from the nearest recurrent robust
-mode of a label-free calibration distribution. The number of modes is selected
-from calibration occupancy rather than object masks. Across ResNet-50 and five
-additional convolutional neural network (CNN) families, K-DGRP reaches a
-competitive object-localization regime while remaining distinct from
-class-conditioned class activation mapping (CAM). Mechanistic decomposition
-and a prospective geometry-preservation control show that the useful signal is
-carried by highly redundant prototype-relative Euclidean geometry: a fixed
-64-dimensional random orthogonal embedding preserves localization, area under
-the precision--recall curve (AUPRC), and perturbation faithfulness within the
-preregistered non-inferiority margins for all six architectures. The compressed
-control remains slightly weaker than the full representation and provides no
-measured end-to-end speed advantage. The original full-dimensional RAW
-Adaptive K-DGRP therefore remains the canonical method.
+(K-DGRP), a class-agnostic and gradient-free visual explanation method. Across
+six CNN architectures, the results support competitive object-relevant
+localization relative to class activation mapping (CAM) baselines. The
+full-dimensional RAW method remains the canonical version.
 
 The third stage studies knowledge distillation (KD), in which a compact student
-learns from a stronger teacher. It introduces \jmethod{}, the project name for
-a selective hierarchical geometry-distillation objective. Rather than copying
-every teacher feature, \jmethod{} transfers an early relational state, balanced
-principal-component coordinates 1--32 at selected transition and late layers,
-and late affinity flow. On ImageNet-100, \jmethod{} attains
-$94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically tied
-with ReviewKD-120 under the current evidence.
+learns from a stronger teacher. It introduces \jmethod{}, a selective
+hierarchical geometry-distillation objective. On ImageNet-100, \jmethod{}
+achieves $94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically
+tied with ReviewKD-120 under the current evidence.
 \end{abstract}
 
 \clearpage

@@ -25,9 +25,9 @@ magnitude, robust-mode location, and prototype-relative direction rather than
 reducing to feature norm alone.
 
 Most importantly, a prospectively evaluated fixed 64-dimensional random
-orthogonal embedding preserves localization, AUPRC, and perturbation
-faithfulness across all six tested CNN families within the preregistered
-non-inferiority margins. \textbf{This supports a concise mechanism: K-DGRP
+orthogonal embedding meets the pooled localization and normalized-logit
+faithfulness non-inferiority margins across six tested CNN families.
+\textbf{This supports a concise mechanism: K-DGRP
 works because object-relevant spatial features are distinctive relative to
 recurrent robust modes, and the corresponding prototype-relative Euclidean
 geometry is highly redundant across feature dimensions.} The compressed
@@ -35,6 +35,13 @@ control remains slightly weaker and gives no end-to-end runtime advantage, so
 the original full-dimensional RAW Adaptive K-DGRP remains canonical. These
 results support class-agnostic object-relevant localization; they do not claim
 that K-DGRP identifies the class-causal pixels for a prediction.
+
+The v6 gap-closure audit verifies the primary 580-image localization and saved
+paired-statistics artifacts, but it also identifies work that remains open.
+\textbf{Full Progress II probability-based faithfulness, historical curve
+identity, ROAD, parameter and label randomization, final prospective
+statistics, and the semantic/error atlas must be completed before the campaign
+is reported as final.}
 
 \jmethod{} provides a second, distinct test of representation geometry. It
 transfers an early relational state, balanced PC1--32 coordinates at selected

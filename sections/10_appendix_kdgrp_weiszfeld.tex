@@ -4,8 +4,9 @@
 
 This appendix makes the robust-prototype calculation independently
 understandable. Mathematical identities are separated from implementation
-choices. The latter must be copied from the frozen production audit before the
-report is submitted.
+choices. The implementation details below are taken from the frozen v6
+production audit. Where historical execution metadata are incomplete, that
+limitation is stated explicitly.
 
 \subsection{Arithmetic mean versus geometric median}
 
@@ -83,13 +84,15 @@ Weiszfeld iteration replaces the unknown weights with weights computed from the
 current iterate:
 \begin{equation}
     w_n^{(t)}=
-    \frac{1}{\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon},
+    \frac{1}{\max\!\left(\|\bm f_n-\bm c^{(t)}\|_2,\varepsilon\right)},
     \qquad
     \bm c^{(t+1)}=
     \frac{\sum_nw_n^{(t)}\bm f_n}{\sum_nw_n^{(t)}}.
 \end{equation}
-The displayed $+\varepsilon$ is the currently documented stabilized form; the
-final report must match the exact frozen implementation.
+The production implementation uses the capped inverse distance above with
+$\varepsilon=10^{-6}$. It therefore agrees with the ordinary Weiszfeld weight
+when the distance is at least $\varepsilon$ and remains finite near a
+coincident point.
 
 The same update can be understood as iteratively reweighted least squares
 (IRLS). Let
@@ -121,21 +124,46 @@ iterate approaches an observation.
 
 \subsection{Production initialization}
 
-\evidenceplaceholder{KDGRP-IMPLEMENTATION-02: exact initializer}{
-Insert the implementation-backed formula for $\bm c^{(0)}$. State whether it
-is the arithmetic mean, coordinate-wise median, a selected calibration vector,
-or another deterministic procedure. Explain that it initializes the solver and
-does not redefine the geometric-median objective. Record any seed and the
-check used when the initializer coincides with a calibration observation.}
+For $N$ calibration spatial vectors, the single-centre initialization is
+\begin{equation}
+    \bm c^{(0)}=\frac{1}{N}\sum_{n=1}^{N}\bm f_n.
+    \label{eq:kdgrp-production-init}
+\end{equation}
+All calibration vectors contribute. The implementation streams the frozen
+feature cache in image order, promotes FP16 cache values to FP32, sums each
+chunk in FP32, and accumulates chunk totals and the vector count on the CPU in
+FP64. The selected taps use fixed 64-image chunks. The ResNet-50 initializer is
+the archived Campaign-71 centre reused by Campaign 72 and then byte-identically
+by Campaign 75. ConvNeXt-Base and the four Campaign-80 architectures use their
+respective calibration fits. This arithmetic mean initializes the iterative
+solver; it does not replace the geometric-median objective.
 
 \subsection{Numerical stabilization and stopping}
 
-\evidenceplaceholder{KDGRP-IMPLEMENTATION-03: stabilization and convergence}{
-Insert the exact inverse-distance convention, numerical $\varepsilon$,
-convergence tolerance, maximum inner iterations, stopping norm, dtype/device,
-and near-coincidence handling from the frozen production implementation. If the
-code uses $1/\max(r,\varepsilon)$ rather than $1/(r+\varepsilon)$, replace the
-displayed equations consistently.}
+The implemented update is
+\begin{equation}
+    r_n^{(t)}=\|\bm f_n-\bm c^{(t)}\|_2,
+    \qquad
+    w_n^{(t)}=\frac{1}{\max(r_n^{(t)},10^{-6})},
+\end{equation}
+followed by the weighted mean in the previous subsection. The single-centre
+stopping test is
+\begin{equation}
+    \frac{\|\bm c^{(t+1)}-\bm c^{(t)}\|_2}
+         {\max(1,\|\bm c^{(t)}\|_2)}<10^{-5},
+\end{equation}
+with a maximum of 15 iterations and a strict comparison. Distances, weights,
+and chunk reductions use FP32 on the GPU; cross-chunk accumulators use FP64 on
+the CPU. For a cluster update, the denominator of the accumulated weighted
+mean is additionally clamped below by $10^{-6}$. Multimode centres are cast
+back to FP32 after each update. Coincident and near-coincident vectors receive
+the capped weight $10^6$; no separate exact subgradient branch or early return
+is implemented.
+
+The unstabilized fixed-point equation is exact only for noncoincident vectors.
+Where the cap is active, the production solver instead follows a capped-weight
+approximation. Its finite iteration limit also means that the saved centre is a
+reproducible numerical estimate, not a claim of exact stationarity.
 
 \subsection{Extension to multiple modes}
 
@@ -152,12 +180,39 @@ The joint assignment-and-centre objective is not globally convex. The
 production initialization, tie handling, empty-cluster policy, and stopping
 rule therefore matter for reproducibility.
 
-\evidenceplaceholder{KDGRP-IMPLEMENTATION-04: exact multi-mode solver}{
-Insert the audited initial $K$-centre algorithm, seed, assignment tie rule,
-empty-cluster handling, per-cluster Weiszfeld initializer, outer stopping rule,
-maximum outer iterations, restart policy, deterministic ordering requirements,
-and whether lower-$K$ solutions warm-start higher $K$. Do not claim global
-optimality.}
+For each $K\in\{2,4,8\}$, the first centre is the frozen single-centre estimate.
+Additional centres are drawn with probability proportional to squared distance
+from the nearest existing centre on a seed pool of at most 65,536 calibration
+vectors. The predetermined seeds are 20260818, 20260819, and 20260820. NumPy's
+default PCG64 generator samples pool indices without replacement, after which
+the indices are sorted. Each value of $K$ is initialized independently from the
+same single centre; a lower-$K$ solution does not warm-start a higher-$K$ fit.
+
+Assignments minimize FP32 squared Euclidean distance. An exact computed tie is
+resolved in favour of the lowest centre index. Each assigned cluster begins its
+inner solve from its current centre. At most three inner Weiszfeld updates and
+eight outer assignment--update iterations are used. The maximum relative
+centre shift must be strictly below $10^{-5}$ for the inner solve and
+$10^{-4}$ for the outer solve, with each denominator bounded below by one.
+
+A cluster whose occupancy is below $0.0025$ is reseeded deterministically from
+high-error seed-pool candidates after a provisional support check. Each
+seed--$K$ fit permits at most two reseeding rounds; a further failure marks the
+fit as collapsed. Among surviving fits, the smallest full-calibration sum of
+Euclidean distances is retained, with the numerical seed breaking an objective
+tie. ResNet-50 retains seed 20260818 and ConvNeXt-Base retains seed 20260819.
+The four Campaign-80 full-refit banks do not preserve the winning-seed metadata,
+so their individual winning seeds remain unverified even though the three-seed
+policy is traceable.
+
+Fixed vector order, row-major spatial flattening, and chunk size are part of the
+reproducibility conditions. The inspected Campaign-72 multimode stream uses
+256-image chunks, whereas the Campaign-71 single-centre stream and Campaign
+79/80 streams use 64-image chunks. Binding the currently inspected source
+version to every historical execution remains an audit limitation. GPU FP32
+indexed accumulation also does not establish cross-hardware bitwise
+determinism. This alternating procedure has no global-optimum guarantee, and
+its finite iteration limits do not certify an exact stationary configuration.
 
 \subsection{Connection to the explanation score}
 

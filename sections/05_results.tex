@@ -97,7 +97,7 @@ K-DGRP uses a stabilized Weiszfeld-type iteration
 \cite{weiszfeld1937median}. In implementation-equivalent notation,
 \begin{equation}
     w_n^{(t)}=
-    \frac{1}{\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon},
+    \frac{1}{\max\!\left(\|\bm f_n-\bm c^{(t)}\|_2,\varepsilon\right)},
     \qquad
     \boxed{
     \bm c^{(t+1)}=
@@ -112,12 +112,22 @@ distant vector does not gain extra leverage merely from a large deviation.
 Appendix~\ref{sec:kdgrp-weiszfeld-appendix} gives the fixed-point and
 iteratively reweighted least-squares derivations.
 
-\evidenceplaceholder{KDGRP-IMPLEMENTATION-01: production solver constants}{
-Replace the displayed stabilization, if necessary, with the exact audited
-production form. Insert the verified initializer, numerical $\varepsilon$,
-convergence tolerance, iteration limits, stopping rule, dtype/device,
-coincident-point handling, and the exact $K>1$ initialization. These are
-implementation facts, not parameters to retune.}
+The production fit starts from the arithmetic mean of all calibration spatial
+vectors and uses $\varepsilon=10^{-6}$. A single-centre fit stops when
+\begin{equation}
+    \frac{\|\bm c^{(t+1)}-\bm c^{(t)}\|_2}
+         {\max(1,\|\bm c^{(t)}\|_2)}<10^{-5},
+    \label{eq:kdgrp-single-stop}
+\end{equation}
+or after 15 iterations. Distances, weights, and chunk reductions use FP32 on
+the GPU. Cross-chunk accumulators use FP64 on the CPU. Coincident or
+near-coincident vectors receive the capped weight $1/\varepsilon$; there is no
+separate exact subgradient branch. For $K>1$, each assignment step is followed
+by at most three centre updates. The procedure uses at most eight outer
+iterations and an outer relative-shift threshold of $10^{-4}$. The resulting
+finite-iteration centre banks are frozen; exact stationarity or a global
+optimum is not asserted. Appendix~\ref{sec:kdgrp-weiszfeld-appendix} records
+the complete initialization, reseeding, restart, and streaming procedure.
 
 \subsubsection{Multiple robust modes and the explanation score}
 
@@ -147,18 +157,26 @@ to every recurrent robust mode.} It is a measure of prototype-relative
 representation distinctiveness, not a class probability, foreground
 probability, anomaly probability, or distance to a class centroid.
 
-A calibration cumulative distribution function (CDF) maps native-grid raw
-distances onto a common score scale. The monotone CDF preserves ranking on that
-native grid. However, the frozen implementation applies the transform before
-bilinear spatial upsampling. Nonlinear calibration and interpolation do not
+A frozen histogram cumulative distribution function (CDF) maps the logarithm
+of the nonnegative native-grid distances onto a common score scale. The
+image-resolution map is
+\begin{equation}
+    \bm M=\mathcal U\!\left(F_{\mathrm{CDF}}
+    (\bm R_{\mathrm{native}})\right),
+    \label{eq:kdgrp-reconstruction}
+\end{equation}
+where CDF calibration is applied before bilinear upsampling $\mathcal U$ with
+\texttt{align\_corners=False}. The nondecreasing CDF preserves weak ordering on
+the native grid but may add ties. It does not guarantee the same
+image-resolution top-area mask because calibration and interpolation do not
 generally commute:
 \begin{equation}
     \mathcal U(F_{\mathrm{CDF}}(R))
     \neq F_{\mathrm{CDF}}(\mathcal U(R)).
 \end{equation}
 The CDF is therefore part of the frozen reconstruction pipeline rather than a
-purely visual remapping. This correction changes the description, not the
-evaluated method.
+purely visual remapping. No final per-image minimum--maximum normalization is
+applied. This clarification changes the description, not the evaluated method.
 
 Controls that normalized by cluster radius, converted distance into a
 cluster-conditional tail score, removed the prototype-relative reference, or
@@ -217,9 +235,12 @@ within a narrow localization range:
 
 \begin{table}[!htbp]
 \centering
-\caption{Frozen adaptive-mode validation at matched semantic taps. Values are
-internal IoU@20 results. Bold identifies the highest point estimate in each
-row, not statistical significance.}
+\caption{Architecture validation on the original 600-image ImageNet-S
+regression cohort. These are not measurements on the separate 580-image
+primary confirmatory cohort. Frozen prototypes and calibration are
+architecture-specific. Historical parent values are shown consistently. Bold
+identifies the highest point estimate in each row, not statistical
+significance.}
 \label{tab:kdgrp-multiarch}
 \small
 \begin{tabular}{lccccc}
@@ -232,7 +253,7 @@ RegNetY-8GF       & 0.34113 & 0.24777 & 0.35232 & 0.35442 & \textbf{0.35481}\\
 \thinrowrule
 MobileNetV3-L     & 0.35191 & 0.22665 & 0.33055 & 0.35771 & \textbf{0.36389}\\
 \thinrowrule
-EfficientNetV2-S  & 0.33502 & 0.19730 & \textbf{0.35584} & 0.35472 & 0.35460\\
+EfficientNetV2-S  & 0.33501 & 0.19730 & \textbf{0.35584} & 0.35472 & 0.35460\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -244,6 +265,38 @@ VGG, and trailed the strongest gradient CAM on some RegNet, MobileNet, and
 EfficientNet comparisons. This heterogeneity is expected because
 class-agnostic localization and class-conditioned attribution are not identical
 tasks.
+
+The separately frozen primary confirmatory cohort contains 580 held-out
+ImageNet-S images from 91 WordNet identifiers (WNIDs). Its K-DGRP localization
+results are shown in \cref{tab:kdgrp-primary580}. The localization tables and
+120 saved paired comparisons were verified against their recorded
+pre-prospective hashes in the v6 audit.
+
+\begin{table}[!htbp]
+\centering
+\caption{RAW Adaptive K-DGRP localization on the separate 580-image primary
+confirmatory ImageNet-S cohort. The selected $K$ and calibration assets are
+frozen independently for each architecture.}
+\label{tab:kdgrp-primary580}
+\small
+\begin{tabular}{lccc}
+\toprule
+Model & Selected $K$ & IoU@20 & AUPRC\\
+\midrule
+ResNet-50          & 4 & 0.32686 & 0.67583\\
+\thinrowrule
+ConvNeXt-Base      & 2 & 0.32916 & 0.71419\\
+\thinrowrule
+VGG16-BN           & 2 & 0.34283 & 0.73147\\
+\thinrowrule
+RegNetY-8GF        & 2 & 0.34166 & 0.69709\\
+\thinrowrule
+MobileNetV3-Large  & 2 & 0.35740 & 0.75340\\
+\thinrowrule
+EfficientNetV2-S   & 2 & 0.33260 & 0.65903\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsubsection{Prospective geometry-preservation control}
 
@@ -278,7 +331,7 @@ Faithfulness composite & --- & --- & $-0.00093$\\
 \thinrowrule
 Image-resolution map Spearman & --- & 0.9852 versus RAW & ---\\
 \thinrowrule
-Architectures within IoU non-inferiority margin & --- & 6/6 & ---\\
+Architecture point estimates within IoU margin & --- & 6/6 & ---\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -295,12 +348,30 @@ The paired differences were
         &=-0.00093,
         &95\%\ \mathrm{CI}&=[-0.00144,-0.00042].
 \end{align}
-The projected score remained within the preregistered
-non-inferiority margins for localization, AUPRC, and faithfulness on all six
-architectures. Because this projection does not select a class direction,
-principal component, or manually chosen semantic coordinate, the result shows
-that much of the useful signal survives when prototype-relative Euclidean
-geometry is approximately preserved.
+Both pooled localization lower bounds exceed the frozen $-0.005$
+non-inferiority margin. Six of six architecture point estimates lie within the
+IoU margin, and every leave-one-architecture-out pooled test passes. This does
+not mean that six separate architecture-level confidence-interval tests were
+performed. The intervals use 20,000 paired image bootstrap resamples within
+each architecture, equal architecture weights, and percentile limits. The
+separate Progress II CAM comparisons use 10,000 within-WNID paired resamples
+and Holm correction across the five CAM comparisons within each
+model--metric--cohort family.
+
+For this mechanism study, the faithfulness composite averages two benefits of
+RANDOM64 relative to RAW: lower deletion AUC and higher insertion AUC. Each
+image--method curve is normalized separately using its minimum and maximum
+target logits, with the range floored at $10^{-12}$. Positive values favour
+RANDOM64. The target is the clean predicted class and remains fixed across all
+21 perturbation points. \textbf{This is a normalized-logit faithfulness
+measure; it is not probability AUC for the target class.} Under this definition,
+the composite difference is $-0.00093$ over 6,000 model--image observations.
+Its 95\% CI is $[-0.00144,-0.00042]$, so it passes the frozen $-0.005$ margin.
+
+Because the projection does not select a class direction, principal component,
+or manually chosen semantic coordinate, the result shows that much of the
+useful signal survives when prototype-relative Euclidean geometry is
+approximately preserved.
 
 \textbf{RANDOM64 remains slightly weaker than RAW and provides essentially no
 end-to-end runtime improvement once projection cost is included.} It is retained
@@ -413,12 +484,23 @@ and failures. These studies define the boundary between class-agnostic
 object-relevant localization and target-class attribution. They do not reopen
 the canonical score.
 
-\evidenceplaceholder{KDGRP-FACTS-01: final audit insertion}{
-Before submission, replace any rounded mechanism-control values with the exact
-machine-readable results; insert source hashes for the selected $K$, Weiszfeld
-implementation, CDF reconstruction order, uncertainty, effective sample sizes,
-and any completed ROAD or sanity-control results. Do not replace RAW K-DGRP
-with a compressed control.}
+The v6 audit verifies the primary 580-image localization results and saved
+paired-statistics artifacts against their recorded pre-prospective hashes. The
+secondary prospective cohort contains 890 images. Localization uses 888 valid
+paired observations for ConvNeXt-Base, VGG16-BN, and MobileNetV3-Large and 890
+for the other architectures; all 890 remain eligible for mask-free
+faithfulness and RemOve And Debias (ROAD) evaluation. Six prospective
+full-curve model outputs and four of six ImageNet-100 mask-free outputs are
+present. However, their completion markers do not contain historical content
+hashes, and the saved AUC summaries integrate logits rather than target-class
+probabilities.
+
+\textbf{Progress II is therefore not reported as final.} Probability-AUC
+repair, ROAD, parameter and label randomization, final prospective statistics,
+and the semantic/error atlas remain open. The separate RANDOM64 study supports
+pooled localization non-inferiority and its explicitly defined normalized-logit
+faithfulness criterion, but provides no meaningful end-to-end speed benefit.
+RAW full-dimensional Adaptive K-DGRP remains canonical.
 
 The intended publication claim is deliberately precise:
 \textbf{Adaptive K-DGRP is a class-agnostic, gradient-free representation
