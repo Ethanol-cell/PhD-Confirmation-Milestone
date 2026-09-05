@@ -221,6 +221,15 @@ distance, and selector composition.
 \Needspace{10\baselineskip}
 \subsection{Training creates the late class-oriented transition}
 
+The depth figures use compact, zero-based ConvNeXt layer names.
+\textbf{$\mathrm{S}x\mathrm{B}y$ means block $y$ in stage $x$, and
+$\mathrm{DS}x$ means the downsampling operation that enters stage $x$.}
+For example, S0B2 is the third block of the first stage, DS1 is the
+downsampling layer between stages 0 and 1, and S3B2 is the third block of the
+fourth and final stage. ``Stem'' denotes the initial patch-embedding operation.
+The tables additionally use L00, L01, and so forth as sequential tap indices
+in the frozen layer registry.
+
 \begin{figure}[!htbp]
     \centering
     \pcaresultfigure[width=\linewidth]{pca_rgb/PCA-FIG-03_cifar10_depth_progression_trained_random.pdf}
@@ -239,6 +248,12 @@ distance, and selector composition.
 
 \Cref{fig:pca-cifar10-random-control,tab:pca-trained-random-main} separate
 architecture-induced visual structure from learned semantic organization.
+In both the figure and table, \textbf{``trained'' means the frozen checkpoint
+whose backbone weights were learned through supervised image classification}.
+\textbf{``Random'' means the same architecture with independently randomized
+backbone weights that were never optimized.} Each random backbone is frozen;
+only its class prototypes are estimated from fit-training descriptors before
+evaluation.
 Randomly initialized networks retain visible patterns and achieve prototype
 accuracy above a pure label-permutation null. Their mean prototype accuracy is
 $0.213$ on CIFAR-10 and approximately $0.039$ on CIFAR-100. This is important:
