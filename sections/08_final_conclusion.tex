@@ -3,37 +3,48 @@
 This confirmation report proposes a representation-centric account of
 explainability in deep vision models. The central hypothesis is that trained
 models develop a transition regime in which generic visual features become
-class-relevant spatial geometry. Dataset-wide principal component analysis red--green--blue
-(PCA-RGB) visualization provides the initial observation, while train-fitted
-bases, a calibration-only selector, trained--random and label-permutation
-controls, held-out wrong-prediction analysis, distance-sensitivity tests, and
-cross-dataset validation provide the quantitative evidence. The focused
-Pre-LN/Post-LN audit shows that the selected transition reorganizes already
-decodable class information into a higher-rank, prototype-aligned geometry.
-This answers RQ1 within the tested ConvNeXt settings; cross-architecture and
-trained-seed replication will determine how broadly the transition location
-generalizes.
+class-relevant spatial geometry. Dataset-wide principal component analysis
+red--green--blue (PCA-RGB) visualization provides the initial observation,
+while train-fitted bases, a calibration-only selector, trained--random and
+label-permutation controls, held-out wrong-prediction analysis,
+distance-sensitivity tests, and cross-dataset validation provide quantitative
+evidence. The focused Pre-LN/Post-LN audit shows that the selected transition
+reorganizes already decodable class information into a higher-rank,
+prototype-aligned geometry. This answers RQ1 within the tested ConvNeXt
+settings; cross-architecture and trained-seed replication will determine how
+broadly the transition location generalizes.
 
-\methodname{} provides the first methodological use of the observation. Its
-distance from adaptive dataset-global robust modes is simple, class-agnostic,
-and gradient-free. Completed internal evidence shows competitive object
-localization on ResNet-50 and four held-out CNN families after selector
-development on ResNet and ConvNeXt. The results also reveal architecture
-heterogeneity and a residual advantage for class-conditioned CAMs on some
-models. The planned publication study will add the faithfulness, sanity,
-semantic, and cross-dataset evidence needed to define the method's explanatory
-scope.
+\methodname{} provides the first methodological use of this observation. It
+assigns each spatial feature its Euclidean distance to the nearest adaptive
+dataset-global robust mode. This provides a simple, class-agnostic, and
+gradient-free measure of representation distinctiveness. Multi-architecture
+evaluation shows competitive object localization while retaining the expected
+advantage of class-conditioned CAMs in some target-specific settings. Exact
+distance decomposition shows that the score combines centred feature
+magnitude, robust-mode location, and prototype-relative direction rather than
+reducing to feature norm alone.
+
+Most importantly, a prospectively evaluated fixed 64-dimensional random
+orthogonal embedding preserves localization, AUPRC, and perturbation
+faithfulness across all six tested CNN families within the preregistered
+non-inferiority margins. \textbf{This supports a concise mechanism: K-DGRP
+works because object-relevant spatial features are distinctive relative to
+recurrent robust modes, and the corresponding prototype-relative Euclidean
+geometry is highly redundant across feature dimensions.} The compressed
+control remains slightly weaker and gives no end-to-end runtime advantage, so
+the original full-dimensional RAW Adaptive K-DGRP remains canonical. These
+results support class-agnostic object-relevant localization; they do not claim
+that K-DGRP identifies the class-causal pixels for a prediction.
 
 \jmethod{} provides a second, distinct test of representation geometry. It
 transfers an early relational state, balanced PC1--32 coordinates at selected
 transition and late layers, and late affinity flow. At the same time, it
 preserves a student-specific bridge and releases spatial constraints near the
-end of training.
-The audited implementation achieves strong ImageNet-100 results and a
-three-seed gain over H9. This is consistent with a benefit from the J1 design
-package. However, the contribution of each component remains to be isolated.
-J1 is presently a practical peer rather than a demonstrated winner over
-ReviewKD.
+end of training. The audited implementation achieves strong ImageNet-100
+results and a three-seed gain over H9. This is consistent with a benefit from
+the J1 design package, although the contribution of each component remains to
+be isolated. J1 is presently a practical peer rather than a demonstrated
+winner over ReviewKD.
 
 \textbf{The next stage is to complete and submit the \methodname{} and
 \jmethod{} papers.} Transformer work will follow with a broad initial survey;

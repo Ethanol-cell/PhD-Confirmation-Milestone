@@ -4,20 +4,20 @@
 \subsection{Research question and distinction from CAM}
 
 Adaptive K Dataset-Global Robust Prototypes (K-DGRP) asks whether the
-representation itself contains a
-class-agnostic geometric signal that identifies object-relevant spatial
-locations \cite{chan2026kdgrp}. Unlike Grad-CAM, it does not require a target
-class or a gradient. Unlike EigenCAM, it does not select the dominant linear
-variance direction. It estimates recurrent modes of the dataset-wide spatial
-feature distribution and measures how far each image location lies from those
-modes.
+representation itself contains a class-agnostic geometric signal that identifies
+object-relevant spatial locations \cite{chan2026kdgrp}. Unlike Grad-CAM, it does
+not require a target class or a gradient. Unlike EigenCAM, it does not select a
+dominant linear variance direction. Instead, K-DGRP estimates recurrent modes
+of the dataset-wide spatial-feature distribution and measures how far each
+location lies from those modes.
 
-This distinction defines the scope of our claims. \methodname{} measures
-representation distinctiveness or object-relevant localization. On its own,
-it cannot identify which class caused a prediction. Its localization results can be
-compared with CAMs, but a smaller deletion effect is not necessarily a failure:
-class-conditioned CAMs are designed to concentrate causal class evidence,
-whereas a class-agnostic map may cover more of the object.
+\textbf{K-DGRP and class activation mapping (CAM) answer different questions.}
+K-DGRP measures prototype-relative representation distinctiveness and can be
+evaluated for object-relevant localization. It does not, by itself, identify
+which class caused a prediction. Class-conditioned CAMs are designed to
+concentrate target-class evidence, whereas a class-agnostic map may cover a
+broader part of the represented object. Localization and perturbation
+faithfulness are therefore reported separately.
 
 \subsection{Robust prototype geometry}
 
@@ -25,126 +25,201 @@ Let the selected semantic tap produce
 \begin{equation}
     \bm F_\ell(x)\in\mathbb{R}^{D\times H\times W},
 \end{equation}
-with spatial vector $\bm f_p\in\mathbb{R}^D$. Across label-free calibration
-images, collect all spatial vectors
-$\mathcal{F}=\{\bm f_n\}_{n=1}^N$. A single dataset-global robust prototype
-is the geometric median
+where $\bm f_p\in\mathbb{R}^D$ is the feature vector at spatial position $p$.
+From label-free calibration images, collect the spatial-feature population
+$\mathcal{F}=\{\bm f_n\}_{n=1}^N$. A single dataset-global robust prototype is
+the geometric median
 \begin{equation}
+    \boxed{
     \bm c^\star
     =\arg\min_{\bm c\in\mathbb{R}^D}
-      \sum_{n=1}^N\|\bm f_n-\bm c\|_2.
+      \sum_{n=1}^N\|\bm f_n-\bm c\|_2.}
     \label{eq:dgrp-median}
 \end{equation}
-We compute this centre with Weiszfeld-type iterations
-\cite{weiszfeld1937median}.
-Starting from an initial centre $\bm c^{(0)}$, one stabilized update is
+
+\subsubsection{Why use a geometric median?}
+
+The arithmetic mean minimizes squared distance:
 \begin{equation}
-    \bm c^{(t+1)}
-    =
-    \frac{
-      \sum_{n=1}^{N}
-      \bm f_n\big/\bigl(\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon\bigr)
-    }{
-      \sum_{n=1}^{N}
-      1\big/\bigl(\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon\bigr)
-    }.
+    \bar{\bm f}
+    =\arg\min_{\bm c}
+      \sum_{n=1}^{N}\|\bm f_n-\bm c\|_2^2.
+\end{equation}
+Its gradient is
+\begin{equation}
+    \nabla_{\bm c}\sum_n\|\bm f_n-\bm c\|_2^2
+    =2\sum_n(\bm c-\bm f_n).
+\end{equation}
+The contribution of one point therefore grows with
+$\|\bm c-\bm f_n\|_2$. A very distant feature can pull the mean strongly.
+
+For the unsquared objective
+\begin{equation}
+    \Phi(\bm c)=\sum_n\|\bm f_n-\bm c\|_2,
+\end{equation}
+the noncoincident contribution to the gradient is
+\begin{equation}
+    \frac{\bm c-\bm f_n}{\|\bm c-\bm f_n\|_2},
+\end{equation}
+whose norm is one. A distant point can still affect the direction of the
+solution, but it does not gain greater leverage merely because it is farther
+away. \textbf{This matters because dataset-wide spatial features contain rare
+parts, boundaries, atypical textures, and other extreme feature states.} The
+reference mode should summarize recurrent feature structure without being
+displaced strongly by a small number of extreme vectors.
+
+\subsubsection{Implicit optimum and Weiszfeld iteration}
+
+Away from a point of coincidence, the first-order condition is
+\begin{equation}
+    \sum_{n=1}^{N}
+    \frac{\bm c^\star-\bm f_n}
+         {\|\bm c^\star-\bm f_n\|_2}=0.
+    \label{eq:geomed-stationarity}
+\end{equation}
+Rearranging gives the fixed-point equation
+\begin{equation}
+    \boxed{
+    \bm c^\star=
+    \frac{\displaystyle\sum_n
+          \bm f_n/\|\bm c^\star-\bm f_n\|_2}
+         {\displaystyle\sum_n
+          1/\|\bm c^\star-\bm f_n\|_2}.}
+    \label{eq:geomed-fixed-point}
+\end{equation}
+This expression characterizes the optimum but does not explicitly solve for it:
+the unknown centre appears inside every inverse-distance weight. A generic
+multidimensional geometric median therefore has no general
+arithmetic-mean-like formula and is normally obtained iteratively; the
+one-dimensional median and specially symmetric configurations are exceptions.
+
+K-DGRP uses a stabilized Weiszfeld-type iteration
+\cite{weiszfeld1937median}. In implementation-equivalent notation,
+\begin{equation}
+    w_n^{(t)}=
+    \frac{1}{\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon},
+    \qquad
+    \boxed{
+    \bm c^{(t+1)}=
+    \frac{\sum_n w_n^{(t)}\bm f_n}
+         {\sum_n w_n^{(t)}}.}
     \label{eq:weiszfeld-update}
 \end{equation}
+Each iteration fixes the current inverse-distance weights and recomputes a
+weighted centre. Recurrently populated regions exert strong aggregate influence
+because many nearby vectors contribute in similar directions. An isolated
+distant vector does not gain extra leverage merely from a large deviation.
+Appendix~\ref{sec:kdgrp-weiszfeld-appendix} gives the fixed-point and
+iteratively reweighted least-squares derivations.
 
-The update is a weighted average in which a point receives weight inversely
-proportional to its current distance from the centre. Feature vectors that
-occur repeatedly near the current centre exert the strongest pull. A rare,
-distant vector cannot dominate through a squared distance. The small $\varepsilon$ prevents a
-division by zero if an iterate reaches a data point. Iteration stops when the
-centre displacement falls below a fixed tolerance or a maximum iteration count
-is reached. Compared with an arithmetic mean, this unsquared geometric-median
-objective is more resistant to rare, distant spatial vectors.
+\evidenceplaceholder{KDGRP-IMPLEMENTATION-01: production solver constants}{
+Replace the displayed stabilization, if necessary, with the exact audited
+production form. Insert the verified initializer, numerical $\varepsilon$,
+convergence tolerance, iteration limits, stopping rule, dtype/device,
+coincident-point handling, and the exact $K>1$ initialization. These are
+implementation facts, not parameters to retune.}
 
-The multimodal extension uses the alternating assignment and update structure
-of prototype clustering \cite{macqueen1967kmeans}. It begins with nearest-centre assignment
+\subsubsection{Multiple robust modes and the explanation score}
+
+For $K>1$, calibration vectors are assigned to their nearest centre,
 \begin{equation}
     a_n=\arg\min_{k\in\{1,\ldots,K\}}
-        \|\bm f_n-\bm c_k\|_2
+        \|\bm f_n-\bm c_k\|_2,
 \end{equation}
-with a separate Weiszfeld update inside each assigned cluster. Assignment and
-robust-centre updating repeat until the memberships or centres stabilize. The
-raw explanation score is
+and each centre is updated as the geometric median of its assigned cluster,
 \begin{equation}
+    \bm c_k=\arg\min_{\bm c}
+       \sum_{n:a_n=k}\|\bm f_n-\bm c\|_2.
+\end{equation}
+Assignment and robust-centre updates alternate until the frozen stopping rule
+is reached. The joint multimode problem is not globally convex, so deterministic
+initialization and calibration provenance are important for reproducibility.
+
+Once the prototype bank is fitted, the raw explanation score is
+\begin{equation}
+    \boxed{
     R_K(p)=\min_{1\leq k\leq K}
-        \|\bm f_p-\bm c_k\|_2.
+        \|\bm f_p-\bm c_k\|_2.}
     \label{eq:kdgrp-score}
 \end{equation}
-A high value means that the spatial feature is far from every recurrent robust
-mode. An empirical calibration cumulative distribution function (CDF) can map
-this score to $[0,1]$ for display,
-but its monotonicity preserves exact top-area masks and rank metrics.
+\textbf{A high score means that the spatial representation is unusual relative
+to every recurrent robust mode.} It is a measure of prototype-relative
+representation distinctiveness, not a class probability, foreground
+probability, anomaly probability, or distance to a class centroid.
 
-The experiments found that normalizing by cluster radius, converting distance
-to a cluster-conditional tail score, or manually combining presumed
-foreground/background centres reduced localization. Mode scale was itself
-informative: broad modes were more foreground-associated. For this reason, we
-retained the raw distance in \cref{eq:kdgrp-score} after the ablation sequence.
+A calibration cumulative distribution function (CDF) maps native-grid raw
+distances onto a common score scale. The monotone CDF preserves ranking on that
+native grid. However, the frozen implementation applies the transform before
+bilinear spatial upsampling. Nonlinear calibration and interpolation do not
+generally commute:
+\begin{equation}
+    \mathcal U(F_{\mathrm{CDF}}(R))
+    \neq F_{\mathrm{CDF}}(\mathcal U(R)).
+\end{equation}
+The CDF is therefore part of the frozen reconstruction pipeline rather than a
+purely visual remapping. This correction changes the description, not the
+evaluated method.
+
+Controls that normalized by cluster radius, converted distance into a
+cluster-conditional tail score, removed the prototype-relative reference, or
+manually combined presumed foreground and background centres degraded
+localization. \textbf{The canonical score therefore remains the raw Euclidean
+distance in \cref{eq:kdgrp-score}.}
 
 \subsection{Adaptive mode-count selection}
 
-Fixed $K=4$ worked well for ResNet-50 but over-fragmented ConvNeXt features.
-The final method considers $K\in\{1,2,4,8\}$. On a held-out calibration
-partition, cluster occupancy is
+Late spatial-feature distributions are not equally multimodal across
+architectures. A fixed $K$ that represents one backbone well can over-fragment
+another. The final method considers $K\in\{1,2,4,8\}$. On a label-free held-out
+calibration partition, cluster occupancy is
 \begin{equation}
     \pi_k=\frac{N_k}{N},\qquad \sum_k\pi_k=1.
 \end{equation}
-Occupancy entropy and effective mode count are
+Occupancy entropy, effective mode count, and utilization are
 \begin{equation}
     H_K=-\sum_k\pi_k\log(\pi_k+\varepsilon),
     \qquad K_{\mathrm{eff}}=\exp(H_K),
+    \qquad U_K=\frac{K_{\mathrm{eff}}}{K},
 \end{equation}
 using Shannon entropy to summarize occupancy balance
-\cite{shannon1948entropy}, with utilization $U_K=K_{\mathrm{eff}}/K$. The
-selector starts at $K=1$ and admits a larger candidate only when
+\cite{shannon1948entropy}. A larger candidate is admitted only when
 \begin{equation}
     \min_k\pi_k\geq0.02,
     \qquad U_K\geq0.75.
     \label{eq:kselector}
 \end{equation}
-The search stops at the first failure, then the selected number of centres is
-refitted on the full calibration cohort. The selector controls complexity
-without segmentation masks or class labels.
+The search stops at the first failed candidate, after which the selected number
+of centres is refitted on the full label-free calibration cohort. No object
+mask or class label is used to choose $K$.
 
-\subsection{Completed internal evidence}
+\textbf{Adaptive $K$ changes the number of reference modes without changing the
+explanation principle.} The frozen registry selects $K=4$ for ResNet-50 and
+$K=2$ for ConvNeXt-Base, VGG16-BN, RegNetY-8GF, MobileNetV3-Large, and
+EfficientNetV2-S. These values must be read from the final manifest rather than
+reselected from evaluation performance.
 
-On a 600-image ResNet-50 cohort, K4-DGRP achieved intersection over union at
-20\% selected area (IoU@20) of $0.32946$ and area under the precision--recall
-curve (AUPRC) of $0.69623$. Paired bootstrap differences in IoU@20 (K-DGRP minus
-baseline) were $-0.002529$ against EigenCAM, 95\% confidence interval (CI)
-$[-0.008263,0.003440]$, and $-0.001025$ against Grad-CAM++, 95\% CI
-$[-0.006821,0.004865]$. The intervals crossed zero. Grad-CAM and LayerCAM were
-higher by $0.009370$, 95\% CI $[0.003211,0.015723]$, and $0.011319$, 95\% CI
-$[0.005895,0.016888]$, respectively \cite{chan2026kdgrp}. The supplied internal
-report does not document multiplicity adjustment, so these intervals are
-treated as descriptive evidence of competitiveness rather than a complete
-confirmatory test.
+\subsection{Localization and prospective mechanism evidence}
 
-We developed the mode-count selector using ResNet and ConvNeXt. After freezing
-it, we evaluated it on four unseen CNN families. The selected map remained in
-a narrow localization range across architectures:
+On the original 600-image ResNet-50 cohort, K4-DGRP achieved intersection over
+union at 20\% selected area (IoU@20) of $0.32946$ and area under the
+precision--recall curve (AUPRC) of $0.69623$. Paired bootstrap differences in
+IoU@20 (K-DGRP minus baseline) were $-0.002529$ against EigenCAM, 95\%
+confidence interval (CI) $[-0.008263,0.003440]$, and $-0.001025$ against
+Grad-CAM++, 95\% CI $[-0.006821,0.004865]$. The intervals crossed zero.
+Grad-CAM and LayerCAM were higher by $0.009370$, 95\% CI
+$[0.003211,0.015723]$, and $0.011319$, 95\% CI
+$[0.005895,0.016888]$, respectively \cite{chan2026kdgrp}. These results are
+treated as evidence of competitiveness rather than universal superiority.
 
-For protocol traceability, the ResNet prototypes were fitted from 10,000
-label-free calibration images and evaluated on a fresh 600-image
-ImageNet-derived cohort with object masks used only for evaluation. ConvNeXt
-was development data rather than a held-out architecture: its K1, K2, K4, and
-K8 IoU@20 values were $0.329204$, $0.328438$, $0.328241$, and $0.326222$.
-For every architecture, the tap was the final unpooled semantic tensor passed
-to the classifier head; calibration vectors were split deterministically into
-centre-fitting and selector subsets before the selected $K$ was refitted on
-the full label-free calibration cohort \cite{chan2026kdgrp}. The confirmatory
-rerun in \cref{sec:plan} will consolidate per-architecture cohort sizes, split
-hashes, and the complete inference specification.
+After mode-count development on ResNet and ConvNeXt, the selector was frozen
+and tested on four previously unseen CNN families. The selected maps remained
+within a narrow localization range:
 
-\begin{table}[H]
+\begin{table}[!htbp]
 \centering
 \caption{Frozen adaptive-mode validation at matched semantic taps. Values are
-internal IoU@20 results from the completed technical study. Bold identifies the
-highest number in each row, not statistical significance.}
+internal IoU@20 results. Bold identifies the highest point estimate in each
+row, not statistical significance.}
 \label{tab:kdgrp-multiarch}
 \small
 \begin{tabular}{lccccc}
@@ -152,83 +227,202 @@ highest number in each row, not statistical significance.}
 Model & K-DGRP & EigenCAM & Grad-CAM & Grad-CAM++ & LayerCAM\\
 \midrule
 VGG16-BN          & 0.33435 & 0.27376 & 0.32793 & \textbf{0.33576} & 0.33306\\
+\thinrowrule
 RegNetY-8GF       & 0.34113 & 0.24777 & 0.35232 & 0.35442 & \textbf{0.35481}\\
+\thinrowrule
 MobileNetV3-L     & 0.35191 & 0.22665 & 0.33055 & 0.35771 & \textbf{0.36389}\\
+\thinrowrule
 EfficientNetV2-S  & 0.33502 & 0.19730 & \textbf{0.35584} & 0.35472 & 0.35460\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The selector chose $K=2$ for all four previously unseen models. Its mean
-post-hoc oracle regret was $0.000147$ IoU and maximum regret was $0.000350$.
-Its point estimate exceeded EigenCAM on all four models. It was close to the
-gradient CAMs on VGG, exceeded Grad-CAM on MobileNet, and trailed the strongest
-gradient CAMs on RegNet, MobileNet, and EfficientNetV2. These are point-estimate
-comparisons; the corresponding per-model paired intervals are not reproduced
-here. Robust-distance maps from independently trained architectures also
-showed same-image spatial Spearman correlations ranging from approximately
-$0.55$ to $0.79$ for the reported pairs.
+The selector chose $K=2$ for all four held-out families. Its mean post-hoc
+oracle regret was $0.000147$ IoU and its maximum regret was $0.000350$. K-DGRP
+exceeded EigenCAM on all four models, remained close to gradient-based CAMs on
+VGG, and trailed the strongest gradient CAM on some RegNet, MobileNet, and
+EfficientNet comparisons. This heterogeneity is expected because
+class-agnostic localization and class-conditioned attribution are not identical
+tasks.
 
-These results indicate that robust distance is more architecture-general than a
-fixed mode count. They do not yet establish cross-dataset generalization,
-class-specific attribution, or complete causal faithfulness.
+\subsubsection{Prospective geometry-preservation control}
 
-\subsection{Neural collapse and interpretation}
+RANDOM64 is a controlled mechanism test, not a replacement explanation method.
+Both features and frozen prototypes are embedded into the same fixed
+64-dimensional random orthogonal subspace:
+\begin{equation}
+    \bm V\in\mathbb{R}^{D\times64},\qquad
+    \bm V^\top\bm V=\bm I,
+\end{equation}
+\begin{equation}
+    R_{64}(p)=
+    \min_k\|\bm V^\top(\bm f_p-\bm c_k)\|_2.
+    \label{eq:kdgrp-random64}
+\end{equation}
 
-Late ResNet features became increasingly class-organized: within-class to
-between-class scatter decreased, simplex error decreased, and nearest-class
-centre accuracy increased toward the final stage. Nevertheless, K-DGRP centres
-were not class-simplex vertices. For 100 classes the centred class means span up
-to 99 dimensions, while four robust centres describe a much lower-cardinality
-spatial/common-mode geometry. Centre class purity was low at useful $K$, and
-class-only or residual-only alternatives underperformed raw distance.
+\begin{table}[!htbp]
+\centering
+\caption{Prospective geometry-preservation control pooled across six CNN
+architectures. Differences are RANDOM64 minus RAW.}
+\label{tab:kdgrp-random64}
+\small
+\begin{tabularx}{0.92\linewidth}{Yrrr}
+\toprule
+Metric & RAW & RANDOM64 & Difference\\
+\midrule
+IoU@20 & 0.32537 & 0.32369 & $-0.00168$\\
+\thinrowrule
+AUPRC & 0.69662 & 0.69381 & $-0.00281$\\
+\thinrowrule
+Faithfulness composite & --- & --- & $-0.00093$\\
+\thinrowrule
+Image-resolution map Spearman & --- & 0.9852 versus RAW & ---\\
+\thinrowrule
+Architectures within IoU non-inferiority margin & --- & 6/6 & ---\\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\textbf{This relates to neural collapse, but it is not an instance of that
-phenomenon.} The
-terminal class-centre geometry studied in neural-collapse work concerns pooled
-or sample-level class representations, whereas K-DGRP models recurrent modes
-among unpooled spatial vectors. The distinction explains why a small $K$ can be
-useful even when the classifier has 100 classes
+The paired differences were
+\begin{align}
+    \Delta\mathrm{IoU@20}
+        &=-0.00168,
+        &95\%\ \mathrm{CI}&=[-0.00215,-0.00120],\\
+    \Delta\mathrm{AUPRC}
+        &=-0.00281,
+        &95\%\ \mathrm{CI}&=[-0.00356,-0.00208],\\
+    \Delta\mathrm{faithfulness}
+        &=-0.00093,
+        &95\%\ \mathrm{CI}&=[-0.00144,-0.00042].
+\end{align}
+The projected score remained within the preregistered
+non-inferiority margins for localization, AUPRC, and faithfulness on all six
+architectures. Because this projection does not select a class direction,
+principal component, or manually chosen semantic coordinate, the result shows
+that much of the useful signal survives when prototype-relative Euclidean
+geometry is approximately preserved.
+
+\textbf{RANDOM64 remains slightly weaker than RAW and provides essentially no
+end-to-end runtime improvement once projection cost is included.} It is retained
+as mechanism evidence. The original full-dimensional RAW Adaptive K-DGRP
+remains canonical.
+
+\subsection{Mechanistic interpretation of K-DGRP}
+
+\subsubsection{Decomposition of prototype-relative distance}
+
+Let $\bm\mu$ be the frozen calibration feature mean, and define
+\begin{equation}
+    \bm h_p=\bm f_p-\bm\mu,
+    \qquad
+    \bm\delta_k=\bm c_k-\bm\mu.
+\end{equation}
+For the selected nearest robust mode
+\begin{equation}
+    k^\star(p)=\arg\min_k\|\bm f_p-\bm c_k\|_2,
+\end{equation}
+the squared score decomposes exactly as
+\begin{equation}
+    \boxed{
+    R(p)^2=
+    \underbrace{\|\bm h_p\|_2^2}_{\text{centred feature magnitude}}
+    +\underbrace{\|\bm\delta_{k^\star}\|_2^2}_{\text{prototype location}}
+    -\underbrace{2\bm h_p^\top\bm\delta_{k^\star}}_{
+        \text{prototype-relative direction}}.}
+    \label{eq:kdgrp-decomposition}
+\end{equation}
+The first term asks how far a feature lies from the global calibration centre.
+The second depends on which recurrent mode is selected. The third measures the
+directional alignment between the spatial feature and that mode.
+
+Centred feature magnitude reproduces a substantial part of the RAW spatial
+ordering, but it does not reproduce the complete K-DGRP result. Controls that
+removed the prototype-relative reference degraded localization.
+\textbf{Prototype location and prototype-relative direction therefore carry
+information beyond global feature norm.}
+
+\subsubsection{Why the method is robust: redundant Euclidean geometry}
+
+A fixed random orthogonal projection does not deliberately preserve a class
+direction, leading principal component, or manually selected coordinate. Each
+retained coordinate mixes information from many original feature dimensions.
+The prospective success of \cref{eq:kdgrp-random64} therefore indicates that
+K-DGRP is not dependent on a small set of privileged axes.
+
+\begin{equation}
+    \boxed{
+    \text{K-DGRP depends primarily on preserving
+    prototype-relative Euclidean geometry.}}
+\end{equation}
+The useful geometry is high-dimensional, distributed, and redundant. Its exact
+mode structure remains architecture dependent. \textbf{RANDOM64 demonstrates
+redundancy of the geometry; it does not make random coordinates semantic.}
+
+For a finite set of relevant feature--prototype pairs, random embedding theory
+suggests that Euclidean distances can often be approximately preserved in fewer
+dimensions \cite{johnson1984extensions}:
+\begin{equation}
+    (1-\eta)\|\bm f-\bm c_k\|_2^2
+    \lesssim
+    a\|\bm V^\top(\bm f-\bm c_k)\|_2^2
+    \lesssim
+    (1+\eta)\|\bm f-\bm c_k\|_2^2.
+\end{equation}
+This is an empirical connection to the principle behind
+Johnson--Lindenstrauss embeddings, not a formal guarantee for the network
+features in this study.
+
+\subsubsection{Architecture differences and the neural-collapse boundary}
+
+Architecture differences arise because late spatial-feature distributions
+differ in multimodality and in how evenly useful distance information is spread
+across feature dimensions. ResNet-50 uses four canonical robust modes in the
+current registry and shows more projected prototype switching and lower
+RAW-to-RANDOM64 map correlation than the $K=2$ architectures. This is an
+observed association, not evidence that $K=4$ alone causes the behaviour.
+All six architectures nevertheless remain within the prospective localization
+non-inferiority margin. \textbf{The architecture-specific quantity is the exact
+geometry of the recurrent modes; the architecture-general principle is distance
+from those modes.}
+
+This robust-mode geometry is distinct from neural collapse. Neural collapse
+concerns pooled class means and classifier geometry, whereas Adaptive K-DGRP
+models recurrent modes among unpooled spatial features
 \cite{papyan2020neuralcollapse,zhu2021neuralcollapse,
 han2022neuralcollapse,fang2021layerpeeled,kothapalli2023neuralcollapse}.
+K-DGRP centres have low class purity and are far fewer than the number of
+classes, so they should not be interpreted as class-simplex vertices. Neural
+collapse remains useful for describing the maturation of late class geometry,
+but it is not the mechanism that defines the K-DGRP centres. The supported
+interpretation is narrower: object-relevant positions tend to exhibit greater
+prototype-relative feature distinctiveness.
 
-We currently interpret this evidence as showing that discriminative training creates a
-late feature space containing both class-semantic organization and broad
-recurrent spatial modes. Object interiors, parts, and boundaries are more
-variable than common background or context and often lie farther from the
-nearest robust mode. The explanation score captures this structured novelty
-rather than distance from a class centroid.
+\subsection{Remaining evidence and publication scope}
 
-\subsection{Evidence required for publication}
+\textbf{The mechanistic search over alternative K-DGRP scoring formulas is
+closed for the current CNN method.} The canonical explanation remains raw
+Euclidean distance to the nearest adaptive robust mode. The completed
+prospective control supplies perturbation-faithfulness evidence for the
+mechanism; continued PCA, radius-normalized, common-gain, or residual-score
+search is not required for the milestone claim.
 
-The existing technical evidence establishes a strong method candidate, but the
-paper protocol will be rerun and extended before submission.
+Remaining work should focus on publication packaging, external cross-dataset
+generalization, unfinished parameter/label-randomization or class-sensitivity
+controls, and a fixed qualitative semantic atlas that includes both successes
+and failures. These studies define the boundary between class-agnostic
+object-relevant localization and target-class attribution. They do not reopen
+the canonical score.
 
-\evidenceplaceholder{KDGRP-TAB-01: confirmatory benchmark}{
-Rerun the frozen method on a sealed cohort with localization, insertion,
-deletion, prediction-drop, class-sensitivity, runtime, and paired confidence
-intervals. Preserve matched semantic taps and report the selected $K$ before
-using segmentation ground truth. State every cohort size and mask source,
-calibration/development/evaluation split, split hash, selector-freezing point,
-bootstrap count, interval definition, and multiplicity policy.}
+\evidenceplaceholder{KDGRP-FACTS-01: final audit insertion}{
+Before submission, replace any rounded mechanism-control values with the exact
+machine-readable results; insert source hashes for the selected $K$, Weiszfeld
+implementation, CDF reconstruction order, uncertainty, effective sample sizes,
+and any completed ROAD or sanity-control results. Do not replace RAW K-DGRP
+with a compressed control.}
 
-\evidenceplaceholder{KDGRP-FIG-01 and KDGRP-ANALYSIS-01: semantic atlas}{
-Insert a fixed qualitative grid containing successes, disagreements with CAMs,
-small objects, multiple objects, clutter, and failures. Add semantic analysis
-of what high-distance regions represent. Do not select cases after viewing the
-final metric.}
-
-\evidenceplaceholder{KDGRP-TAB-02 and KDGRP-FIG-02: error and sanity analysis}{
-Compare correct and incorrect predictions; run parameter- and label-randomized
-sanity checks; test feature norm as a trivial baseline; and distinguish
-objectness from predicted-class causality.}
-
-\evidenceplaceholder{KDGRP-GENERALITY-01: cross-dataset confirmation}{
-Execute the frozen Pascal VOC or equivalent prospective protocol, comparing
-source-domain and target-domain unlabeled prototypes without retuning selector
-thresholds on validation masks.}
-
-The intended paper claim is deliberately precise: a class-agnostic,
-gradient-free score based on adaptive robust feature modes reaches a similar
-object-localization regime to strong CAM methods across diverse CNNs. It should
-not be summarized as universally outperforming CAMs.
+The intended publication claim is deliberately precise:
+\textbf{Adaptive K-DGRP is a class-agnostic, gradient-free representation
+explanation that localizes object-relevant spatial structure through Euclidean
+distinctiveness from adaptive recurrent robust feature modes.} It should not be
+summarized as universally outperforming CAMs or as identifying the class-causal
+pixels for a prediction.

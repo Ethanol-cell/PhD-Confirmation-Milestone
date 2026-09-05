@@ -101,7 +101,7 @@ output without directly characterizing the representation changes that precede
 it. This PhD project investigates a complementary, representation-centred
 hypothesis: trained vision models contain transition regimes in which already
 decodable class information is reorganized into a geometry that can support
-both explanation and knowledge transfer.
+both \textbf{explanation and knowledge transfer.}
 
 The first research stage uses dataset-wide, layer-specific principal component
 analysis (PCA). Its first three coordinates are rendered as red, green, and blue
@@ -117,12 +117,21 @@ than marking its first appearance.} The same transition signature remains
 measurable on ImageNet-1K, although compact class-prototype structure is weaker.
 
 The second stage develops Adaptive K Dataset-Global Robust Prototypes
-(K-DGRP), a class-agnostic, gradient-free explanation method that scores spatial
-features by distance from dataset-global robust modes. Completed internal
-experiments show competitive object localization on ResNet-50 and four held-out
-convolutional neural network (CNN) families. Class-conditioned class activation
-mapping methods remain stronger on some architectures, and expanded
-faithfulness validation is still required.
+(K-DGRP), a class-agnostic, gradient-free explanation method. K-DGRP scores
+each spatial feature by its Euclidean distance from the nearest recurrent robust
+mode of a label-free calibration distribution. The number of modes is selected
+from calibration occupancy rather than object masks. Across ResNet-50 and five
+additional convolutional neural network (CNN) families, K-DGRP reaches a
+competitive object-localization regime while remaining distinct from
+class-conditioned class activation mapping (CAM). Mechanistic decomposition
+and a prospective geometry-preservation control show that the useful signal is
+carried by highly redundant prototype-relative Euclidean geometry: a fixed
+64-dimensional random orthogonal embedding preserves localization, area under
+the precision--recall curve (AUPRC), and perturbation faithfulness within the
+preregistered non-inferiority margins for all six architectures. The compressed
+control remains slightly weaker than the full representation and provides no
+measured end-to-end speed advantage. The original full-dimensional RAW
+Adaptive K-DGRP therefore remains the canonical method.
 
 The third stage studies knowledge distillation (KD), in which a compact student
 learns from a stronger teacher. It introduces \jmethod{}, the project name for
@@ -132,12 +141,6 @@ principal-component coordinates 1--32 at selected transition and late layers,
 and late affinity flow. On ImageNet-100, \jmethod{} attains
 $94.947\pm0.205\%$ Top-1 accuracy across three seeds and is practically tied
 with ReviewKD-120 under the current evidence.
-
-\textbf{The immediate next stage is to complete and submit the \methodname{}
-and \jmethod{} papers.} Transformer investigation will follow these publication
-efforts through a broad literature review, a reproducible pilot, and
-evidence-gated selection of the most informative architecture and explanatory
-object.
 \end{abstract}
 
 \clearpage
@@ -161,10 +164,11 @@ object.
 \input{sections/08_final_conclusion}
 
 \bibliographystyle{plain}
-\bibliography{references}
+\bibliography{references,references_kdgrp}
 
 \clearpage
 \appendix
 \input{sections/09_appendix_pca_rgb}
+\input{sections/10_appendix_kdgrp_weiszfeld}
 
 \end{document}
