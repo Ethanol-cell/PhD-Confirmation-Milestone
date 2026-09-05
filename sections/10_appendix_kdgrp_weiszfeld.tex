@@ -1,0 +1,171 @@
+\clearpage
+\section{Geometric-Median Prototypes and the Weiszfeld Solver}
+\label{sec:kdgrp-weiszfeld-appendix}
+
+This appendix makes the robust-prototype calculation independently
+understandable. Mathematical identities are separated from implementation
+choices. The latter must be copied from the frozen production audit before the
+report is submitted.
+
+\subsection{Arithmetic mean versus geometric median}
+
+For calibration features $\{\bm f_n\}_{n=1}^{N}$, the arithmetic mean minimizes
+the squared-distance objective
+\begin{equation}
+    J_2(\bm c)=\sum_{n=1}^{N}\|\bm f_n-\bm c\|_2^2.
+\end{equation}
+Differentiating gives
+\begin{equation}
+    \nabla J_2(\bm c)
+    =2N\bm c-2\sum_{n=1}^{N}\bm f_n.
+\end{equation}
+Setting the gradient to zero yields the explicit solution
+\begin{equation}
+    \bar{\bm f}=\frac{1}{N}\sum_{n=1}^{N}\bm f_n.
+\end{equation}
+Because the objective squares each residual, the magnitude of one point's
+gradient contribution grows linearly with its distance from the current centre.
+
+The geometric median instead minimizes
+\begin{equation}
+    J_1(\bm c)=\sum_{n=1}^{N}\|\bm f_n-\bm c\|_2.
+\end{equation}
+For $\bm c\neq\bm f_n$, each contribution satisfies
+\begin{equation}
+    \left\|
+    \frac{\bm c-\bm f_n}{\|\bm c-\bm f_n\|_2}
+    \right\|_2=1.
+\end{equation}
+Thus, an extreme point is not ignored, but its influence does not grow merely
+because it is farther from the centre. This property motivates its use as a
+robust reference for a calibration population containing rare spatial-feature
+states.
+
+\subsection{First-order condition and the implicit solution}
+
+When the candidate centre does not coincide with an observation,
+\begin{equation}
+    \nabla J_1(\bm c)
+    =\sum_{n=1}^{N}
+      \frac{\bm c-\bm f_n}{\|\bm c-\bm f_n\|_2}.
+\end{equation}
+At a differentiable optimum $\bm c^\star$,
+\begin{equation}
+    \sum_n
+    \frac{\bm c^\star-\bm f_n}
+         {\|\bm c^\star-\bm f_n\|_2}=0.
+\end{equation}
+Moving the feature terms to the right and collecting $\bm c^\star$ gives
+\begin{equation}
+    \bm c^\star
+    \sum_n\frac{1}{\|\bm c^\star-\bm f_n\|_2}
+    =
+    \sum_n\frac{\bm f_n}{\|\bm c^\star-\bm f_n\|_2},
+\end{equation}
+and hence
+\begin{equation}
+    \boxed{
+    \bm c^\star=
+    \frac{\displaystyle\sum_n
+          \bm f_n/\|\bm c^\star-\bm f_n\|_2}
+         {\displaystyle\sum_n
+          1/\|\bm c^\star-\bm f_n\|_2}.}
+\end{equation}
+The unknown centre occurs inside every denominator, so this is a nonlinear
+fixed-point equation rather than an explicit solution. A generic
+multidimensional geometric median has no general arithmetic-mean-like formula
+and is normally solved iteratively. This statement allows the familiar
+one-dimensional median and specially symmetric configurations as exceptions.
+
+\subsection{Weiszfeld fixed-point and IRLS derivation}
+
+Weiszfeld iteration replaces the unknown weights with weights computed from the
+current iterate:
+\begin{equation}
+    w_n^{(t)}=
+    \frac{1}{\|\bm f_n-\bm c^{(t)}\|_2+\varepsilon},
+    \qquad
+    \bm c^{(t+1)}=
+    \frac{\sum_nw_n^{(t)}\bm f_n}{\sum_nw_n^{(t)}}.
+\end{equation}
+The displayed $+\varepsilon$ is the currently documented stabilized form; the
+final report must match the exact frozen implementation.
+
+The same update can be understood as iteratively reweighted least squares
+(IRLS). Let
+\begin{equation}
+    r_n^{(t)}=\|\bm f_n-\bm c^{(t)}\|_2.
+\end{equation}
+For $r_n^{(t)}>0$, the tangent upper bound for the square root gives
+\begin{equation}
+    \|\bm f_n-\bm c\|_2
+    \leq
+    \frac{\|\bm f_n-\bm c\|_2^2}{2r_n^{(t)}}
+    +\frac{r_n^{(t)}}{2}.
+\end{equation}
+Summing these bounds produces the quadratic surrogate
+\begin{equation}
+    Q(\bm c\mid\bm c^{(t)})
+    =\sum_n
+      \frac{\|\bm f_n-\bm c\|_2^2}{2r_n^{(t)}}
+      +\text{constant}.
+\end{equation}
+Minimizing this weighted least-squares problem yields
+\begin{equation}
+    \bm c^{(t+1)}=
+    \frac{\sum_n\bm f_n/r_n^{(t)}}
+         {\sum_n1/r_n^{(t)}}.
+\end{equation}
+The stabilized implementation prevents a singular inverse distance when an
+iterate approaches an observation.
+
+\subsection{Production initialization}
+
+\evidenceplaceholder{KDGRP-IMPLEMENTATION-02: exact initializer}{
+Insert the implementation-backed formula for $\bm c^{(0)}$. State whether it
+is the arithmetic mean, coordinate-wise median, a selected calibration vector,
+or another deterministic procedure. Explain that it initializes the solver and
+does not redefine the geometric-median objective. Record any seed and the
+check used when the initializer coincides with a calibration observation.}
+
+\subsection{Numerical stabilization and stopping}
+
+\evidenceplaceholder{KDGRP-IMPLEMENTATION-03: stabilization and convergence}{
+Insert the exact inverse-distance convention, numerical $\varepsilon$,
+convergence tolerance, maximum inner iterations, stopping norm, dtype/device,
+and near-coincidence handling from the frozen production implementation. If the
+code uses $1/\max(r,\varepsilon)$ rather than $1/(r+\varepsilon)$, replace the
+displayed equations consistently.}
+
+\subsection{Extension to multiple modes}
+
+For $K>1$, the frozen method alternates between nearest-centre assignment,
+\begin{equation}
+    a_n=\arg\min_k\|\bm f_n-\bm c_k\|_2,
+\end{equation}
+and a geometric-median update within each assigned cluster,
+\begin{equation}
+    \bm c_k=\arg\min_{\bm c}
+      \sum_{n:a_n=k}\|\bm f_n-\bm c\|_2.
+\end{equation}
+The joint assignment-and-centre objective is not globally convex. The
+production initialization, tie handling, empty-cluster policy, and stopping
+rule therefore matter for reproducibility.
+
+\evidenceplaceholder{KDGRP-IMPLEMENTATION-04: exact multi-mode solver}{
+Insert the audited initial $K$-centre algorithm, seed, assignment tie rule,
+empty-cluster handling, per-cluster Weiszfeld initializer, outer stopping rule,
+maximum outer iterations, restart policy, deterministic ordering requirements,
+and whether lower-$K$ solutions warm-start higher $K$. Do not claim global
+optimality.}
+
+\subsection{Connection to the explanation score}
+
+The solver is used only during label-free calibration to estimate recurrent
+reference modes. Once these modes are frozen, explanation inference uses
+\begin{equation}
+    R_K(p)=\min_k\|\bm f_p-\bm c_k\|_2.
+\end{equation}
+No iterative optimization is required for an individual image. Inference needs
+only feature extraction, distances to the frozen centres, nearest-mode
+selection, calibration through the frozen CDF, and spatial reconstruction.

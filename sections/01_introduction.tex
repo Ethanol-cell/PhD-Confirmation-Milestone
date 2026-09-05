@@ -37,9 +37,9 @@ one dataset-wide pool of spatial vectors sampled across the training split. The
 first three coordinates are rendered as red, green, and blue channels to form
 PCA red--green--blue (PCA-RGB) maps. All images share the same layer-specific
 basis, which makes within-layer comparisons possible. The resulting maps
-suggested a recurring qualitative progression: early maps preserve local image structure; intermediate maps
-undergo conspicuous spatial reorganization; and late maps become more
-class-oriented.
+suggested a recurring qualitative progression: early maps preserve local image
+structure; intermediate maps undergo conspicuous spatial reorganization; and
+late maps become more class-oriented.
 
 \textbf{The completed evidence identifies a late transition from feature
 preservation to class-oriented geometry.} Randomly initialized convolutional
@@ -70,13 +70,14 @@ colour pattern.
 \textbf{The observation is tested through two downstream uses: explanation and
 knowledge transfer.} The first method is Adaptive K Dataset-Global Robust
 Prototypes (K-DGRP). It asks whether the geometry of late unpooled spatial
-features can provide an explanation. It models recurrent dataset-global feature modes using robust
-prototypes and scores each spatial position by its distance from the nearest
-mode. The second method is \jmethod{}, the project name for a selective
-hierarchical knowledge-distillation objective. It asks whether selected spatial
-and relational geometry can be transferred from a teacher to a smaller student. This creates a
-linked programme in which representation geometry is first observed, then used
-for explanation, and finally tested as an actionable training signal.
+features can provide an explanation. It models recurrent dataset-global feature
+modes using robust prototypes and scores each spatial position by its distance
+from the nearest mode. The second method is \jmethod{}, the project name for a
+selective hierarchical knowledge-distillation objective. It asks whether
+selected spatial and relational geometry can be transferred from a teacher to a
+smaller student. This creates a linked programme in which representation
+geometry is first observed, then used for explanation, and finally tested as an
+actionable training signal.
 
 \subsection{Problem statement}
 
@@ -84,25 +85,24 @@ for explanation, and finally tested as an actionable training signal.
 
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Depth is under-characterized:} existing CAM methods provide
-    useful output-conditioned localization,
-    but do not fully characterize how spatial representations evolve across
-    depth or how an explanatory layer should be selected.
+    useful output-conditioned localization, but do not fully characterize how
+    spatial representations evolve across depth or how an explanatory layer
+    should be selected.
     \item \textbf{Visual similarity is not sufficient evidence:} PCA-RGB can
-    reveal repeatable visual patterns, but colour similarity
-    is not automatically semantic evidence. Each layer has its own basis, so
-    direct colour identity across layers is not defined, and global variance may
+    reveal repeatable visual patterns, but colour similarity is not
+    automatically semantic evidence. Each layer has its own basis, so direct
+    colour identity across layers is not defined, and global variance may
     reflect texture, background, position, or scale.
     \item \textbf{Localization and faithfulness are different claims:}
-    competitive object localization does not automatically imply
-    classifier faithfulness. A class-agnostic representation map and a
-    class-conditioned attribution map answer different questions and require
-    different evaluation.
+    competitive object localization does not automatically imply classifier
+    faithfulness. A class-agnostic representation map and a class-conditioned
+    attribution map answer different questions and require different
+    evaluation.
     \item \textbf{Knowledge transfer requires selective supervision:}
-    knowledge-distillation methods often match logits, features, or
-    relations without an explicit account of which stage of representation
-    formation should be constrained. Excessive layer-wise imitation can
-    overconstrain a compact student whose computational path differs from its
-    teacher.
+    knowledge-distillation methods often match logits, features, or relations
+    without an explicit account of which stage of representation formation
+    should be constrained. Excessive layer-wise imitation can overconstrain a
+    compact student whose computational path differs from its teacher.
 \end{enumerate}
 
 \textbf{The central scientific problem is to identify a reproducible
@@ -123,27 +123,24 @@ Four research questions (RQs) organize the programme:
 
 \begin{description}[leftmargin=1.3cm,style=nextline]
     \item[RQ1] \textbf{Representation transition:} How do learned spatial
-    representations evolve across CNN depth,
-    and can the transition toward class-discriminative organization be detected
-    reproducibly?
+    representations evolve across CNN depth, and can the transition toward
+    class-discriminative organization be detected reproducibly?
     \item[RQ2] \textbf{Explanation:} Can transition-layer geometry provide
-    informative and faithful
-    visual explanations?
+    informative and faithful visual explanations?
     \item[RQ3] \textbf{Knowledge transfer:} Can related geometry be transferred
-    from teacher to student to
-    improve learning, and which layers and geometric components are responsible?
+    from teacher to student to improve learning, and which layers and geometric
+    components are responsible?
     \item[RQ4] \textbf{Extension beyond CNNs:} Do comparable transitions arise
-    in token-based vision models,
-    and what explanation or transfer opportunities do they enable?
+    in token-based vision models, and what explanation or transfer opportunities
+    do they enable?
 \end{description}
 
 \textbf{The objectives connect observation to application:} (i) construct
-aligned representation
-visualizations and quantitative transition measures; (ii) develop and evaluate
-\methodname{} as a class-agnostic explanation method; (iii) develop and audit
-the \jmethod{} geometry-distillation objective; and (iv) investigate
-transformer representations without prematurely fixing one architecture or
-method.
+aligned representation visualizations and quantitative transition measures;
+(ii) develop and evaluate \methodname{} as a class-agnostic explanation method;
+(iii) develop and audit the \jmethod{} geometry-distillation objective; and
+(iv) investigate transformer representations without prematurely fixing one
+architecture or method.
 
 \subsection{Expected contributions and scope}
 
@@ -151,21 +148,19 @@ The expected contributions are:
 
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Transition characterization:} an empirical and quantitative
-    characterization of spatial
-    representation transition across trained CNNs;
+    characterization of spatial representation transition across trained CNNs;
     \item \textbf{Representation-based explanation:} a class-agnostic,
-    gradient-free explanation principle based on
-    distance from adaptive dataset-global robust feature modes;
+    gradient-free explanation principle based on distance from adaptive
+    dataset-global robust feature modes;
     \item \textbf{Actionable transfer:} a selective hierarchical distillation
-    method that transfers early
-    relations, balanced transition coordinates, and late relational evolution;
+    method that transfers early relations, balanced transition coordinates,
+    and late relational evolution;
     \item \textbf{Claim-specific evaluation:} an evaluation framework that
-    distinguishes object localization,
-    class attribution, representation diagnostics, and transferable utility;
-    and
+    distinguishes object localization, class attribution, representation
+    diagnostics, and transferable utility; and
     \item \textbf{Future generalization:} evidence clarifying whether the same
-    transition hypothesis extends
-    beyond CNN spatial grids to transformer token representations.
+    transition hypothesis extends beyond CNN spatial grids to transformer token
+    representations.
 \end{enumerate}
 
 \textbf{The completed evidence is deliberately scoped to image classification
@@ -174,7 +169,7 @@ intended thesis scope, but claims in the completed-work chapters are restricted
 to the architectures and datasets actually tested. Transformer generalization
 remains prospective.
 
-\subsection{Research programme}
+\subsection{Research plan}
 
 \begin{figure}[H]
     \centering
@@ -186,9 +181,9 @@ remains prospective.
 
 \Cref{fig:research-program} shows the intended logic. \textbf{PCA-RGB is a
 discovery and diagnostic instrument. It should not be treated as a faithful
-attribution method on its own.}
-\methodname{} tests whether recurrent feature-space geometry can localize
-object-relevant structure. \jmethod{} tests whether selected geometry has
-training utility. These studies are complementary, but the report avoids the
-stronger unsupported claim that successful distillation proves the faithfulness
-of a particular explanation map.
+attribution method on its own.} \methodname{} tests whether recurrent
+feature-space geometry can localize object-relevant structure. \jmethod{} tests
+whether selected geometry has training utility. These studies are
+complementary, but the report avoids the stronger unsupported claim that
+successful distillation proves the faithfulness of a particular explanation
+map.
